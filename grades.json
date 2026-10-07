@@ -1,0 +1,45 @@
+[
+    {
+        "codigo_grade": "grade_26000000_2026_1",
+        "codigo_RA":"26000000",
+        "semestre_ano": "2026.1",
+        "modificada": true,
+        "materias":[
+            {
+                "codigo":"DIR010",
+                "nome":"Antropologia Jurídica",
+                "horario": "Segunda 19:00",
+                "docente":"Fernando Davi"
+            },
+            {
+                "codigo":"DIR033",
+                "nome":"Criminologia",
+                "horario": "Terça 19:00",
+                "docente":"Fernando Davi"
+            }
+        ]
+
+        
+
+    },
+    {
+        "codigo_grade": "grade_26000001_2026_2",
+        "codigo_RA":"26000001",
+        "semestre_ano": "2026.2",
+        "modificada": false,
+        "materias":[
+            {
+                "codigo":"EBD1",
+                "nome":"Estudos de Banco de Dados 1",
+                "horario": "Segunda 08:00",
+                "docente":"Jorge Santos"
+            },
+            {
+                "codigo":"ALP02",
+                "nome":"Algoritmos e Lógica de Programação",
+                "horario": "Quarta 08:00",
+                "docente":"Jorge Santos"
+            }
+        ]
+    }
+]

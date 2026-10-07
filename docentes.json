@@ -7,7 +7,8 @@
         "documento": {
             "tipo": "CPF",
             "valor": "145.852.369-11"
-        }
+        },
+        "instituicao": "Universidade 1"
         
     },
     {
@@ -18,7 +19,8 @@
         "documento": {
             "tipo": "CPF",
             "valor": "654.123.987-20"
-        }
+        },
+        "instituicao": "Universidade 2"
         
     }
 ]

@@ -3,7 +3,21 @@
         "RA":"26000000",
         "nome":"Gabriel Silva",
         "email":"gabriel.silva@estudante.com",
-        "curso":"Direito",
+        "formacao":{
+            "curso":"Direito",
+            "nivel": "Graduação",
+            "institicao": {
+                "nome": "Universidade 1",
+                "campus": "Campus Central"
+            }
+        },
+        "ingresso": {
+            "data_entrada": "2026-02-10",
+            "tipo_admissao": "transferencia", 
+            "periodo_letivo": "regular", 
+            "turno": "noite" 
+        },
+        "grade_id": "grade_26000000_2026_1",
         "celular":"(19) 98741-5236",
         "documento": {
             "tipo": "CPF",
@@ -23,7 +37,21 @@
         "RA":"26000001",
         "nome":"Pedro Souza",
         "email":"pedro.souza@estudante.com",
-        "curso":"Engenharia de Software",
+        "formacao":{
+            "curso":"Engenharia de Software",
+            "nivel": "Graduação",
+            "institicao": {
+                "nome": "Universidade 2",
+                "campus": "Campus 2"
+            }
+        },
+        "ingresso": {
+            "data_entrada": "2026-08-03",
+            "tipo_admissao": "vestibular", 
+            "periodo_letivo": "meio_ano", 
+            "turno": "matutino" 
+        },
+        "grade_id": "grade_26000001_2026_2",
         "celular":"(11) 98765-4321",
         "documento": {
             "tipo": "CPF",
