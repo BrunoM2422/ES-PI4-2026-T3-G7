@@ -1,0 +1,42 @@
+[
+    {
+        "RA":"26000000",
+        "nome":"Gabriel Silva",
+        "email":"gabriel.silva@estudante.com",
+        "curso":"Direito",
+        "celular":"(19) 98741-5236",
+        "documento": {
+            "tipo": "CPF",
+            "valor": "475.257.881-62"
+        },
+        "endereço":{
+            "cep":"13087-010",
+            "logradouro":"Rua Almirante Barroso",
+            "bairro":"Vila Nova",
+            "numero":"452",
+            "complemento":"Apto 32 Bloco B",
+            "cidade":"Campinas",
+            "estado":"SP"
+        }
+    },
+    {
+        "RA":"26000001",
+        "nome":"Pedro Souza",
+        "email":"pedro.souza@estudante.com",
+        "curso":"Engenharia de Software",
+        "celular":"(11) 98765-4321",
+        "documento": {
+            "tipo": "CPF",
+            "valor": "312.654.987-05"
+        },
+        "endereço":{
+            "cep":"80010-000",
+            "logradouro":"Avenida Luiz Xavier",
+            "bairro":"Centro",
+            "numero":"1205",
+            "complemento":"Conjunto 41",
+            "cidade":"Curitiba",
+            "estado":"PR"
+        }
+    }
+]

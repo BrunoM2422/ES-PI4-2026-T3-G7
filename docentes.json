@@ -1,0 +1,24 @@
+[
+    {
+        "RP":"P456",
+        "nome": "Fernando Davi",
+        "email":"fernando.davi@docente.com",
+        "celular":"(21) 97412-8563",
+        "documento": {
+            "tipo": "CPF",
+            "valor": "145.852.369-11"
+        }
+        
+    },
+    {
+        "RP":"P457",
+        "nome": "Jorge Santos",
+        "email":"jorge.santos@docente.com",
+        "celular":"(31) 96321-4785",
+        "documento": {
+            "tipo": "CPF",
+            "valor": "654.123.987-20"
+        }
+        
+    }
+]
