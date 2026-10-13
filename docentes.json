@@ -8,7 +8,9 @@
             "tipo": "CPF",
             "valor": "145.852.369-11"
         },
-        "instituicao": "Universidade 1"
+        "papeis":["docente"],
+        "ativo":true,
+        "id_instituicao":"UNI-1"
         
     },
     {
@@ -20,7 +22,9 @@
             "tipo": "CPF",
             "valor": "654.123.987-20"
         },
-        "instituicao": "Universidade 2"
+        "papeis":["docente"],
+        "ativo":true,
+        "id_instituicao":"UNI-2"
         
     }
 ]

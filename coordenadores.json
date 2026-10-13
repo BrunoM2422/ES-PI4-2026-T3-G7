@@ -1,0 +1,26 @@
+[
+    {
+        "nome": "Mariana Costa",
+        "email": "mariana.costa@coordenador.com",
+        "celular": "(11) 98324-7165",
+        "documento": {
+            "tipo": "CPF",
+            "valor": "328.517.640-92"
+        },
+        "papeis": ["coordenador"],
+        "ativo": true,
+        "id_instituicao": "UNI-1"
+    },
+    {
+        "nome": "Rafael Mendes",
+        "email": "rafael.mendes@coordenador.com",
+        "celular": "(21) 99263-5841",
+        "documento": {
+            "tipo": "CPF",
+            "valor": "517.294.830-16"
+        },
+        "papeis": ["coordenador"],
+        "ativo": true,
+        "id_instituicao": "UNI-2"
+    }
+]
