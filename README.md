@@ -1,4 +1,9 @@
 
+# NotaDez
+
+
+
+
 ## Como executar o Projeto
 
 ## Pré-requisitos
@@ -16,6 +21,18 @@ git clone https://github.com/BrunoM2422/ES-PI4-2026-T3-G7.git
 
 ```bash
 cd ES-PI4-2026-T3-G7
+```
+
+## 3. Configure as variáveis de ambiente
+Abra o terminal e rode:
+```bash
+cp .env.example .env
+```
+
+Em seguida, abra o arquivo .env e substitua o valor de MONGODB_URI pela sua string de conexão do MongoDB.
+```bash
+PORT=3000
+MONGODB_URI=adicione_aqui_a_string_de_conexao_do_mongodb
 ```
 
 ---
