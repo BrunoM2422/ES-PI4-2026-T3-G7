@@ -1,21 +1,21 @@
 
 [
   {
-    "email": "aluno@aluno",
+    "email": "gabriel.silva@estudante.com",
     "senha": "aluno",
-    "tipo": "aluno",
-    "nome": "aluno aluno"
+    "papeis":["estudante"],
+    "nome": "Gabriel Silva"
   },
   {
-    "email": "prof@prof",
+    "email": "fernando.davi@docente.com",
     "senha": "prof",
-    "tipo": "professor",
-    "nome": "prof prof"
+    "papeis":["docente"],
+    "nome": "Fernando Davi"
   },
   {
-    "email": "adm@adm",
-    "senha": "adm",
-    "tipo": "admin",
-    "nome": "adm adm"
+    "email": "admin@admin.com",
+    "senha": "admin",
+    "papeis":["admin"],
+    "nome": "Administrador 1"
   }
 ]
