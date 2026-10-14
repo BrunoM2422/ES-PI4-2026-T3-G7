@@ -1,0 +1,21 @@
+
+[
+  {
+    "email": "aluno@aluno",
+    "senha": "aluno",
+    "tipo": "aluno",
+    "nome": "aluno aluno"
+  },
+  {
+    "email": "prof@prof",
+    "senha": "prof",
+    "tipo": "professor",
+    "nome": "prof prof"
+  },
+  {
+    "email": "adm@adm",
+    "senha": "adm",
+    "tipo": "admin",
+    "nome": "adm adm"
+  }
+]

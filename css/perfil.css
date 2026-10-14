@@ -1,0 +1,250 @@
+.profile-host {
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.profile-layout {
+  display: grid;
+  align-items: start;
+  gap: 22px;
+}
+
+.student-profile {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+}
+
+.professor-profile {
+  grid-template-columns: minmax(0, 1.8fr) minmax(260px, .95fr);
+}
+
+.profile-side-column {
+  display: grid;
+  align-content: start;
+  gap: 22px;
+}
+
+.profile-card {
+  min-width: 0;
+  padding: 21px 22px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 5px 20px rgb(26 39 74 / 3%);
+}
+
+.profile-card h2 {
+  margin: 0 0 20px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.profile-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 22px;
+}
+
+.profile-avatar {
+  display: grid;
+  width: 74px;
+  height: 74px;
+  flex: 0 0 74px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #e8ebf4, #d8ddec);
+  color: #8d98b0;
+}
+
+.profile-avatar svg {
+  width: 55px;
+  height: 55px;
+  margin-top: 10px;
+}
+
+.profile-upload-area {
+  display: grid;
+  justify-items: start;
+  gap: 7px;
+}
+
+.profile-upload {
+  min-height: 35px;
+  padding: 0 14px;
+  border: 1px solid var(--primary);
+  border-radius: 7px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.profile-upload-area small {
+  color: #94a1b8;
+  font-size: 9px;
+}
+
+.profile-fields {
+  display: grid;
+  gap: 14px;
+}
+
+.profile-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 12px;
+}
+
+.profile-field {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  color: #42516b;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.profile-field input,
+.profile-field textarea {
+  width: 100%;
+  min-height: 39px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  outline: none;
+  background: #fff;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.profile-field textarea {
+  min-height: 78px;
+  resize: vertical;
+}
+
+.profile-field input::placeholder,
+.profile-field textarea::placeholder {
+  color: #98a6bd;
+}
+
+.profile-field input:focus,
+.profile-field textarea:focus {
+  border-color: #938dff;
+  box-shadow: 0 0 0 3px rgb(81 70 238 / 9%);
+}
+
+.profile-field input[readonly] {
+  background: #f7f9fc;
+  color: #64728b;
+  cursor: default;
+}
+
+.profile-field input[readonly]:focus {
+  border-color: var(--line);
+  box-shadow: none;
+}
+
+.profile-password-control {
+  position: relative;
+  display: block;
+}
+
+.profile-password-control input {
+  padding-right: 42px;
+}
+
+.password-visibility {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #8390a6;
+}
+
+.password-visibility:hover {
+  background: #edf0f6;
+  color: var(--primary);
+}
+
+.password-visibility svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.password-visibility .eye-slash {
+  display: none;
+}
+
+.password-visibility[aria-pressed="true"] .eye-slash {
+  display: block;
+}
+
+.profile-save-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.profile-save,
+.profile-security-save {
+  min-height: 39px;
+  padding: 0 17px;
+  border: 1px solid var(--primary);
+  border-radius: 7px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.profile-save {
+  width: 100%;
+}
+
+.profile-security-save {
+  width: 100%;
+  margin-top: 2px;
+  border-color: var(--line);
+  background: #fff;
+  color: var(--primary);
+}
+
+.profile-security-save:hover {
+  border-color: #c9c7ff;
+  background: #f8f7ff;
+}
+
+@media (max-width: 950px) {
+  .student-profile,
+  .professor-profile {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 550px) {
+  .profile-card {
+    padding: 17px 15px;
+  }
+
+  .profile-fields-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+}
