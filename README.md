@@ -26,7 +26,7 @@ cd ES-PI4-2026-T3-G7
 ## 3. Configure as variáveis de ambiente
 Abra o terminal e rode:
 ```bash
-cp .env.example .env
+copy .env.example .env
 ```
 
 Em seguida, abra o arquivo .env e substitua o valor de MONGODB_URI pela sua string de conexão do MongoDB.
