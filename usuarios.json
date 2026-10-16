@@ -1,0 +1,21 @@
+
+[
+  {
+    "email": "gabriel.silva@estudante.com",
+    "senha": "aluno",
+    "papeis":["estudante"],
+    "nome": "Gabriel Silva"
+  },
+  {
+    "email": "fernando.davi@docente.com",
+    "senha": "prof",
+    "papeis":["docente"],
+    "nome": "Fernando Davi"
+  },
+  {
+    "email": "admin@admin.com",
+    "senha": "admin",
+    "papeis":["admin"],
+    "nome": "Administrador 1"
+  }
+]
