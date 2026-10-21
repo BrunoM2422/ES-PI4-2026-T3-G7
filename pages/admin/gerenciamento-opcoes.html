@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gerenciamento de Op&ccedil;&otilde;es | NotaDez</title>
+    <link rel="stylesheet" href="../../css/shared/style.css">
+    <link rel="stylesheet" href="../../css/admin/paginas.css">
+  </head>
+  <body>
+    <div id="app" data-page="gerenciamento-opcoes" data-role="admin" data-title="Gerenciamento de Op&ccedil;&otilde;es">
+      <div class="shell">
+        <aside class="side" data-component="sidebar"></aside>
+        <main class="main">
+          <div data-component="header"></div>
+          <section class="content">
+            <article class="admin-page">
+              <div class="admin-page-intro">
+                <span class="admin-eyebrow">Configura&ccedil;&otilde;es acad&ecirc;micas</span>
+                <h2>Gerenciamento de Op&ccedil;&otilde;es</h2>
+                <p>Visualize as libera&ccedil;&otilde;es dispon&iacute;veis para os perfis acad&ecirc;micos.</p>
+              </div>
+              <section class="admin-options-card">
+                <div class="admin-options-heading">
+                  <div>
+                    <h3>Libera&ccedil;&otilde;es do sistema</h3>
+                    <p>Configure as libera&ccedil;&otilde;es acad&ecirc;micas.</p>
+                  </div>
+                  <span class="admin-options-badge">Dados n&atilde;o dispon&iacute;veis</span>
+                </div>
+                <div class="admin-option-row">
+                  <div class="admin-option-icon" aria-hidden="true">&#9998;</div>
+                  <div class="admin-option-copy">
+                    <strong>Libera&ccedil;&atilde;o de matr&iacute;cula para alunos</strong>
+                    <span>Permite que alunos realizem a matr&iacute;cula no per&iacute;odo letivo.</span>
+                  </div>
+                  <div class="admin-option-actions" data-option="matricula">
+                    <button class="admin-release-button" type="button" data-state="ativar" aria-pressed="false">Liberar matr&iacute;cula</button>
+                    <button class="admin-release-button admin-remove-button" type="button" data-state="desativar" aria-pressed="false">Tirar matr&iacute;cula</button>
+                  </div>
+                </div>
+                <div class="admin-option-row">
+                  <div class="admin-option-icon" aria-hidden="true">&#9734;</div>
+                  <div class="admin-option-copy">
+                    <strong>Libera&ccedil;&atilde;o de avalia&ccedil;&atilde;o de professor</strong>
+                    <span>Disponibiliza aos alunos o formul&aacute;rio para avaliar docentes.</span>
+                  </div>
+                  <div class="admin-option-actions" data-option="avaliacao">
+                    <button class="admin-release-button" type="button" data-state="ativar" aria-pressed="false">Liberar avalia&ccedil;&atilde;o</button>
+                    <button class="admin-release-button admin-remove-button" type="button" data-state="desativar" aria-pressed="false">Tirar avalia&ccedil;&atilde;o de professor</button>
+                  </div>
+                </div>
+                <div class="admin-option-row">
+                  <div class="admin-option-icon" aria-hidden="true">&#9776;</div>
+                  <div class="admin-option-copy">
+                    <strong>Libera&ccedil;&atilde;o de grade de professores</strong>
+                    <span>Exibe a grade de hor&aacute;rios dos docentes para consulta.</span>
+                  </div>
+                  <div class="admin-option-actions" data-option="grade">
+                    <button class="admin-release-button" type="button" data-state="ativar" aria-pressed="false">Liberar grade</button>
+                    <button class="admin-release-button admin-remove-button" type="button" data-state="desativar" aria-pressed="false">Tirar libera&ccedil;&atilde;o da grade</button>
+                  </div>
+                </div>
+              </section>
+            </article>
+          </section>
+          <div data-component="footer"></div>
+        </main>
+      </div>
+    </div>
+    <script src="../../js/shared/app.js"></script>
+    <script src="../../js/admin/gerenciamento-opcoes.js"></script>
+  </body>
+</html>

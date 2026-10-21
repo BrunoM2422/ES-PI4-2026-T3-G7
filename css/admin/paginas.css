@@ -1,0 +1,460 @@
+.admin-page {
+  display: grid;
+  gap: 18px;
+}
+
+.admin-page-intro {
+  padding: 2px 1px;
+}
+
+.admin-eyebrow {
+  color: var(--primary);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.admin-page-intro h2 {
+  margin: 6px 0;
+  color: #26334a;
+  font-size: 22px;
+}
+
+.admin-page-intro p,
+.admin-card-heading p {
+  margin: 0;
+  color: #78869c;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px;
+}
+
+.admin-form-card {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.admin-form-card-narrow {
+  width: min(100%, 820px);
+}
+
+.admin-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.admin-card-heading h3 {
+  margin: 0 0 4px;
+  color: #26334a;
+  font-size: 15px;
+}
+
+.admin-card-icon,
+.admin-file-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 19px;
+}
+
+.admin-card-heading-danger .admin-card-icon {
+  background: #fff0f0;
+  color: #dc4545;
+}
+
+.admin-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.admin-field {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+  color: #45546c;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.admin-field-wide {
+  grid-column: 1 / -1;
+}
+
+.admin-field input,
+.admin-field select,
+.admin-field textarea {
+  width: 100%;
+  min-height: 39px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  outline: none;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.admin-field textarea {
+  min-height: 94px;
+  resize: vertical;
+}
+
+.admin-field input:focus,
+.admin-field select:focus,
+.admin-field textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgb(81 70 238 / 10%);
+}
+
+.admin-field input::placeholder,
+.admin-field textarea::placeholder {
+  color: #9aa5b7;
+}
+
+.admin-field-unavailable p {
+  display: grid;
+  min-height: 39px;
+  align-items: center;
+  margin: 0;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #f7f8fb;
+  color: #8490a2;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.admin-button {
+  min-height: 39px;
+  padding: 0 16px;
+  border: 1px solid var(--primary);
+  border-radius: 7px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.admin-button:hover {
+  filter: brightness(.96);
+}
+
+.admin-button-secondary {
+  border-color: var(--line);
+  background: #fff;
+  color: #465570;
+}
+
+.admin-button-danger {
+  border-color: #d94444;
+  background: #d94444;
+}
+
+.admin-options-card {
+  width: min(100%, 920px);
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.admin-options-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 14px;
+}
+
+.admin-options-heading h3 {
+  margin: 0 0 5px;
+  color: #26334a;
+  font-size: 15px;
+}
+
+.admin-options-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.admin-options-badge {
+  padding: 6px 9px;
+  border-radius: 20px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.admin-option-row {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 13px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+
+.admin-option-icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 16px;
+}
+
+.admin-option-copy {
+  display: grid;
+  gap: 5px;
+}
+
+.admin-option-copy strong {
+  color: #34425a;
+  font-size: 12px;
+}
+
+.admin-option-copy span {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.admin-option-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.admin-release-button {
+  min-height: 35px;
+  padding: 0 12px;
+  border: 1px solid var(--primary);
+  border-radius: 7px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.admin-release-button:hover {
+  filter: brightness(.96);
+}
+
+.admin-release-button.is-selected {
+  border-color: #168663;
+  background: #168663;
+}
+
+.admin-release-button.admin-remove-button {
+  border-color: #d7dce5;
+  background: #fff;
+  color: #566176;
+}
+
+.admin-release-button.admin-remove-button.is-selected {
+  border-color: #b64152;
+  background: #b64152;
+  color: #fff;
+}
+
+.admin-file-field {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  padding: 17px;
+  border: 1px dashed #c9cfe0;
+  border-radius: 9px;
+  background: #fafaff;
+  color: #45546c;
+  font-size: 12px;
+}
+
+.admin-file-field .admin-file-icon {
+  width: 34px;
+  height: 34px;
+  flex-basis: 34px;
+  font-size: 17px;
+}
+
+.admin-file-field small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.admin-file-action {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: #465570;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.admin-table-wrap {
+  max-width: 100%;
+  margin: 12px 0;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+  text-align: left;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.admin-table th {
+  background: #f7f9fc;
+  color: #52617a;
+}
+
+.admin-table td {
+  color: #465570;
+}
+
+.admin-confirm-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 15px;
+  color: #56647b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.admin-confirm-field input {
+  margin: 2px 0 0;
+  accent-color: var(--primary);
+}
+
+body.theme-dark .admin-page-intro h2,
+body.theme-dark .admin-card-heading h3 {
+  color: var(--ink);
+}
+
+body.theme-dark .admin-options-card {
+  border-color: var(--line);
+  background: #182337;
+}
+
+body.theme-dark .admin-options-heading h3,
+body.theme-dark .admin-option-copy strong {
+  color: var(--ink);
+}
+
+body.theme-dark .admin-form-card {
+  border-color: var(--line);
+  background: #182337;
+}
+
+body.theme-dark .admin-field {
+  color: #c2cce0;
+}
+
+body.theme-dark .admin-field input,
+body.theme-dark .admin-field select,
+body.theme-dark .admin-field textarea,
+body.theme-dark .admin-field-unavailable p,
+body.theme-dark .admin-button-secondary {
+  border-color: var(--line);
+  background: #202b3d;
+  color: var(--ink);
+}
+
+body.theme-dark .admin-file-field {
+  border-color: #46516a;
+  background: #202b3d;
+  color: var(--ink);
+}
+
+body.theme-dark .admin-file-action {
+  border-color: var(--line);
+  background: #182337;
+  color: var(--ink);
+}
+
+body.theme-dark .admin-table th {
+  background: #202b3d;
+  color: var(--ink);
+}
+
+body.theme-dark .admin-table td,
+body.theme-dark .admin-confirm-field {
+  color: #c2cce0;
+}
+
+@media (max-width: 900px) {
+  .admin-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .admin-field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-field-wide {
+    grid-column: auto;
+  }
+
+  .admin-form-card {
+    padding: 16px;
+  }
+
+  .admin-options-card {
+    padding: 16px;
+  }
+
+  .admin-option-row {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .admin-option-actions {
+    grid-column: 2;
+    justify-self: start;
+    justify-content: flex-start;
+  }
+}

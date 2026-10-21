@@ -3,13 +3,121 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Meu Perfil Docente | NotaDez</title>
-    <link rel="stylesheet" href="../../css/style.css">
-    <link rel="stylesheet" href="../../css/perfil.css">
+    <title>
+      Meu Perfil Docente | NotaDez
+    </title>
+    <link rel="stylesheet" href="../../css/shared/style.css">
+    <link rel="stylesheet" href="../../css/professor/perfil.css">
   </head>
   <body>
-    <div id="app" data-page="perfil" data-role="professor" data-title="Meu Perfil Docente"></div>
-    <script src="../../js/app.js"></script>
-    <script src="../../js/perfil.js"></script>
+    <div id="app" data-page="perfil" data-role="professor" data-title="Meu Perfil Docente">
+      <div class="shell">
+        <aside class="side" data-component="sidebar">
+        </aside>
+        <main class="main">
+          <div data-component="header">
+          </div>
+          <section class="content">
+            <article class="card profile-host">
+              <div class="profile-layout professor-profile">
+                <section class="profile-card profile-personal">
+                  <h2>
+                    Informa&ccedil;&otilde;es Pessoais
+                  </h2>
+                  <div class="profile-avatar-row">
+                    <div class="profile-avatar" aria-label="Foto de perfil vazia">
+                      <svg viewBox="0 0 64 64" aria-hidden="true">
+                        <circle cx="32" cy="22" r="12" fill="currentColor" opacity=".75"/>
+                        <path d="M10 58c1-13 10-21 22-21s21 8 22 21" fill="currentColor" opacity=".55"/>
+                      </svg>
+                    </div>
+                    <div class="profile-upload-area">
+                      <button class="profile-upload" type="button">
+                        Upload Nova Foto
+                      </button>
+                      <small>JPG, PNG ou GIF. M&aacute;ximo de 5 MB.</small>
+                    </div>
+                  </div>
+                  <div class="profile-fields">
+                    <div class="profile-fields-grid">
+                      <label class="profile-field">
+                        <span>Nome Completo</span>
+                        <input type="text" placeholder="Dados n&atilde;o dispon&iacute;veis" readonly aria-readonly="true">
+                      </label>
+                      <label class="profile-field">
+                        <span>E-mail Institucional</span>
+                        <input type="email" placeholder="Dados n&atilde;o dispon&iacute;veis" readonly aria-readonly="true">
+                      </label>
+                      <label class="profile-field">
+                        <span>Celular</span>
+                        <input type="tel" placeholder="Dados n&atilde;o dispon&iacute;veis">
+                      </label>
+                      <label class="profile-field">
+                        <span>Documento (CPF)</span>
+                        <input type="text" inputmode="numeric" placeholder="Dados n&atilde;o dispon&iacute;veis" readonly aria-readonly="true">
+                      </label>
+                    </div>
+                    <label class="profile-field">
+                      <span>Endere&ccedil;o Residencial</span>
+                      <input type="text" placeholder="Dados n&atilde;o dispon&iacute;veis" readonly aria-readonly="true">
+                    </label>
+                    <label class="profile-field">
+                      <span>Descri&ccedil;&atilde;o / Bio</span>
+                      <textarea rows="3" placeholder="Conte um pouco sobre sua atua&ccedil;&atilde;o acad&ecirc;mica">
+                      </textarea>
+                    </label>
+                    <div class="profile-fields-grid">
+                      <label class="profile-field">
+                        <span>Categoria de Contrata&ccedil;&atilde;o</span>
+                        <input type="text" placeholder="Dados n&atilde;o dispon&iacute;veis" readonly aria-readonly="true">
+                      </label>
+                      <label class="profile-field">
+                        <span>Departamento</span>
+                        <input type="text" placeholder="Dados n&atilde;o dispon&iacute;veis" readonly aria-readonly="true">
+                      </label>
+                    </div>
+                  </div>
+                  <div class="profile-save-row">
+                    <button class="profile-save" type="button">
+                      Salvar Altera&ccedil;&otilde;es
+                    </button>
+                  </div>
+                </section>
+                <div class="profile-side-column">
+                  <section class="profile-card profile-security">
+                    <h2>
+                      Seguran&ccedil;a &amp; Senha
+                    </h2>
+                    <div class="profile-fields">
+                      <div class="profile-field">
+                        <span>Senha Atual</span>
+                        <p class="profile-unavailable">Dados n&atilde;o dispon&iacute;veis.</p>
+                      </div>
+                      <label class="profile-field">
+                        <span>Nova Senha</span>
+                        <input type="password" placeholder="Digite a nova senha" autocomplete="new-password">
+                      </label>
+                      <label class="profile-field">
+                        <span>Confirmar Nova Senha</span>
+                        <input type="password" placeholder="Repita a nova senha" autocomplete="new-password">
+                      </label>
+                    </div>
+                    <button class="profile-security-save" type="button">
+                      Alterar Senha
+                    </button>
+                  </section>
+                </div>
+              </div>
+            </article>
+          </section>
+          <div data-component="footer">
+          </div>
+        </main>
+      </div>
+    </div>
+    <script src="../../js/shared/app.js">
+    </script>
+    <script src="../../js/professor/perfil.js">
+    </script>
   </body>
 </html>

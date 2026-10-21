@@ -3,13 +3,66 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Falar com Coordena&#231;&#227;o | NotaDez</title>
-    <link rel="stylesheet" href="../../css/style.css">
-    <link rel="stylesheet" href="../../css/aluno-paginas.css">
+    <title>
+      Falar com Coordena&#231;&#227;o | NotaDez
+    </title>
+    <link rel="stylesheet" href="../../css/shared/style.css">
+    <link rel="stylesheet" href="../../css/aluno/paginas.css">
   </head>
   <body>
-    <div id="app" data-page="contato" data-role="aluno" data-title="Falar com Coordena&#231;&#227;o"></div>
-    <script src="../../js/app.js"></script>
-    <script src="../../js/aluno-paginas.js"></script>
+    <div id="app" data-page="contato" data-role="aluno" data-title="Falar com Coordena&#231;&#227;o">
+      <div class="shell">
+        <aside class="side" data-component="sidebar">
+        </aside>
+        <main class="main">
+          <div data-component="header">
+          </div>
+          <section class="content">
+            <article class="student-page-host">
+              <div class="contact-layout">
+                <section class="student-page-panel contact-compose">
+                  <h2>
+                    Nova Mensagem
+                  </h2>
+                  <form id="contact-form">
+                    <span class="contact-field-label">Assunto / Categoria</span><p class="contact-options-unavailable">Op&ccedil;&otilde;es n&atilde;o dispon&iacute;veis.</p>
+                    <label for="contact-message">
+                      Mensagem
+                    </label>
+                    <textarea id="contact-message" required placeholder="Escreva detalhadamente sua solicita&ccedil;&atilde;o...">
+                    </textarea>
+                    <div class="contact-actions">
+                      <label class="contact-attach" for="contact-file">
+                        <span aria-hidden="true">&#128206;</span>Anexar arquivo
+                      </label>
+                      <input id="contact-file" type="file">
+                      <button type="submit" class="contact-submit">
+                        Enviar Mensagem
+                      </button>
+                    </div>
+                    <p class="contact-feedback" aria-live="polite">
+                    </p>
+                  </form>
+                </section>
+                <section class="contact-history">
+                  <h2>
+                    Chamados e Mensagens Anteriores
+                  </h2>
+                  <article class="student-page-panel contact-history-empty">
+                    Nenhum chamado anterior.
+                  </article>
+                </section>
+              </div>
+            </article>
+          </section>
+          <div data-component="footer">
+          </div>
+        </main>
+      </div>
+    </div>
+    <script src="../../js/shared/app.js">
+    </script>
+    <script src="../../js/aluno/contato.js">
+    </script>
   </body>
 </html>

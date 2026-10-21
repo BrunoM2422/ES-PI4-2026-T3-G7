@@ -1,7 +1,8 @@
 (() => {
-  const host = document.querySelector('#app .card');
+  const host = document.querySelector('#app .calendar-host');
+  const cloneTemplate = id => document.getElementById(id).content.cloneNode(true);
   const { role } = document.querySelector('#app').dataset;
-  const user = JSON.parse(sessionStorage.getItem('notadez_demo_user') || 'null');
+  const user = JSON.parse(sessionStorage.getItem('notadez_user') || 'null');
   const storageKey = `notadez_calendar_${role}_${user?.email || 'usuario'}`;
   const now = new Date();
   let displayedMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -10,106 +11,13 @@
   let events = loadEvents();
 
   host.classList.add('calendar-host');
-  host.innerHTML = `
-    <div class="calendar-page">
-      <div class="calendar-toolbar">
-        <div>
-          <p class="calendar-eyebrow">Agenda acad&ecirc;mica</p>
-          <h2 id="calendar-month"></h2>
-        </div>
-        <div class="calendar-actions">
-          <button class="calendar-button calendar-today" id="calendar-today" type="button">Hoje</button>
-          <button class="calendar-icon-button" id="calendar-prev" type="button" aria-label="M&ecirc;s anterior">&lsaquo;</button>
-          <button class="calendar-icon-button" id="calendar-next" type="button" aria-label="Pr&oacute;ximo m&ecirc;s">&rsaquo;</button>
-          <button class="calendar-button calendar-add" id="calendar-add" type="button"><span aria-hidden="true">+</span> Novo evento</button>
-        </div>
-      </div>
-
-      <div class="calendar-layout">
-        <section class="calendar-month-view" aria-label="Calend&aacute;rio mensal">
-          <div class="calendar-weekdays" aria-hidden="true">
-            <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>S&aacute;b</span><span>Dom</span>
-          </div>
-          <div class="calendar-days" id="calendar-days"></div>
-        </section>
-        <aside class="calendar-agenda">
-          <div class="agenda-heading">
-            <div>
-              <p class="calendar-eyebrow">Eventos do m&ecirc;s</p>
-              <h3 id="agenda-month"></h3>
-            </div>
-            <span class="agenda-count" id="agenda-count">0</span>
-          </div>
-          <div class="agenda-list" id="agenda-list"></div>
-          <p class="calendar-hint">Selecione um dia para adicionar um evento. Clique em um evento para edit&aacute;-lo.</p>
-        </aside>
-      </div>
-    </div>
-
-    <dialog class="event-modal" id="event-modal" aria-labelledby="event-modal-title">
-      <form class="event-form" id="event-form">
-        <div class="modal-heading">
-          <div>
-            <p class="calendar-eyebrow">Agenda acad&ecirc;mica</p>
-            <h2 id="event-modal-title">Novo evento</h2>
-          </div>
-          <button class="modal-close" id="event-close" type="button" aria-label="Fechar">&times;</button>
-        </div>
-        <label class="event-field event-field-wide">
-          <span>Nome do evento</span>
-          <input id="event-title" name="title" maxlength="90" placeholder="Ex.: Aula, prova ou reuni&atilde;o" required>
-        </label>
-        <div class="event-fields-row">
-          <label class="event-field">
-            <span>Data</span>
-            <input id="event-date" name="date" type="date" required>
-          </label>
-          <label class="event-field">
-            <span>Categoria</span>
-            <select id="event-category" name="category">
-              <option value="purple">Acad&ecirc;mico</option>
-              <option value="blue">Aula</option>
-              <option value="green">Pessoal</option>
-              <option value="orange">Prazo</option>
-              <option value="red">Importante</option>
-            </select>
-          </label>
-        </div>
-        <div class="event-fields-row">
-          <label class="event-field">
-            <span>In&iacute;cio</span>
-            <input id="event-start" name="start" type="time" required>
-          </label>
-          <label class="event-field">
-            <span>T&eacute;rmino</span>
-            <input id="event-end" name="end" type="time" required>
-          </label>
-        </div>
-        <label class="event-field event-field-wide">
-          <span>Local</span>
-          <input id="event-location" name="location" maxlength="100" placeholder="Sala, bloco ou link">
-        </label>
-        <label class="event-field event-field-wide">
-          <span>Descri&ccedil;&atilde;o</span>
-          <textarea id="event-description" name="description" rows="3" maxlength="400" placeholder="Detalhes adicionais (opcional)"></textarea>
-        </label>
-        <div class="event-form-footer">
-          <button class="calendar-delete" id="event-delete" type="button" hidden>Excluir evento</button>
-          <div class="event-form-actions">
-            <button class="calendar-button" id="event-cancel" type="button">Cancelar</button>
-            <button class="calendar-button calendar-add" type="submit">Salvar evento</button>
-          </div>
-        </div>
-      </form>
-    </dialog>
-  `;
+  
 
   const modal = host.querySelector('#event-modal');
   const form = host.querySelector('#event-form');
   const fields = {
     title: host.querySelector('#event-title'),
     date: host.querySelector('#event-date'),
-    category: host.querySelector('#event-category'),
     start: host.querySelector('#event-start'),
     end: host.querySelector('#event-end'),
     location: host.querySelector('#event-location'),
@@ -153,7 +61,6 @@
       id: editingId || createId(),
       title: fields.title.value.trim(),
       date: fields.date.value,
-      category: fields.category.value,
       start: fields.start.value,
       end: fields.end.value,
       location: fields.location.value.trim(),
@@ -208,44 +115,47 @@
     const firstDay = new Date(year, month, 1);
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const offset = (firstDay.getDay() + 6) % 7;
-    const dayCells = [];
+    const daysContainer = host.querySelector('#calendar-days');
+    daysContainer.replaceChildren();
 
     for (let index = 0; index < offset; index += 1) {
-      dayCells.push('<div class="calendar-day calendar-day-empty" aria-hidden="true"></div>');
+      daysContainer.append(cloneTemplate('calendar-empty-day-template'));
     }
 
     for (let dayNumber = 1; dayNumber <= daysInMonth; dayNumber += 1) {
       const date = new Date(year, month, dayNumber);
       const dateKey = formatDate(date);
       const dayEvents = eventsForDate(dateKey);
-      const classes = [
-        'calendar-day',
-        dateKey === today ? 'is-today' : '',
-        dateKey < today ? 'is-past' : '',
-        dateKey === selectedDate ? 'is-selected' : ''
-      ].filter(Boolean).join(' ');
-      const eventMarkup = dayEvents.slice(0, 2).map(item => `
-        <button class="calendar-event event-${escapeAttribute(item.category)}" type="button" data-event-id="${escapeAttribute(item.id)}" title="${escapeAttribute(item.start)} ${escapeAttribute(item.title)}">
-          <span>${escapeHtml(item.title)}</span>
-        </button>
-      `).join('');
-      const extraCount = dayEvents.length > 2
-        ? `<span class="calendar-more">+${dayEvents.length - 2} mais</span>`
-        : '';
-
-      dayCells.push(`
-        <div class="${classes}" data-date="${dateKey}">
-          <button class="calendar-date" type="button" aria-label="Adicionar evento em ${dateKey}" ${dateKey < today ? 'disabled' : ''}>${dayNumber}</button>
-          <div class="calendar-event-stack">${eventMarkup}${extraCount}</div>
-        </div>
-      `);
+      const day = cloneTemplate('calendar-day-template').querySelector('.calendar-day');
+      day.classList.toggle('is-today', dateKey === today);
+      day.classList.toggle('is-past', dateKey < today);
+      day.classList.toggle('is-selected', dateKey === selectedDate);
+      day.dataset.date = dateKey;
+      const dateButton = day.querySelector('.calendar-date');
+      dateButton.setAttribute('aria-label', `Adicionar evento em ${dateKey}`);
+      dateButton.disabled = dateKey < today;
+      dateButton.textContent = String(dayNumber);
+      const stack = day.querySelector('.calendar-event-stack');
+      dayEvents.slice(0, 2).forEach(item => {
+        const eventButton = cloneTemplate('calendar-event-template').querySelector('.calendar-event');
+        if (item.category) eventButton.classList.add(`event-${item.category}`);
+        eventButton.dataset.eventId = item.id;
+        eventButton.title = `${item.start} ${item.title}`;
+        eventButton.querySelector('span').textContent = item.title;
+        stack.append(eventButton);
+      });
+      if (dayEvents.length > 2) {
+        const more = cloneTemplate('calendar-more-template').querySelector('.calendar-more');
+        more.textContent = `+${dayEvents.length - 2} mais`;
+        stack.append(more);
+      }
+      daysContainer.append(day);
     }
 
-    const remaining = (7 - (dayCells.length % 7)) % 7;
+    const remaining = (7 - (offset + daysInMonth) % 7) % 7;
     for (let index = 0; index < remaining; index += 1) {
-      dayCells.push('<div class="calendar-day calendar-day-empty" aria-hidden="true"></div>');
+      daysContainer.append(cloneTemplate('calendar-empty-day-template'));
     }
-    host.querySelector('#calendar-days').innerHTML = dayCells.join('');
     host.querySelector('#calendar-add').disabled = selectedDate < today;
     renderAgenda(month, year);
   }
@@ -261,22 +171,32 @@
     host.querySelector('#agenda-count').textContent = monthEvents.length;
 
     if (!monthEvents.length) {
-      agenda.innerHTML = '<div class="agenda-empty"><span class="agenda-empty-icon">&#10022;</span><strong>Nenhum evento neste m&ecirc;s</strong><small>Adicione um evento clicando em um dia do calend&aacute;rio.</small></div>';
+      agenda.replaceChildren(cloneTemplate('agenda-empty-template'));
       return;
     }
 
-    agenda.innerHTML = monthEvents.map(item => {
+    agenda.replaceChildren();
+    monthEvents.forEach(item => {
       const date = parseDate(item.date);
       const weekday = new Intl.DateTimeFormat('pt-BR', { weekday: 'short' }).format(date).replace('.', '');
-      const dateLabel = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(date).replace('.', '');
-      return `
-        <button class="agenda-event" type="button" data-agenda-id="${escapeAttribute(item.id)}">
-          <span class="agenda-event-marker event-${escapeAttribute(item.category)}"></span>
-          <span class="agenda-event-date"><strong>${dateLabel}</strong><small>${weekday}</small></span>
-          <span class="agenda-event-info"><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.start)}${item.end ? ` - ${escapeHtml(item.end)}` : ''}${item.location ? ` &middot; ${escapeHtml(item.location)}` : ''}</small></span>
-        </button>
-      `;
-    }).join('');
+      const dateLabel = new Intl.DateTimeFormat('pt-BR', {
+        day: '2-digit',
+        month: 'short'
+      }).format(date).replace('.', '');
+      const button = cloneTemplate('agenda-event-template').querySelector('.agenda-event');
+      button.dataset.agendaId = item.id;
+      if (item.category) button.querySelector('.agenda-event-marker').classList.add(`event-${item.category}`);
+      button.querySelector('.agenda-event-date strong').textContent = dateLabel;
+      button.querySelector('.agenda-event-date small').textContent = weekday;
+      button.querySelector('.agenda-event-info strong').textContent = item.title;
+      const timeDetails = [
+    item.start,
+    item.end ? `- ${item.end}` : '',
+    item.location ? `· ${item.location}` : ''
+  ].filter(Boolean).join(' ');
+      button.querySelector('.agenda-event-info small').textContent = timeDetails;
+      agenda.append(button);
+    });
 
     agenda.querySelectorAll('[data-agenda-id]').forEach(button => {
       button.addEventListener('click', () => {
@@ -293,9 +213,8 @@
     fields.title.value = item?.title || '';
     fields.date.value = item?.date || date;
     fields.date.min = item?.date < todayKey() ? item.date : todayKey();
-    fields.category.value = item?.category || 'purple';
-    fields.start.value = item?.start || '09:00';
-    fields.end.value = item?.end || '10:00';
+    fields.start.value = item?.start || '';
+    fields.end.value = item?.end || '';
     fields.location.value = item?.location || '';
     fields.description.value = item?.description || '';
     host.querySelector('#event-modal-title').textContent = item ? 'Editar evento' : 'Novo evento';
@@ -362,20 +281,6 @@
 
   function capitalize(value) {
     return value.charAt(0).toLocaleUpperCase('pt-BR') + value.slice(1);
-  }
-
-  function escapeHtml(value) {
-    return String(value).replace(/[&<>"']/g, character => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;'
-    })[character]);
-  }
-
-  function escapeAttribute(value) {
-    return escapeHtml(value);
   }
 
   render();

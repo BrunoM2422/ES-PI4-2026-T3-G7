@@ -1,0 +1,147 @@
+<template id="sidebar-aluno">
+  <div class="brand">
+    <a class="brand-link" href="../../login.html" aria-label="Ir para o login"> <i aria-hidden="true">&#10022;</i> </a> <span>NotaDez</span>
+  </div>
+  <nav class="nav" aria-label="Navega&ccedil;&atilde;o principal">
+    <a data-nav-page="dashboard" href="../../pages/aluno/dashboard.html">
+      <span class="nav-icon" aria-hidden="true">&#9638;</span><span>Dashboard</span>
+    </a>
+    <a data-nav-page="notas" href="../../pages/aluno/notas.html">
+      <span class="nav-icon" aria-hidden="true">&#9636;</span><span>Notas</span>
+    </a>
+    <a data-nav-page="calendario" href="../../pages/aluno/calendario.html">
+      <span class="nav-icon" aria-hidden="true">&#9687;</span><span>Calend&aacute;rio</span>
+    </a>
+    <a data-nav-page="frequencia" href="../../pages/aluno/frequencia.html">
+      <span class="nav-icon" aria-hidden="true">&#10003;</span><span>Frequ&ecirc;ncia</span>
+    </a>
+    <a data-nav-page="grade" href="../../pages/aluno/grade.html">
+      <span class="nav-icon" aria-hidden="true">&#9671;</span><span>Grade Curricular</span>
+    </a>
+    <a data-nav-page="historico" href="../../pages/aluno/historico.html">
+      <span class="nav-icon" aria-hidden="true">&#9700;</span><span>Hist&oacute;rico</span>
+    </a>
+    <a data-nav-page="financeiro" href="../../pages/aluno/financeiro.html">
+      <span class="nav-icon" aria-hidden="true">$</span><span>Financeiro</span>
+    </a>
+    <a data-nav-page="avaliar" href="../../pages/aluno/avaliar.html">
+      <span class="nav-icon" aria-hidden="true">&#9734;</span><span>Avaliar Professor</span>
+    </a>
+    <a data-nav-page="contato" href="../../pages/aluno/contato.html">
+      <span class="nav-icon" aria-hidden="true">&#9993;</span><span>Contato</span>
+    </a>
+    <a data-nav-page="configuracoes" href="../../pages/aluno/configuracoes.html">
+      <span class="nav-icon" aria-hidden="true">&#9881;</span><span>Configura&ccedil;&otilde;es</span>
+    </a>
+    <a data-nav-page="perfil" href="../../pages/aluno/perfil.html">
+      <span class="nav-icon" aria-hidden="true">&#9679;</span><span>Meu Perfil</span>
+    </a>
+  </nav>
+  <div class="user">
+    <a class="user-avatar-link" data-profile-link aria-label="Abrir perfil">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="22" r="12" fill="currentColor" opacity=".78"/>
+      <path d="M10 58c1-13 10-21 22-21s21 8 22 21" fill="currentColor" opacity=".56"/>
+    </svg>
+    </a>
+    <div class="user-details">
+      <b data-user-name>Usu&aacute;rio</b><small data-user-email></small>
+    </div>
+  </div>
+</template>
+<template id="sidebar-professor">
+  <div class="brand">
+    <a class="brand-link" href="../../login.html" aria-label="Ir para o login"> <i aria-hidden="true">&#10022;</i> </a> <span>NotaDez</span>
+  </div>
+  <nav class="nav" aria-label="Navega&ccedil;&atilde;o principal">
+    <a data-nav-page="dashboard" href="../../pages/professor/dashboard.html">
+      <span class="nav-icon" aria-hidden="true">&#9638;</span><span>Dashboard</span>
+    </a>
+    <a data-nav-page="turmas" href="../../pages/professor/turmas.html">
+      <span class="nav-icon" aria-hidden="true">&#9827;</span><span>Minhas Turmas</span>
+    </a>
+    <a data-nav-page="notas" href="../../pages/professor/notas.html">
+      <span class="nav-icon" aria-hidden="true">&#9636;</span><span>Notas</span>
+    </a>
+    <a data-nav-page="calendario" href="../../pages/professor/calendario.html">
+      <span class="nav-icon" aria-hidden="true">&#9687;</span><span>Calend&aacute;rio</span>
+    </a>
+    <a data-nav-page="frequencia" href="../../pages/professor/frequencia.html">
+      <span class="nav-icon" aria-hidden="true">&#10003;</span><span>Frequ&ecirc;ncia</span>
+    </a>
+    <a data-nav-page="horarios" href="../../pages/professor/horarios.html">
+      <span class="nav-icon" aria-hidden="true">&#9687;</span><span>Hor&aacute;rios</span>
+    </a>
+    <a data-nav-page="financeiro" data-finance-nav href="../../pages/professor/financeiro.html">
+      <span class="nav-icon" aria-hidden="true">$</span><span>Financeiro</span>
+    </a>
+    <a data-nav-page="perfil" href="../../pages/professor/perfil.html">
+      <span class="nav-icon" aria-hidden="true">&#9679;</span><span>Perfil</span>
+    </a>
+    <a data-nav-page="configuracoes" href="../../pages/professor/configuracoes.html">
+      <span class="nav-icon" aria-hidden="true">&#9881;</span><span>Configura&ccedil;&otilde;es</span>
+    </a>
+    <a data-nav-page="auditoria" href="../../pages/professor/auditoria.html">
+      <span class="nav-icon" aria-hidden="true">&#9671;</span><span>Auditoria/Log</span>
+    </a>
+  </nav>
+  <div class="user">
+    <a class="user-avatar-link" data-profile-link aria-label="Abrir perfil">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="22" r="12" fill="currentColor" opacity=".78"/>
+      <path d="M10 58c1-13 10-21 22-21s21 8 22 21" fill="currentColor" opacity=".56"/>
+    </svg>
+    </a>
+    <div class="user-details">
+      <b data-user-name>Usu&aacute;rio</b><small data-user-email></small>
+    </div>
+  </div>
+</template>
+<template id="sidebar-admin">
+  <div class="brand">
+    <a class="brand-link" href="../../login.html" aria-label="Ir para o login"> <i aria-hidden="true">&#10022;</i> </a> <span>NotaDez</span>
+  </div>
+  <nav class="nav" aria-label="Navega&ccedil;&atilde;o principal">
+    <a data-nav-page="dashboard" href="../../pages/admin/dashboard.html">
+      <span class="nav-icon" aria-hidden="true">&#9638;</span><span>Dashboard</span>
+    </a>
+    <a data-nav-page="calendario" href="../../pages/admin/calendario.html">
+      <span class="nav-icon" aria-hidden="true">&#9687;</span><span>Calend&aacute;rio</span>
+    </a>
+    <a data-nav-page="adicionar-alunos" href="../../pages/admin/adicionar-alunos.html">
+      <span class="nav-icon" aria-hidden="true">&#43;</span><span>Adicionar alunos</span>
+    </a>
+    <a data-nav-page="adicionar-docente" href="../../pages/admin/adicionar-docente.html">
+      <span class="nav-icon" aria-hidden="true">&#43;</span><span>Adicionar docente</span>
+    </a>
+    <a data-nav-page="cancelar-matricula" href="../../pages/admin/cancelar-matricula.html">
+      <span class="nav-icon" aria-hidden="true">&#10005;</span><span>Cancelar matr&iacute;cula</span>
+    </a>
+    <a data-nav-page="trancar-matricula" href="../../pages/admin/trancar-matricula.html">
+      <span class="nav-icon" aria-hidden="true">&#10003;</span><span>Trancar matr&iacute;cula</span>
+    </a>
+    <a data-nav-page="adicionar-curso" href="../../pages/admin/adicionar-curso.html">
+      <span class="nav-icon" aria-hidden="true">&#43;</span><span>Adicionar curso</span>
+    </a>
+    <a data-nav-page="adicionar-turma" href="../../pages/admin/adicionar-turma.html">
+      <span class="nav-icon" aria-hidden="true">&#43;</span><span>Adicionar turma</span>
+    </a>
+    <a data-nav-page="configuracoes" href="../../pages/admin/configuracoes.html">
+      <span class="nav-icon" aria-hidden="true">&#9881;</span><span>Configura&#231;&#245;es</span>
+    </a>
+    <a data-nav-page="gerenciamento-opcoes" href="../../pages/admin/gerenciamento-opcoes.html">
+      <span class="nav-icon" aria-hidden="true">&#9881;</span><span>Gerenciamento de Op&ccedil;&otilde;es</span>
+    </a>
+  </nav>
+  <div class="user">
+    <a class="user-avatar-link" data-profile-link aria-label="Abrir perfil">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="22" r="12" fill="currentColor" opacity=".78"/>
+      <path d="M10 58c1-13 10-21 22-21s21 8 22 21" fill="currentColor" opacity=".56"/>
+    </svg>
+    </a>
+    <div class="user-details">
+      <b data-user-name>Usu&aacute;rio</b><small data-user-email></small>
+    </div>
+  </div>
+</template>

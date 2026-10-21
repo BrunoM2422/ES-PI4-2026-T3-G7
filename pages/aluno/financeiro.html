@@ -3,13 +3,85 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Painel Financeiro | NotaDez</title>
-    <link rel="stylesheet" href="../../css/style.css">
-    <link rel="stylesheet" href="../../css/financeiro.css">
+    <title>
+      Painel Financeiro | NotaDez
+    </title>
+    <link rel="stylesheet" href="../../css/shared/style.css">
+    <link rel="stylesheet" href="../../css/aluno/financeiro.css">
   </head>
   <body>
-    <div id="app" data-page="financeiro" data-role="aluno" data-title="Painel Financeiro"></div>
-    <script src="../../js/app.js"></script>
-    <script src="../../js/financeiro.js"></script>
+    <div id="app" data-page="financeiro" data-role="aluno" data-title="Painel Financeiro">
+      <div class="shell">
+        <aside class="side" data-component="sidebar">
+        </aside>
+        <main class="main">
+          <div data-component="header">
+          </div>
+          <section class="content">
+            <article class="finance-host">
+              <div class="finance-page">
+                <section class="finance-summary-grid student-summary">
+                  <article class="finance-summary">
+                    <span>Total Pendente</span><strong>&mdash;</strong><small>Dados financeiros n&atilde;o dispon&iacute;veis.</small>
+                  </article>
+                  <article class="finance-summary finance-accent">
+                    <span>Pr&oacute;ximo Vencimento</span><strong>&mdash;</strong><small>Dados financeiros n&atilde;o dispon&iacute;veis.</small>
+                  </article>
+                </section>
+                <section class="finance-panel">
+                  <div class="finance-panel-heading">
+                    <h2>
+                      Formas de Pagamento R&aacute;pidas
+                    </h2>
+                  </div>
+                  <p class="finance-empty">Formas de pagamento n&atilde;o dispon&iacute;veis.</p>
+                </section>
+                <section class="finance-panel finance-table-panel">
+                  <div class="finance-panel-heading">
+                    <h2>
+                      Hist&oacute;rico de Parcelas
+                    </h2>
+                  </div>
+                  <div class="finance-table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>
+                            Refer&ecirc;ncia
+                          </th>
+                          <th>
+                            Valor
+                          </th>
+                          <th>
+                            Vencimento
+                          </th>
+                          <th>
+                            Status
+                          </th>
+                          <th>
+                            A&ccedil;&atilde;o
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td colspan="5" class="finance-empty">
+                            Nenhuma parcela dispon&iacute;vel.
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
+            </article>
+          </section>
+          <div data-component="footer">
+          </div>
+        </main>
+      </div>
+    </div>
+    <script src="../../js/shared/app.js">
+    </script>
   </body>
 </html>

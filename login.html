@@ -3,17 +3,17 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Entrar | NotaDez</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>
+      Entrar | NotaDez
+    </title>
+    <link rel="stylesheet" href="css/shared/style.css">
   </head>
   <body>
     <main class="login">
       <section class="art">
         <div class="brand">
-          <i aria-hidden="true">&#10022;</i>
-          <span>NotaDez</span>
+          <i aria-hidden="true">&#10022;</i> <span>NotaDez</span>
         </div>
-
         <div class="artcenter">
           <div class="visual" role="img" aria-label="Ilustra&#231;&#227;o de chap&#233;u de formatura">
             <svg viewBox="0 0 180 130" aria-hidden="true">
@@ -23,44 +23,41 @@
               <circle cx="162" cy="96" r="7" fill="#ffd166"/>
             </svg>
           </div>
-          <h2>Sua jornada acad&#234;mica em um s&#243; lugar</h2>
+          <h2>
+            Sua jornada acad&#234;mica em um s&#243; lugar
+          </h2>
         </div>
-
         <small>&copy; 2026 NotaDez Academic System. Todos os direitos reservados.</small>
       </section>
-
       <section class="loginpanel">
         <form class="loginform" id="login">
-          <h1>Bem-vindo de volta!</h1>
-
+          <h1>
+            Bem-vindo de volta!
+          </h1>
           <div class="field">
-            <label for="email">Endere&#231;o de e-mail</label>
+            <label for="email">
+              Endere&#231;o de e-mail
+            </label>
             <input id="email" name="email" type="text" placeholder="Digite seu e-mail" autocomplete="username" required>
           </div>
-
           <div class="field">
-            <label for="senha">Sua senha</label>
+            <label for="senha">
+              Sua senha
+            </label>
             <input id="senha" name="senha" type="password" placeholder="Digite sua senha" autocomplete="current-password" required>
           </div>
-
           <p class="login-links">
             <a href="recuperacao.html">Esqueceu a senha?</a>
           </p>
-
-          <div id="error" class="error" role="alert" aria-live="polite"></div>
-          <button class="btn primary full" type="submit">Entrar na conta</button>
-
-          <div class="demo-access">
-            Acesso demonstrativo &middot; <a href="#" id="help">Credenciais de teste</a>
-            <p id="creds" hidden>
-              Aluno: gabriel.silva@estudante.com / aluno<br>
-              Professor: fernando.davi@docente.com / prof<br>
-              Administrador: admin@admin.com / admin
-            </p>
+          <div id="error" class="error" role="alert" aria-live="polite">
           </div>
+          <button class="btn primary full" type="submit">
+            Entrar na conta
+          </button>
         </form>
       </section>
     </main>
-    <script src="js/login.js"></script>
+    <script src="js/shared/login.js">
+    </script>
   </body>
 </html>

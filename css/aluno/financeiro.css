@@ -1,0 +1,178 @@
+.finance-host {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+.finance-page {
+  display: grid;
+  gap: 16px;
+}
+.finance-summary-grid {
+  display: grid;
+  gap: 14px;
+}
+.student-summary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.professor-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.finance-summary, .finance-panel {
+  min-width: 0;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e1e8f0);
+  border-radius: 10px;
+}
+.finance-summary {
+  display: grid;
+  gap: 7px;
+  padding: 16px;
+}
+.finance-summary > span, .finance-summary small {
+  color: var(--muted, #75849b);
+  font-size: 12px;
+}
+.finance-summary strong {
+  color: var(--text, #172033);
+  font-size: 21px;
+  line-height: 1.2;
+}
+.finance-summary.finance-accent strong {
+  color: #5145ed;
+}
+.finance-summary small {
+  font-size: 11px;
+}
+.finance-panel {
+  overflow: hidden;
+}
+.finance-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 12px 16px;
+}
+.finance-panel-heading h2 {
+  margin: 0;
+  color: var(--text, #172033);
+  font-size: 14px;
+  font-weight: 650;
+}
+.payment-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0 16px 16px;
+}
+.payment-options button {
+  padding: 10px;
+  text-align: left;
+  border: 1px solid var(--border, #e1e8f0);
+  border-radius: 7px;
+  background: var(--surface-muted, #f7f9fc);
+  color: var(--text, #34445e);
+  opacity: 1;
+}
+.payment-options button span {
+  margin-right: 7px;
+  color: #5145ed;
+}
+.finance-table-wrap {
+  overflow-x: auto;
+}
+.finance-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.finance-table-wrap th, .finance-table-wrap td {
+  padding: 11px 13px;
+  border-top: 1px solid var(--border, #e8edf3);
+  text-align: left;
+  white-space: nowrap;
+}
+.finance-table-wrap th {
+  background: var(--surface-muted, #f7f9fc);
+  color: var(--muted, #596b87);
+  font-weight: 600;
+}
+.finance-empty {
+  height: 70px;
+  color: var(--muted, #8190a5);
+  text-align: center !important;
+  white-space: normal !important;
+}
+.finance-panel > .finance-empty {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 16px;
+}
+.professor-finance-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(250px, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+.finance-heading-action button {
+  border: 0;
+  background: transparent;
+  color: #5145ed;
+  font-weight: 600;
+}
+.finance-heading-action button:disabled {
+  opacity: .7;
+}
+.finance-detail dl {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0 16px 14px;
+  font-size: 12px;
+}
+.finance-detail dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  color: var(--muted, #596b87);
+}
+.finance-detail dd {
+  margin: 0;
+  color: var(--text, #172033);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.finance-detail .finance-deduction dd {
+  color: #e34b4b;
+}
+.finance-detail .finance-net {
+  margin-top: 4px;
+  padding-top: 13px;
+  border-top: 1px solid var(--border, #e8edf3);
+  color: var(--text, #172033);
+  font-weight: 700;
+}
+.finance-detail .finance-net dd {
+  color: #00a875;
+  font-size: 15px;
+}
+body.theme-dark .finance-summary, body.theme-dark .finance-panel {
+  background: var(--surface, #1c2433);
+  border-color: var(--border, #303a4a);
+}
+body.theme-dark .payment-options button, body.theme-dark .finance-table-wrap th {
+  background: var(--surface-muted, #242e3e);
+}
+@media (max-width: 900px) {
+  .professor-finance-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .student-summary, .professor-summary, .payment-options {
+    grid-template-columns: 1fr;
+  }
+}

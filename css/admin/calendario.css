@@ -454,6 +454,18 @@
   resize: vertical;
 }
 
+.event-field-unavailable small {
+  display: grid;
+  min-height: 39px;
+  align-items: center;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #f7f8fb;
+  color: var(--muted);
+  font-weight: 400;
+}
+
 .event-field input:focus,
 .event-field select:focus,
 .event-field textarea:focus {

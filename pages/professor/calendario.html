@@ -3,13 +3,181 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Calend&#225;rio de Atividades | NotaDez</title>
-    <link rel="stylesheet" href="../../css/style.css">
-    <link rel="stylesheet" href="../../css/calendario.css">
+    <title>
+      Calend&#225;rio de Atividades | NotaDez
+    </title>
+    <link rel="stylesheet" href="../../css/shared/style.css">
+    <link rel="stylesheet" href="../../css/professor/calendario.css">
   </head>
   <body>
-    <div id="app" data-page="calendario" data-role="professor" data-title="Calend&#225;rio de Atividades"></div>
-    <script src="../../js/app.js"></script>
-    <script src="../../js/calendario.js"></script>
+    <div id="app" data-page="calendario" data-role="professor" data-title="Calend&#225;rio de Atividades">
+      <div class="shell">
+        <aside class="side" data-component="sidebar">
+        </aside>
+        <main class="main">
+          <div data-component="header">
+          </div>
+          <section class="content">
+            <article class="card calendar-host">
+              <div class="calendar-page">
+                <div class="calendar-toolbar">
+                  <div>
+                    <p class="calendar-eyebrow">
+                      Agenda acad&ecirc;mica
+                    </p>
+                    <h2 id="calendar-month">
+                    </h2>
+                  </div>
+                  <div class="calendar-actions">
+                    <button class="calendar-button calendar-today" id="calendar-today" type="button">
+                      Hoje
+                    </button>
+                    <button class="calendar-icon-button" id="calendar-prev" type="button" aria-label="M&ecirc;s anterior">
+                      &lsaquo;
+                    </button>
+                    <button class="calendar-icon-button" id="calendar-next" type="button" aria-label="Pr&oacute;ximo m&ecirc;s">
+                      &rsaquo;
+                    </button>
+                    <button class="calendar-button calendar-add" id="calendar-add" type="button">
+                      <span aria-hidden="true">+</span>Novo evento
+                    </button>
+                  </div>
+                </div>
+                <div class="calendar-layout">
+                  <section class="calendar-month-view" aria-label="Calend&aacute;rio mensal">
+                    <div class="calendar-weekdays" aria-hidden="true">
+                      <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>S&aacute;b</span><span>Dom</span>
+                    </div>
+                    <div class="calendar-days" id="calendar-days">
+                    </div>
+                  </section>
+                  <aside class="calendar-agenda">
+                    <div class="agenda-heading">
+                      <div>
+                        <p class="calendar-eyebrow">
+                          Eventos do m&ecirc;s
+                        </p>
+                        <h3 id="agenda-month">
+                        </h3>
+                      </div>
+                      <span class="agenda-count" id="agenda-count">0</span>
+                    </div>
+                    <div class="agenda-list" id="agenda-list">
+                    </div>
+                    <p class="calendar-hint">
+                      Selecione um dia para adicionar um evento. Clique em um evento para edit&aacute;-lo.
+                    </p>
+                  </aside>
+                </div>
+              </div>
+              <dialog class="event-modal" id="event-modal" aria-labelledby="event-modal-title">
+                <form class="event-form" id="event-form">
+                  <div class="modal-heading">
+                    <div>
+                      <p class="calendar-eyebrow">
+                        Agenda acad&ecirc;mica
+                      </p>
+                      <h2 id="event-modal-title">
+                        Novo evento
+                      </h2>
+                    </div>
+                    <button class="modal-close" id="event-close" type="button" aria-label="Fechar">
+                      &times;
+                    </button>
+                  </div>
+                  <label class="event-field event-field-wide">
+                    <span>Nome do evento</span>
+                    <input id="event-title" name="title" maxlength="90" placeholder="Informe o nome do evento" required>
+                  </label>
+                  <div class="event-fields-row">
+                    <label class="event-field">
+                      <span>Data</span>
+                      <input id="event-date" name="date" type="date" required>
+                    </label>
+                    <div class="event-field event-field-unavailable"><span>Categoria</span><small>Op&ccedil;&otilde;es n&atilde;o dispon&iacute;veis.</small></div>
+                  </div>
+                  <div class="event-fields-row">
+                    <label class="event-field">
+                      <span>In&iacute;cio</span>
+                      <input id="event-start" name="start" type="time" required>
+                    </label>
+                    <label class="event-field">
+                      <span>T&eacute;rmino</span>
+                      <input id="event-end" name="end" type="time" required>
+                    </label>
+                  </div>
+                  <label class="event-field event-field-wide">
+                    <span>Local</span>
+                    <input id="event-location" name="location" maxlength="100" placeholder="Sala, bloco ou link">
+                  </label>
+                  <label class="event-field event-field-wide">
+                    <span>Descri&ccedil;&atilde;o</span>
+                    <textarea id="event-description" name="description" rows="3" maxlength="400" placeholder="Detalhes adicionais (opcional)">
+                    </textarea>
+                  </label>
+                  <div class="event-form-footer">
+                    <button class="calendar-delete" id="event-delete" type="button" hidden>
+                      Excluir evento
+                    </button>
+                    <div class="event-form-actions">
+                      <button class="calendar-button" id="event-cancel" type="button">
+                        Cancelar
+                      </button>
+                      <button class="calendar-button calendar-add" type="submit">
+                        Salvar evento
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </dialog>
+            </article>
+          </section>
+          <div data-component="footer">
+          </div>
+        </main>
+      </div>
+    </div>
+    <template id="calendar-empty-day-template">
+      <div class="calendar-day calendar-day-empty" aria-hidden="true">
+      </div>
+    </template>
+    <template id="calendar-day-template">
+      <div class="calendar-day">
+        <button class="calendar-date" type="button">
+        </button>
+        <div class="calendar-event-stack">
+        </div>
+      </div>
+    </template>
+    <template id="calendar-event-template">
+      <button class="calendar-event" type="button">
+        <span></span>
+      </button>
+    </template>
+    <template id="calendar-more-template">
+      <span class="calendar-more"></span>
+    </template>
+    <template id="agenda-empty-template">
+      <div class="agenda-empty">
+        <span class="agenda-empty-icon">&#10022;</span><strong>Nenhum evento neste m&ecirc;s</strong><small>N&atilde;o h&aacute; eventos dispon&iacute;veis.</small>
+      </div>
+    </template>
+    <template id="agenda-event-template">
+      <button class="agenda-event" type="button">
+        <span class="agenda-event-marker"></span>
+        <span class="agenda-event-date">
+          <strong></strong>
+          <small></small>
+        </span>
+        <span class="agenda-event-info">
+          <strong></strong>
+          <small></small>
+        </span>
+      </button>
+    </template>
+    <script src="../../js/shared/app.js">
+    </script>
+    <script src="../../js/professor/calendario.js">
+    </script>
   </body>
 </html>

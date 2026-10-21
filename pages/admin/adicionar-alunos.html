@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Adicionar alunos | NotaDez</title>
+    <link rel="stylesheet" href="../../css/shared/style.css">
+    <link rel="stylesheet" href="../../css/admin/paginas.css">
+  </head>
+  <body>
+    <div id="app" data-page="adicionar-alunos" data-role="admin" data-title="Adicionar alunos">
+      <div class="shell">
+        <aside class="side" data-component="sidebar"></aside>
+        <main class="main">
+          <div data-component="header"></div>
+          <section class="content">
+            <article class="admin-page">
+              <div class="admin-page-intro">
+                <span class="admin-eyebrow">Gest&atilde;o acad&ecirc;mica</span>
+                <h2>Adicionar alunos</h2>
+                <p>Cadastre uma pessoa ou prepare uma importa&ccedil;&atilde;o em lote.</p>
+              </div>
+              <div class="admin-form-grid admin-student-grid">
+                <section class="admin-form-card">
+                  <div class="admin-card-heading">
+                    <span class="admin-card-icon" aria-hidden="true">&#43;</span>
+                    <div><h3>Cadastro individual</h3><p>Preencha os dados do novo aluno.</p></div>
+                  </div>
+                  <div class="admin-form-body">
+                    <div class="admin-field-grid">
+                      <label class="admin-field admin-field-wide"><span>Nome completo</span><input name="nome" autocomplete="name" required></label>
+                      <label class="admin-field"><span>E-mail institucional</span><input name="email" type="email" autocomplete="email" required></label>
+                      <label class="admin-field"><span>CPF</span><input name="cpf" inputmode="numeric" placeholder="Informe o CPF" required></label>
+                      <label class="admin-field"><span>Telefone</span><input name="telefone" type="tel" autocomplete="tel" placeholder="Informe o telefone" required></label>
+                      <label class="admin-field admin-field-wide"><span>Endere&ccedil;o</span><input name="endereco" autocomplete="street-address" placeholder="Rua, n&uacute;mero, bairro, cidade e CEP" required></label>
+                      <div class="admin-field admin-field-unavailable"><span>Curso</span><p>Op&ccedil;&otilde;es n&atilde;o dispon&iacute;veis.</p></div>
+                    </div>
+                    <button class="admin-button" type="button">Cadastrar aluno</button>
+                  </div>
+                </section>
+                <section class="admin-form-card">
+                  <div class="admin-card-heading">
+                    <span class="admin-card-icon" aria-hidden="true">&#8645;</span>
+                    <div><h3>Importa&ccedil;&atilde;o por CSV</h3><p>Confira os dados antes de importar.</p></div>
+                  </div>
+                  <div class="admin-form-body">
+                    <div class="admin-file-field">
+                      <span class="admin-file-icon" aria-hidden="true">&#128196;</span>
+                      <strong>Arquivo CSV</strong>
+                      <small>Colunas esperadas: nome, email, cpf, telefone, endereco, curso</small>
+                      <span class="admin-file-action">Escolher arquivo</span>
+                    </div>
+                    <div class="admin-table-wrap">
+                      <table class="admin-table">
+                        <thead><tr><th>Nome</th><th>E-mail</th><th>CPF</th><th>Telefone</th><th>Endere&ccedil;o</th><th>Curso</th></tr></thead>
+                        <tbody><tr><td colspan="6">A pr&eacute;via dos registros aparecer&aacute; aqui.</td></tr></tbody>
+                      </table>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </article>
+          </section>
+          <div data-component="footer"></div>
+        </main>
+      </div>
+    </div>
+    <script src="../../js/shared/app.js"></script>
+  </body>
+</html>

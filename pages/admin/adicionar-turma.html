@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Adicionar turma | NotaDez</title>
+    <link rel="stylesheet" href="../../css/shared/style.css">
+    <link rel="stylesheet" href="../../css/admin/paginas.css">
+  </head>
+  <body>
+    <div id="app" data-page="adicionar-turma" data-role="admin" data-title="Adicionar turma">
+      <div class="shell">
+        <aside class="side" data-component="sidebar"></aside>
+        <main class="main">
+          <div data-component="header"></div>
+          <section class="content">
+            <article class="admin-page">
+              <div class="admin-page-intro">
+                <span class="admin-eyebrow">Organiza&ccedil;&atilde;o acad&ecirc;mica</span>
+                <h2>Adicionar turma</h2>
+                <p>Associe um curso, um docente respons&aacute;vel e um per&iacute;odo letivo.</p>
+              </div>
+              <section class="admin-form-card admin-form-card-narrow">
+                <div class="admin-card-heading">
+                  <span class="admin-card-icon" aria-hidden="true">&#43;</span>
+                  <div><h3>Dados da turma</h3><p>Informe os detalhes da oferta.</p></div>
+                </div>
+                <div class="admin-form-body">
+                  <div class="admin-field-grid">
+                    <label class="admin-field"><span>C&oacute;digo da turma</span><input name="codigo" placeholder="Informe o c&oacute;digo da turma" required></label>
+                    <div class="admin-field admin-field-unavailable"><span>Curso</span><p>Op&ccedil;&otilde;es n&atilde;o dispon&iacute;veis.</p></div>
+                    <label class="admin-field"><span>Docente respons&aacute;vel</span><input name="docente" placeholder="Nome ou e-mail institucional" required></label>
+                    <label class="admin-field"><span>Per&iacute;odo letivo</span><input name="periodo" placeholder="Informe o per&iacute;odo letivo" required></label>
+                    <label class="admin-field"><span>Vagas</span><input name="vagas" type="number" min="1" max="300" required></label>
+                    <div class="admin-field admin-field-unavailable"><span>Turno</span><p>Op&ccedil;&otilde;es n&atilde;o dispon&iacute;veis.</p></div>
+                    <label class="admin-field admin-field-wide"><span>Local ou sala</span><input name="local" placeholder="Bloco e sala"></label>
+                  </div>
+                  <button class="admin-button" type="button">Cadastrar turma</button>
+                </div>
+              </section>
+            </article>
+          </section>
+          <div data-component="footer"></div>
+        </main>
+      </div>
+    </div>
+    <script src="../../js/shared/app.js"></script>
+  </body>
+</html>

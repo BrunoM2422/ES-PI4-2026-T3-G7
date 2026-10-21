@@ -3,13 +3,342 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Grade Curricular | NotaDez</title>
-    <link rel="stylesheet" href="../../css/style.css">
-    <link rel="stylesheet" href="../../css/aluno-paginas.css">
+    <title>
+      Grade Curricular | NotaDez
+    </title>
+    <link rel="stylesheet" href="../../css/shared/style.css">
+    <link rel="stylesheet" href="../../css/aluno/paginas.css">
   </head>
   <body>
-    <div id="app" data-page="grade" data-role="aluno" data-title="Grade Curricular"></div>
-    <script src="../../js/app.js"></script>
-    <script src="../../js/aluno-paginas.js"></script>
+    <div id="app" data-page="grade" data-role="aluno" data-title="Grade Curricular">
+      <div class="shell">
+        <aside class="side" data-component="sidebar">
+        </aside>
+        <main class="main">
+          <div data-component="header">
+          </div>
+          <section class="content">
+            <article class="student-page-host">
+              <div class="student-page-layout curriculum-page">
+                <div class="curriculum-toolbar">
+                  <div>
+                    <h2>
+                      Grade Curricular
+                    </h2>
+                  </div>
+                  <button type="button" class="curriculum-add-button">
+                    Adicionar mat&eacute;rias
+                  </button>
+                </div>
+                <section class="student-page-panel curriculum-panel" aria-label="Grade semanal">
+                  <p class="student-dashboard-empty">Dados da grade curricular n&atilde;o dispon&iacute;veis.</p>
+                  <div class="curriculum-grid">
+                    <div class="curriculum-corner" aria-hidden="true">
+                    </div>
+                    <div class="curriculum-day-heading">
+                      <span>Seg</span><strong>1</strong>
+                    </div>
+                    <div class="curriculum-day-heading">
+                      <span>Ter</span><strong>2</strong>
+                    </div>
+                    <div class="curriculum-day-heading">
+                      <span>Qua</span><strong>3</strong>
+                    </div>
+                    <div class="curriculum-day-heading">
+                      <span>Qui</span><strong>4</strong>
+                    </div>
+                    <div class="curriculum-day-heading">
+                      <span>Sex</span><strong>5</strong>
+                    </div>
+                    <div class="curriculum-day-heading">
+                      <span>S&aacute;b</span><strong>6</strong>
+                    </div>
+                    <div class="curriculum-day-heading">
+                      <span>Dom</span><strong>7</strong>
+                    </div>
+                    <div class="curriculum-time">
+                      07:00
+                    </div>
+                    <div class="curriculum-slot" aria-label="Seg, 07:00 a 08:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Ter, 07:00 a 08:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qua, 07:00 a 08:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qui, 07:00 a 08:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Sex, 07:00 a 08:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="S&aacute;b, 07:00 a 08:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Dom, 07:00 a 08:00">
+                    </div>
+                    <div class="curriculum-time">
+                      08:00
+                    </div>
+                    <div class="curriculum-slot" aria-label="Seg, 08:00 a 09:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Ter, 08:00 a 09:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qua, 08:00 a 09:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qui, 08:00 a 09:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Sex, 08:00 a 09:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="S&aacute;b, 08:00 a 09:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Dom, 08:00 a 09:00">
+                    </div>
+                    <div class="curriculum-time">
+                      09:00
+                    </div>
+                    <div class="curriculum-slot" aria-label="Seg, 09:00 a 10:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Ter, 09:00 a 10:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qua, 09:00 a 10:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qui, 09:00 a 10:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Sex, 09:00 a 10:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="S&aacute;b, 09:00 a 10:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Dom, 09:00 a 10:00">
+                    </div>
+                    <div class="curriculum-time">
+                      10:00
+                    </div>
+                    <div class="curriculum-slot" aria-label="Seg, 10:00 a 11:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Ter, 10:00 a 11:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qua, 10:00 a 11:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qui, 10:00 a 11:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Sex, 10:00 a 11:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="S&aacute;b, 10:00 a 11:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Dom, 10:00 a 11:00">
+                    </div>
+                    <div class="curriculum-time">
+                      11:00
+                    </div>
+                    <div class="curriculum-slot" aria-label="Seg, 11:00 a 12:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Ter, 11:00 a 12:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qua, 11:00 a 12:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qui, 11:00 a 12:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Sex, 11:00 a 12:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="S&aacute;b, 11:00 a 12:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Dom, 11:00 a 12:00">
+                    </div>
+                    <div class="curriculum-time">
+                      12:00
+                    </div>
+                    <div class="curriculum-slot" aria-label="Seg, 12:00 a 13:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Ter, 12:00 a 13:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qua, 12:00 a 13:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qui, 12:00 a 13:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Sex, 12:00 a 13:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="S&aacute;b, 12:00 a 13:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Dom, 12:00 a 13:00">
+                    </div>
+                    <div class="curriculum-time">
+                      13:00
+                    </div>
+                    <div class="curriculum-slot" aria-label="Seg, 13:00 a 14:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Ter, 13:00 a 14:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qua, 13:00 a 14:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qui, 13:00 a 14:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Sex, 13:00 a 14:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="S&aacute;b, 13:00 a 14:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Dom, 13:00 a 14:00">
+                    </div>
+                    <div class="curriculum-time">
+                      14:00
+                    </div>
+                    <div class="curriculum-slot" aria-label="Seg, 14:00 a 15:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Ter, 14:00 a 15:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qua, 14:00 a 15:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qui, 14:00 a 15:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Sex, 14:00 a 15:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="S&aacute;b, 14:00 a 15:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Dom, 14:00 a 15:00">
+                    </div>
+                    <div class="curriculum-time">
+                      15:00
+                    </div>
+                    <div class="curriculum-slot" aria-label="Seg, 15:00 a 16:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Ter, 15:00 a 16:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qua, 15:00 a 16:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qui, 15:00 a 16:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Sex, 15:00 a 16:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="S&aacute;b, 15:00 a 16:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Dom, 15:00 a 16:00">
+                    </div>
+                    <div class="curriculum-time">
+                      16:00
+                    </div>
+                    <div class="curriculum-slot" aria-label="Seg, 16:00 a 17:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Ter, 16:00 a 17:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qua, 16:00 a 17:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qui, 16:00 a 17:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Sex, 16:00 a 17:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="S&aacute;b, 16:00 a 17:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Dom, 16:00 a 17:00">
+                    </div>
+                    <div class="curriculum-time">
+                      17:00
+                    </div>
+                    <div class="curriculum-slot" aria-label="Seg, 17:00 a 18:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Ter, 17:00 a 18:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qua, 17:00 a 18:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qui, 17:00 a 18:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Sex, 17:00 a 18:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="S&aacute;b, 17:00 a 18:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Dom, 17:00 a 18:00">
+                    </div>
+                    <div class="curriculum-time">
+                      18:00
+                    </div>
+                    <div class="curriculum-slot" aria-label="Seg, 18:00 a 19:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Ter, 18:00 a 19:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qua, 18:00 a 19:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qui, 18:00 a 19:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Sex, 18:00 a 19:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="S&aacute;b, 18:00 a 19:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Dom, 18:00 a 19:00">
+                    </div>
+                    <div class="curriculum-time">
+                      19:00
+                    </div>
+                    <div class="curriculum-slot" aria-label="Seg, 19:00 a 20:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Ter, 19:00 a 20:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qua, 19:00 a 20:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qui, 19:00 a 20:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Sex, 19:00 a 20:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="S&aacute;b, 19:00 a 20:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Dom, 19:00 a 20:00">
+                    </div>
+                    <div class="curriculum-time">
+                      20:00
+                    </div>
+                    <div class="curriculum-slot" aria-label="Seg, 20:00 a 21:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Ter, 20:00 a 21:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qua, 20:00 a 21:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qui, 20:00 a 21:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Sex, 20:00 a 21:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="S&aacute;b, 20:00 a 21:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Dom, 20:00 a 21:00">
+                    </div>
+                    <div class="curriculum-time">
+                      21:00
+                    </div>
+                    <div class="curriculum-slot" aria-label="Seg, 21:00 a 22:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Ter, 21:00 a 22:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qua, 21:00 a 22:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qui, 21:00 a 22:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Sex, 21:00 a 22:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="S&aacute;b, 21:00 a 22:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Dom, 21:00 a 22:00">
+                    </div>
+                    <div class="curriculum-time">
+                      22:00
+                    </div>
+                    <div class="curriculum-slot" aria-label="Seg, 22:00 a 23:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Ter, 22:00 a 23:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qua, 22:00 a 23:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Qui, 22:00 a 23:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Sex, 22:00 a 23:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="S&aacute;b, 22:00 a 23:00">
+                    </div>
+                    <div class="curriculum-slot" aria-label="Dom, 22:00 a 23:00">
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </article>
+          </section>
+          <div data-component="footer">
+          </div>
+        </main>
+      </div>
+    </div>
+    <script src="../../js/shared/app.js">
+    </script>
   </body>
 </html>

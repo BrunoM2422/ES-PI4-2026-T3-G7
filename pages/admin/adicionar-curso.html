@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Adicionar curso | NotaDez</title>
+    <link rel="stylesheet" href="../../css/shared/style.css">
+    <link rel="stylesheet" href="../../css/admin/paginas.css">
+  </head>
+  <body>
+    <div id="app" data-page="adicionar-curso" data-role="admin" data-title="Adicionar curso">
+      <div class="shell">
+        <aside class="side" data-component="sidebar"></aside>
+        <main class="main">
+          <div data-component="header"></div>
+          <section class="content">
+            <article class="admin-page">
+              <div class="admin-page-intro">
+                <span class="admin-eyebrow">Cat&aacute;logo acad&ecirc;mico</span>
+                <h2>Adicionar curso</h2>
+                <p>Cadastre um curso para organizar disciplinas, turmas e matr&iacute;culas.</p>
+              </div>
+              <section class="admin-form-card admin-form-card-narrow">
+                <div class="admin-card-heading">
+                  <span class="admin-card-icon" aria-hidden="true">&#43;</span>
+                  <div><h3>Dados do curso</h3><p>Defina as informa&ccedil;&otilde;es principais do programa.</p></div>
+                </div>
+                <div class="admin-form-body">
+                  <div class="admin-field-grid">
+                    <label class="admin-field"><span>C&oacute;digo do curso</span><input name="codigo" placeholder="Informe o c&oacute;digo do curso" required></label>
+                    <label class="admin-field"><span>Nome do curso</span><input name="nome" required></label>
+                    <label class="admin-field"><span>Unidade acad&ecirc;mica</span><input name="unidade" required></label>
+                    <div class="admin-field admin-field-unavailable"><span>Grau acad&ecirc;mico</span><p>Op&ccedil;&otilde;es n&atilde;o dispon&iacute;veis.</p></div>
+                    <label class="admin-field"><span>Dura&ccedil;&atilde;o (semestres)</span><input name="duracao" type="number" min="1" max="20" required></label>
+                    <div class="admin-field admin-field-unavailable"><span>Modalidade</span><p>Op&ccedil;&otilde;es n&atilde;o dispon&iacute;veis.</p></div>
+                    <label class="admin-field admin-field-wide"><span>Descri&ccedil;&atilde;o</span><textarea name="descricao" rows="4" placeholder="Objetivos e informa&ccedil;&otilde;es do curso"></textarea></label>
+                  </div>
+                  <button class="admin-button" type="button">Cadastrar curso</button>
+                </div>
+              </section>
+            </article>
+          </section>
+          <div data-component="footer"></div>
+        </main>
+      </div>
+    </div>
+    <script src="../../js/shared/app.js"></script>
+  </body>
+</html>
