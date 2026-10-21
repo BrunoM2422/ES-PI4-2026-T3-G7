@@ -20,7 +20,12 @@ const usuarioSchema = new mongoose.Schema({
   nome: {
     type: String,
     required: true
-  }
+  },
+  // cadastro do admin:
+  cpf: { type: String, trim: true },
+  telefone: { type: String, trim: true },
+  endereco: { type: String, trim: true },
+  especialidade: { type: String, trim: true }
 });
 
 module.exports = mongoose.model('Usuario', usuarioSchema, 'usuarios');
