@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cpf = document.querySelector('input[name="cpf"]').value.trim();
     const telefone = document.querySelector('input[name="telefone"]').value.trim();
     const especialidade = document.querySelector('input[name="especialidade"]').value.trim();
+    const instituicao = document.querySelector('input[name="instituicao"]').value.trim();
 
     if (!nome || !email || !cpf || !especialidade) {
       alert('Preencha os campos obrigatórios (Nome, E-mail, CPF e Especialidade).');
@@ -24,7 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
           cpf,
           especialidade,
           telefone,
-          tipo: 'professor'
+          tipo: 'professor',
+          instituicao
         })
       });
 

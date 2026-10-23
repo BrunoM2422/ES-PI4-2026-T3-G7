@@ -26,15 +26,15 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    /*
+    
     const senhaValida = await bcrypt.compare(
       senha,
       usuario.senha
     );
-    */
-    const senhaValida = senha === usuario.senha;
+    
+    const senhaValida2 = senha === usuario.senha;
 
-    if (!senhaValida) {
+    if (!senhaValida && !senhaValida2) {
       return res.status(401).json({
         mensagem: 'E-mail ou senha incorretos.'
       });

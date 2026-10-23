@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cpf = document.querySelector('input[name="cpf"]').value.trim();
     const telefone = document.querySelector('input[name="telefone"]').value.trim();
     const endereco = document.querySelector('input[name="endereco"]').value.trim();
+    const instituicao = document.querySelector('input[name="instituicao"]').value.trim();
 
     if (!nome || !email || !cpf) {
       alert('Preencha os campos obrigatórios (Nome, E-mail e CPF).');
@@ -24,7 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
           cpf,
           telefone,
           endereco,
-          tipo: 'estudante'
+          tipo: 'estudante',
+          instituicao
         })
       });
 
