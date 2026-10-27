@@ -30,9 +30,9 @@
                     <label class="admin-field"><span>C&oacute;digo do curso</span><input name="codigo" placeholder="Informe o c&oacute;digo do curso" required></label>
                     <label class="admin-field"><span>Nome do curso</span><input name="nome" required></label>
                     <label class="admin-field"><span>Unidade acad&ecirc;mica</span><input name="unidade" required></label>
-                    <div class="admin-field admin-field-unavailable"><span>Grau acad&ecirc;mico</span><p>Op&ccedil;&otilde;es n&atilde;o dispon&iacute;veis.</p></div>
+                    <label class="admin-field"><span>Grau acad&ecirc;mico</span><select name="grau" required><option value="" selected disabled>Selecione o grau acad&ecirc;mico</option><option value="Bacharelado">Bacharelado</option><option value="Licenciatura">Licenciatura</option><option value="Tecnólogo">Tecnólogo</option><option value="Pós-Graduação">Pós-Graduação</option><option value="Mestrado">Mestrado</option><option value="Pós Doutorado">Pós Doutorado</option></select></label>
                     <label class="admin-field"><span>Dura&ccedil;&atilde;o (semestres)</span><input name="duracao" type="number" min="1" max="20" required></label>
-                    <div class="admin-field admin-field-unavailable"><span>Modalidade</span><p>Op&ccedil;&otilde;es n&atilde;o dispon&iacute;veis.</p></div>
+                    <label class="admin-field"><span>Modalidade</span><select name="modalidade" required><option value="" selected disabled>Selecione a modalidade</option><option value="Presencial">Presencial</option><option value="Semipresencial">Semipresencial</option><option value="Ensino a Distância (EAD)">Ensino a Distância (EAD)</option></select></label>
                     <label class="admin-field admin-field-wide"><span>Descri&ccedil;&atilde;o</span><textarea name="descricao" rows="4" placeholder="Objetivos e informa&ccedil;&otilde;es do curso"></textarea></label>
                   </div>
                   <button class="admin-button" type="button">Cadastrar curso</button>

@@ -6,16 +6,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const codigoInput = document.querySelector('input[name="codigo"]');
     const nomeInput = document.querySelector('input[name="nome"]');
     const unidadeInput = document.querySelector('input[name="unidade"]');
+    const grauInput = document.querySelector('select[name="grau"]');
+    const modalidadeInput = document.querySelector('select[name="modalidade"]');
     const duracaoInput = document.querySelector('input[name="duracao"]');
     const descricaoInput = document.querySelector('textarea[name="descricao"]');
 
     const codigo = codigoInput.value.trim();
     const nome = nomeInput.value.trim();
     const unidade = unidadeInput.value.trim();
+    const grau = grauInput.value;
+    const modalidade = modalidadeInput.value;
     const duracao = Number(duracaoInput.value);
 
-    if (!codigo || !nome || !unidade || !duracaoInput.value) {
-      alert('Preencha os campos obrigatórios (Código, Nome, Unidade acadêmica e Duração).');
+    if (!codigo || !nome || !unidade || !grau || !modalidade || !duracaoInput.value) {
+      alert('Preencha os campos obrigatórios do curso.');
       return;
     }
 
@@ -35,6 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
           codigo,
           nome,
           unidade,
+          grau,
+          modalidade,
           duracao,
           descricao: descricaoInput.value.trim()
         })

@@ -11,7 +11,7 @@ const router = express.Router();
 router.get('/cursos', async (req, res) => {
   try {
     const cursos = await Curso.find()
-      .select('codigo nome unidade duracao descricao')
+      .select('codigo nome unidade grau modalidade duracao descricao')
       .sort({ nome: 1 })
       .lean();
 
@@ -26,10 +26,12 @@ router.get('/cursos', async (req, res) => {
 
 router.post('/cursos', async (req, res) => {
   try {
-    const { codigo, nome, unidade, duracao, descricao } = req.body;
+    const { codigo, nome, unidade, grau, modalidade, duracao, descricao } = req.body;
     const duracaoNumerica = Number(duracao);
+    const grausPermitidos = ['Bacharelado', 'Licenciatura', 'Tecnólogo', 'Pós-Graduação', 'Mestrado', 'Pós Doutorado'];
+    const modalidadesPermitidas = ['Presencial', 'Semipresencial', 'Ensino a Distância (EAD)'];
 
-    if (!codigo || !nome || !unidade || !Number.isInteger(duracaoNumerica)) {
+    if (!codigo || !nome || !unidade || !grausPermitidos.includes(grau) || !modalidadesPermitidas.includes(modalidade) || !Number.isInteger(duracaoNumerica)) {
       return res.status(400).json({ mensagem: 'Preencha os campos obrigatórios do curso.' });
     }
 
@@ -41,6 +43,8 @@ router.post('/cursos', async (req, res) => {
       codigo: codigo.trim().toUpperCase(),
       nome: nome.trim(),
       unidade: unidade.trim(),
+      grau,
+      modalidade,
       duracao: duracaoNumerica,
       descricao: typeof descricao === 'string' ? descricao.trim() : ''
     });
@@ -156,6 +160,8 @@ router.post('/cadastrar', async (req, res) => {
           codigo: cursoSelecionado.codigo,
           nome: cursoSelecionado.nome,
           unidade: cursoSelecionado.unidade,
+          grau: cursoSelecionado.grau,
+          modalidade: cursoSelecionado.modalidade,
           duracao: cursoSelecionado.duracao,
           descricao: cursoSelecionado.descricao
         },

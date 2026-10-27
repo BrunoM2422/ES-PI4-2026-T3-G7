@@ -12,6 +12,8 @@ const estudanteSchema = new mongoose.Schema({
     codigo: { type: String, trim: true },
     nome: { type: String, trim: true },
     unidade: { type: String, trim: true },
+    grau: { type: String, trim: true },
+    modalidade: { type: String, trim: true },
     duracao: { type: Number, min: 1, max: 20 },
     descricao: { type: String, trim: true }
   },
