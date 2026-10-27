@@ -131,6 +131,68 @@
   color: #9aa5b7;
 }
 
+.admin-course-field > label {
+  color: #45546c;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.admin-course-combobox {
+  position: relative;
+}
+
+.admin-course-options {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 4px);
+  right: 0;
+  left: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgb(26 39 61 / 12%);
+}
+
+.admin-course-options[hidden] {
+  display: none;
+}
+
+.admin-course-option {
+  display: grid;
+  width: 100%;
+  gap: 3px;
+  padding: 9px 11px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-course-option:last-child {
+  border-bottom: 0;
+}
+
+.admin-course-option:hover,
+.admin-course-option[aria-selected="true"] {
+  background: var(--primary-soft);
+}
+
+.admin-course-option span {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.admin-course-option small,
+.admin-course-status {
+  color: #78869c;
+  font-size: 10px;
+  font-weight: 400;
+}
+
 .admin-field-unavailable p {
   display: grid;
   min-height: 39px;

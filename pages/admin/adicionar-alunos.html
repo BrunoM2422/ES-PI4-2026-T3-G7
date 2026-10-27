@@ -34,7 +34,15 @@
                       <label class="admin-field"><span>Instituição</span><input name="instituicao" placeholder="Informe o nome da instituição" required></label>
                       <label class="admin-field"><span>Telefone</span><input name="telefone" type="tel" autocomplete="tel" placeholder="Informe o telefone" required></label>
                       <label class="admin-field admin-field-wide"><span>Endere&ccedil;o</span><input name="endereco" autocomplete="street-address" placeholder="Rua, n&uacute;mero, bairro, cidade e CEP" required></label>
-                      <div class="admin-field admin-field-unavailable"><span>Curso</span><p>Op&ccedil;&otilde;es n&atilde;o dispon&iacute;veis.</p></div>
+                      <div class="admin-field admin-course-field admin-field-wide">
+                        <label for="cursoBusca">Curso</label>
+                        <div class="admin-course-combobox">
+                          <input id="cursoBusca" name="cursoBusca" type="search" placeholder="Digite para buscar um curso" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="curso-opcoes" aria-describedby="curso-status" required>
+                          <div id="curso-opcoes" class="admin-course-options" role="listbox" aria-label="Cursos disponíveis" hidden></div>
+                        </div>
+                        <input type="hidden" name="cursoId">
+                        <small id="curso-status" class="admin-course-status" role="status" aria-live="polite">Carregando cursos...</small>
+                      </div>
                     </div>
                     <button class="admin-button" type="button">Cadastrar aluno</button>
                   </div>
