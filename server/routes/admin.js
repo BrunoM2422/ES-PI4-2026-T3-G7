@@ -1,10 +1,64 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
 const Usuario = require('../models/Usuario');
 const Estudante = require('../models/Estudante');
 const Docente = require('../models/Docente');
+const Curso = require('../models/Curso');
 
 const router = express.Router();
+
+router.get('/cursos', async (req, res) => {
+  try {
+    const cursos = await Curso.find()
+      .select('codigo nome unidade grau modalidade duracao descricao')
+      .sort({ nome: 1 })
+      .lean();
+
+    return res.json({
+      cursos: cursos.map(curso => ({ ...curso, id: String(curso._id) }))
+    });
+  } catch (erro) {
+    console.error('Erro ao listar cursos:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível carregar os cursos.' });
+  }
+});
+
+router.post('/cursos', async (req, res) => {
+  try {
+    const { codigo, nome, unidade, grau, modalidade, duracao, descricao } = req.body;
+    const duracaoNumerica = Number(duracao);
+    const grausPermitidos = ['Bacharelado', 'Licenciatura', 'Tecnólogo', 'Pós-Graduação', 'Mestrado', 'Pós Doutorado'];
+    const modalidadesPermitidas = ['Presencial', 'Semipresencial', 'Ensino a Distância (EAD)'];
+
+    if (!codigo || !nome || !unidade || !grausPermitidos.includes(grau) || !modalidadesPermitidas.includes(modalidade) || !Number.isInteger(duracaoNumerica)) {
+      return res.status(400).json({ mensagem: 'Preencha os campos obrigatórios do curso.' });
+    }
+
+    if (duracaoNumerica < 1 || duracaoNumerica > 20) {
+      return res.status(400).json({ mensagem: 'A duração deve ser de 1 a 20 semestres.' });
+    }
+
+    const novoCurso = new Curso({
+      codigo: codigo.trim().toUpperCase(),
+      nome: nome.trim(),
+      unidade: unidade.trim(),
+      grau,
+      modalidade,
+      duracao: duracaoNumerica,
+      descricao: typeof descricao === 'string' ? descricao.trim() : ''
+    });
+
+    await novoCurso.save();
+    return res.status(201).json({ mensagem: 'Curso cadastrado com sucesso!', curso: novoCurso });
+  } catch (erro) {
+    console.error('Erro ao cadastrar curso:', erro);
+    if (erro.code === 11000) {
+      return res.status(409).json({ mensagem: 'Já existe um curso com este código.' });
+    }
+    return res.status(500).json({ mensagem: 'Erro interno ao cadastrar curso.' });
+  }
+});
 
 
 async function obterOuCriarCodigoInstituicao(nomeInstituicao) {
@@ -64,7 +118,7 @@ async function obterOuCriarCodigoInstituicao(nomeInstituicao) {
 
 router.post('/cadastrar', async (req, res) => {
   try {
-    const { nome, email, cpf, telefone, endereco, especialidade, tipo, instituicao } = req.body;
+    const { nome, email, cpf, telefone, endereco, especialidade, tipo, instituicao, cursoId } = req.body;
 
     if (!nome || !email || !cpf || !tipo) {
       return res.status(400).json({ mensagem: 'Preencha todos os campos obrigatórios.' });
@@ -81,6 +135,15 @@ router.post('/cadastrar', async (req, res) => {
     let codigoMatricula = '';
 
     if (tipo === 'estudante') {
+      if (!cursoId || !mongoose.isValidObjectId(cursoId)) {
+        return res.status(400).json({ mensagem: 'Selecione um curso válido para o estudante.' });
+      }
+
+      const cursoSelecionado = await Curso.findById(cursoId);
+      if (!cursoSelecionado) {
+        return res.status(404).json({ mensagem: 'O curso selecionado não foi encontrado.' });
+      }
+
       const totalEstudantes = await Estudante.countDocuments();
       const sequencial = String(totalEstudantes).padStart(3, '0');
       codigoMatricula = `E2026${sequencial}`;
@@ -92,6 +155,16 @@ router.post('/cadastrar', async (req, res) => {
         cpf,
         telefone,
         endereco,
+        cursoId: cursoSelecionado._id,
+        curso: {
+          codigo: cursoSelecionado.codigo,
+          nome: cursoSelecionado.nome,
+          unidade: cursoSelecionado.unidade,
+          grau: cursoSelecionado.grau,
+          modalidade: cursoSelecionado.modalidade,
+          duracao: cursoSelecionado.duracao,
+          descricao: cursoSelecionado.descricao
+        },
         instituicao: dadosInstituicao
       });
       await novoEstudante.save();
