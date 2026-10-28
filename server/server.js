@@ -6,6 +6,7 @@ const path = require('path');
 const conectarBanco = require('./config/database');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
+const perfisRoutes = require('./routes/perfis');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,6 +18,7 @@ app.use(express.static(path.join(__dirname, '..')));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/perfis',perfisRoutes);
 
 async function iniciarServidor() {
   try {
