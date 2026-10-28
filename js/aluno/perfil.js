@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           body: JSON.stringify({
             email: user.email,
             telefone,
-            endereco: endereco
+            endereco
           })
         });
 

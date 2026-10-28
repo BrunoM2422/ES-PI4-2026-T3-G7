@@ -7,6 +7,8 @@ const docenteSchema = new mongoose.Schema({
   cpf: { type: String, trim: true },
   telefone: { type: String, trim: true },
   especialidade: { type: String, trim: true },
+  endereco: { type: String, trim: true },
+  descricao: { type: String, trim: true },
   instituicao: {
     nome: { type: String, trim: true },
     codigo: { type: String, trim: true }

@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const inputEmail = document.querySelector('input[name="email"]');
   const inputCelular = document.querySelector('input[name="telefone"]');
   const inputCpf = document.querySelector('input[name="cpf"]');
+  const inputEndereco = document.querySelector('input[name="endereco"]');
+  const inputDescricao = document.querySelector('textarea');
 
 
   try {
@@ -25,6 +27,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (inputEmail) inputEmail.value = usuario.email || '';
       if (inputCpf) inputCpf.value = detalhes.cpf || '';
       if (inputCelular) inputCelular.value = detalhes.telefone || '';
+      if (inputEndereco) inputEndereco.value = detalhes.endereco || '';
+      if (inputDescricao) inputDescricao.value = detalhes.descricao || '';
     }
   } catch (erro) {
     console.error('Erro ao carregar dados do perfil:', erro);
@@ -35,6 +39,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (botaoSalvar) {
     botaoSalvar.addEventListener('click', async () => {
       const telefone = inputCelular ? inputCelular.value.trim() : '';
+      const endereco = inputEndereco ? inputEndereco.value.trim() : '';
+      const descricao = inputDescricao ? inputDescricao.value.trim() : '';
 
       try {
         const response = await fetch('http://localhost:3000/api/perfis', {
@@ -42,7 +48,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email: user.email,
-            telefone
+            telefone,
+            endereco,
+            descricao
           })
         });
 
