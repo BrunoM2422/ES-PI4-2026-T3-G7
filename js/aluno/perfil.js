@@ -63,4 +63,53 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
   }
+
+
+  const botaoAlterarSenha = document.querySelector('.profile-security-save');
+  if (botaoAlterarSenha) {
+    botaoAlterarSenha.addEventListener('click', async () => {
+      const inputNovaSenha = document.querySelector('input[name="novaSenha"]');
+      const inputConfirmaSenha = document.querySelector('input[name="confirmaSenha"]');
+
+      const novaSenha = inputNovaSenha ? inputNovaSenha.value.trim() : '';
+      const confirmaSenha = inputConfirmaSenha ? inputConfirmaSenha.value.trim() : '';
+
+      if (!novaSenha || !confirmaSenha) {
+        alert('Preencha os campos de nova senha e confirmação.');
+        return;
+      }
+
+      if (novaSenha !== confirmaSenha) {
+        alert('As senhas digitadas não coincidem.');
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:3000/api/perfis/senha', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: user.email,
+            novaSenha,
+            confirmaSenha
+          })
+        });
+
+        const resultado = await response.json();
+        if (response.ok) {
+          alert('Senha alterada com sucesso! Utilize-a no próximo login.');
+          if (inputNovaSenha) inputNovaSenha.value = '';
+          if (inputConfirmaSenha) inputConfirmaSenha.value = '';
+        } else {
+          alert(resultado.mensagem || 'Erro ao alterar senha.');
+        }
+      } catch (erro) {
+        console.error('Erro na requisição:', erro);
+        alert('Não foi possível conectar ao servidor.');
+      }
+    });
+  }
+
+
+
 });

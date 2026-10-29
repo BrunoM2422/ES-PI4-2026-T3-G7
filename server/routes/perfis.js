@@ -1,4 +1,5 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const Usuario = require('../models/Usuario');
 const Estudante = require('../models/Estudante');
 const Docente = require('../models/Docente');
@@ -74,5 +75,44 @@ router.put('/', async (req, res) => {
     return res.status(500).json({ mensagem: 'Erro interno ao atualizar perfil.' });
   }
 });
+
+
+router.put('/senha', async (req, res) => {
+  try {
+    const { email, novaSenha, confirmaSenha } = req.body;
+
+    if (!email || !novaSenha || !confirmaSenha) {
+      return res.status(400).json({ mensagem: 'Preencha todos os campos de senha.' });
+    }
+
+    if (novaSenha !== confirmaSenha) {
+      return res.status(400).json({ mensagem: 'As senhas não coincidem.' });
+    }
+
+    if (novaSenha.length < 6) {
+      return res.status(400).json({ mensagem: 'A nova senha deve ter pelo menos 6 caracteres.' });
+    }
+
+    const usuario = await Usuario.findOne({ email });
+    if (!usuario) {
+      return res.status(404).json({ mensagem: 'Usuário não encontrado.' });
+    }
+
+
+    const senhaHash = await bcrypt.hash(novaSenha, 10);
+
+    await Usuario.findOneAndUpdate(
+      { email },
+      { $set: { senha: senhaHash } },
+      { returnDocument: 'after' }
+    );
+
+    return res.json({ mensagem: 'Senha alterada com sucesso!' });
+  } catch (erro) {
+    console.error('Erro ao alterar senha:', erro);
+    return res.status(500).json({ mensagem: 'Erro interno ao alterar senha.' });
+  }
+});
+
 
 module.exports = router;
