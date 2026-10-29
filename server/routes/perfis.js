@@ -45,7 +45,7 @@ router.get('/', async (req, res) => {
 
 router.put('/', async (req, res) => {
   try {
-    const { email, telefone, endereco, descricao } = req.body;
+    const { email, telefone, endereco, descricao, foto } = req.body;
     if (!email) {
       return res.status(400).json({ mensagem: 'E-mail não informado.' });
     }
@@ -58,7 +58,7 @@ router.put('/', async (req, res) => {
     if (usuario.papeis.includes('estudante')) {
       await Estudante.findOneAndUpdate(
         { email },
-        { $set: { telefone, endereco } },
+        { $set: { telefone, endereco, foto } },
         { returnDocument: 'after' }
       );
     } else if (usuario.papeis.includes('docente')) {
