@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const defaultSvg = document.getElementById('default-avatar-svg');
   const btnAlterarFoto = document.getElementById('btn-alterar-foto');
   const inputFileFoto = document.getElementById('input-file-foto');
+  const btnRemoverFoto = document.getElementById('btn-remover-foto');
 
   let fotoBase64 = '';
 
@@ -27,10 +28,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       avatarImg.src = base64;
       avatarImg.style.display = 'block';
       if (defaultSvg) defaultSvg.style.display = 'none';
+      if (btnRemoverFoto) btnRemoverFoto.hidden = false;
     } else {
       avatarImg.src = '';
       avatarImg.style.display = 'none';
       if (defaultSvg) defaultSvg.style.display = 'block';
+      if (btnRemoverFoto) btnRemoverFoto.hidden = true;
     }
   }
 
@@ -217,6 +220,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  if (btnRemoverFoto) {
+    btnRemoverFoto.addEventListener('click', () => {
+      if (!confirm('Deseja remover sua foto de perfil?')) return;
+      fotoBase64 = '';
+      atualizarExibicaoFoto('');
+      inputFileFoto.value = '';
+    });
+  }
 
   const botaoSalvar = document.querySelector('.profile-save');
   if (botaoSalvar) {

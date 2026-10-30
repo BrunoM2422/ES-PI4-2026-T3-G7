@@ -368,3 +368,49 @@ body.theme-dark .crop-modal {
 body.theme-dark .crop-btn:not(.crop-btn-primary) {
   background: #252e3e;
 }
+
+.profile-upload-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-remove {
+  display: grid;
+  width: 35px;
+  height: 35px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
+  color: #8390a6;
+  transition: color .15s ease, border-color .15s ease, background .15s ease;
+}
+
+.profile-remove[hidden] {
+  display: none;
+}
+
+.profile-remove svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.profile-remove:hover {
+  border-color: #f2b8bf;
+  background: #fff5f6;
+  color: #e23b4d;
+}
+
+body.theme-dark .profile-remove {
+  background: #252e3e;
+}
+
+body.theme-dark .profile-remove:hover {
+  background: #3a2730;
+}

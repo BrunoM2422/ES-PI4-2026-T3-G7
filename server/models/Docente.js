@@ -9,6 +9,7 @@ const docenteSchema = new mongoose.Schema({
   especialidade: { type: String, trim: true },
   endereco: { type: String, trim: true },
   descricao: { type: String, trim: true },
+  foto: { type: String, default: '' },
   instituicao: {
     nome: { type: String, trim: true },
     codigo: { type: String, trim: true }

@@ -33,11 +33,18 @@
                       <img id="avatar-img" src="" alt="Foto de Perfil" style="display:none; width:100%; height:100%; border-radius:50%; object-fit:cover;">
                     </div>
                     <div class="profile-upload-area">
-                      <button class="profile-upload" id="btn-alterar-foto" type="button">
-                        Alterar Foto
-                      </button>
+                      <div class="profile-upload-actions">
+                        <button class="profile-upload" id="btn-alterar-foto" type="button">
+                          Alterar Foto
+                        </button>
+                        <button class="profile-remove" id="btn-remover-foto" type="button" title="Remover foto" aria-label="Remover foto" hidden>
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v6M14 10v6"/>
+                          </svg>
+                        </button>
+                      </div>
                       <input type="file" id="input-file-foto" accept="image/png, image/jpeg, image/jpg" style="display: none;">
-                      <small>JPG ou PNG. M&aacute;ximo de 5 MB.</small>
+                      <small>JPG ou PNG. M&aacute;ximo de 10 MB.</small>
                     </div>
                   </div>
                   <div class="profile-fields">

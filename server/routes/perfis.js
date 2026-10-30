@@ -64,7 +64,7 @@ router.put('/', async (req, res) => {
     } else if (usuario.papeis.includes('docente')) {
       await Docente.findOneAndUpdate(
         { email },
-        { $set: { telefone, endereco, descricao } },
+        { $set: { telefone, endereco, descricao, foto } },
         { returnDocument: 'after' }
       );
     }
