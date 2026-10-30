@@ -7,6 +7,7 @@ const estudanteSchema = new mongoose.Schema({
   cpf: { type: String, trim: true },
   telefone: { type: String, trim: true },
   endereco: { type: String, trim: true },
+  foto: { type: String, default: '' },
   cursoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Curso' },
   curso: {
     codigo: { type: String, trim: true },
