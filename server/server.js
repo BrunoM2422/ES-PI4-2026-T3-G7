@@ -7,6 +7,10 @@ const conectarBanco = require('./config/database');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const perfisRoutes = require('./routes/perfis');
+const opcoesRoutes = require('./routes/opcoes');
+const Disciplina = require('./models/Disciplina');
+const Turma = require('./models/Turma');
+const GradeHorario = require('./models/GradeHorario');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,10 +25,14 @@ app.use(express.static(path.join(__dirname, '..')));
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/perfis',perfisRoutes);
+app.use('/api/opcoes', opcoesRoutes);
 
 async function iniciarServidor() {
   try {
     await conectarBanco();
+    await Disciplina.init();
+    await Turma.init();
+    await GradeHorario.init();
 
     app.get('/', (req, res) => {
       res.sendFile(path.join(__dirname, '..', 'login.html'));

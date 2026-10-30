@@ -30,7 +30,9 @@ document.querySelector('#login').addEventListener('submit', async event => {
     sessionStorage.setItem('notadez_user', JSON.stringify({
       tipo: role,
       nome: user.nome,
-      email: user.email
+      email: user.email,
+      nivelPermissao: user.nivelPermissao || null,
+      statusAcademico: user.statusAcademico || 'ativo'
     }));
 
     const dashboards = {
@@ -38,7 +40,9 @@ document.querySelector('#login').addEventListener('submit', async event => {
       professor: 'pages/professor/dashboard.html',
       admin: 'pages/admin/dashboard.html'
     };
-    window.location.href = dashboards[role];
+    window.location.href = role === 'aluno' && user.statusAcademico === 'trancado'
+      ? 'pages/aluno/perfil.html'
+      : dashboards[role];
   } catch {
     error.textContent = 'N\u00e3o foi poss\u00edvel conectar ao servidor. Tente novamente.';
   }

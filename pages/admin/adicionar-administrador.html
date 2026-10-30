@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Adicionar administrador | NotaDez</title>
+    <title>Cadastro de administrador | NotaDez</title>
     <link rel="stylesheet" href="../../css/shared/style.css">
     <link rel="stylesheet" href="../../css/admin/paginas.css">
   </head>
@@ -12,7 +12,7 @@
       id="app"
       data-page="adicionar-administrador"
       data-role="admin"
-      data-title="Adicionar administrador"
+      data-title="Cadastro de administrador"
     >
       <div class="shell">
         <aside class="side" data-component="sidebar"></aside>
@@ -22,7 +22,7 @@
             <article class="admin-page">
               <div class="admin-page-intro">
                 <span class="admin-eyebrow">Gest&atilde;o de acesso</span>
-                <h2>Adicionar administrador</h2>
+                <h2>Cadastro de administrador</h2>
                 <p>Informe os dados e o n&iacute;vel de permiss&atilde;o do novo administrador.</p>
               </div>
               <section class="admin-form-card admin-form-card-narrow">
@@ -51,9 +51,9 @@
                       <span>N&iacute;vel de permiss&atilde;o</span>
                       <select name="permissao" required>
                         <option value="" selected disabled>Selecione o n&iacute;vel de permiss&atilde;o</option>
-                        <option>Administrador</option>
-                        <option>Administrador acad&ecirc;mico</option>
-                        <option>Administrador de sistema</option>
+                        <option value="admin_mestre">Administrador mestre</option>
+                        <option value="admin_2">Administrador 2</option>
+                        <option value="admin_3">Administrador 3</option>
                       </select>
                     </label>
                   </div>

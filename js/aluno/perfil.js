@@ -14,6 +14,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const inputCelular = document.querySelector('input[name="telefone"]');
   const inputCpf = document.querySelector('input[name="cpf"]');
   const inputEndereco = document.querySelector('input[name="endereco"]');
+  const statusCard = document.querySelector('#student-status');
+  const statusTitle = document.querySelector('#student-status-title');
+  const statusDetails = document.querySelector('#student-status-details');
 
   const avatarImg = document.getElementById('avatar-img');
   const defaultSvg = document.getElementById('default-avatar-svg');
@@ -44,6 +47,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (response.ok) {
       const { usuario, detalhes } = data;
+
+      if (statusCard && statusTitle) {
+        const trancado = usuario.statusAcademico === 'trancado';
+        statusCard.hidden = false;
+        statusCard.classList.toggle('is-locked', trancado);
+        statusTitle.textContent = `Situação acadêmica: ${trancado ? 'Matrícula trancada' : 'Ativa'}`;
+        if (trancado && detalhes.trancamento) {
+          const formatarData = valor => valor
+            ? new Date(`${String(valor).slice(0, 10)}T00:00:00`).toLocaleDateString('pt-BR')
+            : '';
+          const inicio = formatarData(detalhes.trancamento.inicio);
+          const retorno = formatarData(detalhes.trancamento.retorno);
+          const periodo = inicio && retorno ? `Período: ${inicio} a ${retorno}. ` : '';
+          statusDetails.textContent = `${periodo}${detalhes.trancamento.justificativa || ''}`.trim();
+          statusDetails.hidden = !statusDetails.textContent;
+        }
+      }
 
       if (inputNome) inputNome.value = usuario.nome || '';
       if (inputEmail) inputEmail.value = usuario.email || '';

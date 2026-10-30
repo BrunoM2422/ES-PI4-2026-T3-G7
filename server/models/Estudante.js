@@ -8,6 +8,12 @@ const estudanteSchema = new mongoose.Schema({
   telefone: { type: String, trim: true },
   endereco: { type: String, trim: true },
   foto: { type: String, default: '' },
+  statusAcademico: { type: String, enum: ['ativo', 'trancado'], default: 'ativo' },
+  trancamento: {
+    inicio: { type: Date },
+    retorno: { type: Date },
+    justificativa: { type: String, trim: true }
+  },
   cursoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Curso' },
   curso: {
     codigo: { type: String, trim: true },

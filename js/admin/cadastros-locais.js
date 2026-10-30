@@ -51,6 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (pagina === 'adicionar-disciplina') {
     const cursosSelect = document.querySelector('[name="curso"]');
     const semestreSelect = document.querySelector('[name="semestre"]');
+    const botao = document.querySelector('.admin-button');
+    const status = document.querySelector('.admin-local-note');
     const atualizarSemestres = cursos => {
       const curso = cursos.find(item => item.id === cursosSelect.value);
       const duracao = Number(curso?.duracao || 0);
@@ -88,9 +90,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!campos.every(campo => campo.reportValidity())) return;
 
-      alert('Disciplina conferida. Ela ainda não será salva no banco de dados.');
-      document.querySelector('.admin-local-note').textContent =
-        'Disciplina pronta para ser conectada ao catálogo quando a persistência for implementada.';
+      const [nome, codigo, semestre, curso, descricao] = campos;
+      botao.disabled = true;
+      botao.textContent = 'Cadastrando...';
+      status.textContent = '';
+
+      fetch('/api/admin/disciplinas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: nome.value.trim(),
+          codigo: codigo.value.trim(),
+          semestre: Number(semestre.value),
+          cursoId: curso.value,
+          descricao: descricao.value.trim()
+        })
+      })
+        .then(async response => {
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.mensagem || 'Não foi possível cadastrar a disciplina.');
+
+          status.textContent = data.mensagem;
+          document.querySelector('[name="nome"]').value = '';
+          document.querySelector('[name="codigo"]').value = '';
+          document.querySelector('[name="descricao"]').value = '';
+          semestreSelect.value = '';
+        })
+        .catch(erro => {
+          status.textContent = erro.message;
+        })
+        .finally(() => {
+          botao.disabled = false;
+          botao.textContent = 'Cadastrar disciplina';
+        });
     });
   }
 });

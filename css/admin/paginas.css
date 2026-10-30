@@ -296,12 +296,23 @@
 .schedule-teacher-option strong { font-size: 11px; }
 .schedule-teacher-option small, .schedule-teacher-option em { color: var(--muted); font-size: 9px; font-style: normal; }
 .schedule-modal-note { margin: 12px 0 0 !important; font-size: 10px !important; }
+.schedule-class-target { min-height: 90px; cursor: default; transition: background .15s, box-shadow .15s; }
+.schedule-class-target.is-hover { background: #eae9ff; box-shadow: inset 0 0 0 2px #8d86ff; }
+.schedule-class-assignments { display: flex; flex-wrap: wrap; gap: 4px; }
+.schedule-class-assignment { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 3px 5px 3px 7px; border-radius: 20px; background: #e3f6ed; color: #19724c; font-size: 8px; font-weight: 700; overflow-wrap: anywhere; }
+.schedule-class-assignment button { display: grid; width: 15px; height: 15px; flex: 0 0 15px; place-items: center; padding: 0; border: 0; border-radius: 50%; background: rgb(25 114 76 / 12%); color: #19724c; font-size: 12px; line-height: 1; }
+.schedule-class-drop { display: block; padding: 4px; border: 1px dashed #d8d5ff; border-radius: 5px; color: #9692c6; font-size: 8px; text-align: center; }
+.schedule-class-target.is-hover .schedule-class-drop { border-color: var(--primary); background: #fff; color: var(--primary); }
+.schedule-empty-slot { display: grid; min-height: 70px; place-items: center; color: #c4cad7; font-size: 13px; }
 body.theme-dark .schedule-course-card, body.theme-dark .schedule-semester-card, body.theme-dark .schedule-subject-panel, body.theme-dark .schedule-calendar-panel, body.theme-dark .schedule-savebar, body.theme-dark .schedule-modal { border-color: var(--line); background: #182337; color: var(--ink); }
 body.theme-dark .schedule-course-card strong, body.theme-dark .schedule-semester-card strong, body.theme-dark .schedule-step-heading h3, body.theme-dark .schedule-calendar-heading h3, body.theme-dark .schedule-modal h3 { color: var(--ink); }
 body.theme-dark .schedule-search input, body.theme-dark .schedule-back, body.theme-dark .schedule-teacher-option { border-color: var(--line); background: #202b3d; color: var(--ink); }
 body.theme-dark .schedule-slot { border-color: var(--line); background: #1b2433; }
 body.theme-dark .schedule-hour-label, body.theme-dark .schedule-time-label, body.theme-dark .schedule-day-label { border-color: var(--line); background: #202b3d; color: var(--ink); }
 body.theme-dark .schedule-lesson { background: #302d55; color: #f2f2ff; }
+body.theme-dark .schedule-class-assignment { background: #193b31; color: #9ee2c1; }
+body.theme-dark .schedule-class-assignment button { background: rgb(158 226 193 / 12%); color: #9ee2c1; }
+body.theme-dark .schedule-class-drop { border-color: #45416d; color: #aaa6e8; }
 
 .admin-options-card {
   width: min(100%, 920px);

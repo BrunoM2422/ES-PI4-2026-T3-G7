@@ -41,6 +41,25 @@
   font-weight: 700;
 }
 
+.student-status-card {
+  display: grid;
+  gap: 5px;
+  margin: -8px 0 18px;
+  padding: 11px 13px;
+  border: 1px solid #bfe8d5;
+  border-radius: 8px;
+  background: #f0faf5;
+  color: #236b4b;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.student-status-card[hidden] { display: none; }
+.student-status-card strong { font-size: 11px; }
+.student-status-card span { color: #547b68; }
+.student-status-card.is-locked { border-color: #f0d4a0; background: #fff9ed; color: #8a5b0c; }
+.student-status-card.is-locked span { color: #806b48; }
+
 .profile-avatar-row {
   display: flex;
   align-items: center;
@@ -414,3 +433,8 @@ body.theme-dark .profile-remove {
 body.theme-dark .profile-remove:hover {
   background: #3a2730;
 }
+
+body.theme-dark .student-status-card { border-color: #285940; background: #1d3429; color: #a4e0be; }
+body.theme-dark .student-status-card span { color: #b8d8c5; }
+body.theme-dark .student-status-card.is-locked { border-color: #67502b; background: #382f20; color: #f0cd8b; }
+body.theme-dark .student-status-card.is-locked span { color: #d9c7a3; }

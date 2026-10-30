@@ -29,12 +29,13 @@ Abra o terminal e rode:
 copy .env.example .env
 ```
 
-Em seguida, abra o arquivo .env e substitua o valor de MONGODB_URI pela sua string de conexão do MongoDB.
+Em seguida, abra o arquivo .env e substitua o valor de MONGODB_URI pela sua string de conexão do MongoDB. E substitua a senha do SMTP pela senha do email Nota Dez para habilitar a verificação de dois fatores.
 ```bash
-PORT=3000
-MONGODB_URI=adicione_aqui_a_string_de_conexao_do_mongodb
-```
 
+MONGODB_URI=adicione_aqui_a_string_de_conexao_do_mongodb
+SMTP_PASS=sua_senha_de_app_do_gmail
+
+```
 ---
 
 Instale as dependências:

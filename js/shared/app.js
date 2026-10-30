@@ -1,4 +1,4 @@
-(() => {
+ (async () => {
   const app = document.querySelector('#app');
   if (!app) return;
 
@@ -14,6 +14,54 @@
   if (!user || user.tipo !== role) {
     window.location.href = '../../login.html';
     return;
+  }
+
+  const paginasAlunoTrancado = ['perfil', 'contato', 'historico', 'financeiro'];
+  if (role === 'aluno') {
+    try {
+      const response = await fetch(`/api/perfis?email=${encodeURIComponent(user.email || '')}`);
+      if (response.ok) {
+        const data = await response.json();
+        user.statusAcademico = data.usuario?.statusAcademico || 'ativo';
+        sessionStorage.setItem('notadez_user', JSON.stringify(user));
+      }
+    } catch (erro) {
+      console.error('N\u00e3o foi poss\u00edvel atualizar a situa\u00e7\u00e3o acad\u00eamica do aluno:', erro);
+    }
+
+    if (user.statusAcademico === 'trancado' && !paginasAlunoTrancado.includes(page)) {
+      window.location.replace('../../pages/aluno/perfil.html');
+      return;
+    }
+  }
+
+  const nivelAdmin = user.nivelPermissao || 'admin_mestre';
+  const adminRestrito = role === 'admin' && nivelAdmin !== 'admin_mestre';
+  if (adminRestrito && page !== 'dashboard') {
+    window.location.replace('../../pages/admin/dashboard.html');
+    return;
+  }
+
+  let opcoesAluno = { avaliacao: false, gradeCurricular: false };
+  if (role === 'aluno') {
+    try {
+      const response = await fetch('/api/opcoes');
+      if (!response.ok) throw new Error('Não foi possível carregar as opções do sistema.');
+      const data = await response.json();
+      opcoesAluno = { ...opcoesAluno, ...(data.opcoes || {}) };
+    } catch (erro) {
+      console.error('Erro ao verificar liberações para alunos:', erro);
+    }
+
+    const opcaoDaPagina = page === 'avaliar'
+      ? 'avaliacao'
+      : page === 'grade'
+        ? 'gradeCurricular'
+        : null;
+    if (opcaoDaPagina && !opcoesAluno[opcaoDaPagina]) {
+      window.location.replace('../../pages/aluno/dashboard.html');
+      return;
+    }
   }
 
   const settingsKey = 'notadez_settings_' + (user.email || role);
@@ -42,6 +90,48 @@
     const sidebarSlot = app.querySelector('[data-component="sidebar"]');
     if (!sidebarTemplate || !sidebarSlot) throw new Error(`Componente de navega\u00e7\u00e3o ausente para ${role}`);
     sidebarSlot.replaceChildren(sidebarTemplate.content.cloneNode(true));
+
+    if (role === 'aluno') {
+      const acessos = [
+        { page: 'avaliar', opcao: 'avaliacao' },
+        { page: 'grade', opcao: 'gradeCurricular' }
+      ];
+      acessos.forEach(({ page: pagina, opcao }) => {
+        const link = app.querySelector(`[data-nav-page="${pagina}"]`);
+        if (link && !opcoesAluno[opcao]) {
+          link.href = '#';
+          link.classList.add('disabled');
+          link.setAttribute('aria-disabled', 'true');
+          link.tabIndex = -1;
+          link.title = 'Indisponível até liberação pelo administrador.';
+          link.addEventListener('click', event => event.preventDefault());
+        }
+      });
+
+      if (user.statusAcademico === 'trancado') {
+        app.querySelectorAll('[data-nav-page]').forEach(link => {
+          if (paginasAlunoTrancado.includes(link.dataset.navPage)) return;
+          link.href = '#';
+          link.classList.add('disabled');
+          link.setAttribute('aria-disabled', 'true');
+          link.tabIndex = -1;
+          link.title = 'Acesso indispon\u00edvel durante o trancamento da matr\u00edcula.';
+          link.addEventListener('click', event => event.preventDefault());
+        });
+      }
+    }
+
+    if (adminRestrito) {
+      app.querySelectorAll('[data-nav-page]').forEach(link => {
+        if (link.dataset.navPage === 'dashboard') return;
+        link.href = '#';
+        link.classList.add('disabled');
+        link.setAttribute('aria-disabled', 'true');
+        link.tabIndex = -1;
+        link.title = 'Esta opção ainda não foi liberada para este nível de administrador.';
+        link.addEventListener('click', event => event.preventDefault());
+      });
+    }
 
     const insertFragment = (markup, selector) => {
       const parsed = new DOMParser().parseFromString(markup, 'text/html');

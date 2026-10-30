@@ -18,23 +18,21 @@
               <div class="admin-page-intro">
                 <span class="admin-eyebrow">Gest&atilde;o de matr&iacute;culas</span>
                 <h2>Cancelar matr&iacute;cula</h2>
-                <p>Localize a matr&iacute;cula e registre o motivo do cancelamento.</p>
+                <p>Informe o RA ou e-mail e o CPF do aluno para remover o cadastro e encerrar o acesso.</p>
               </div>
               <section class="admin-form-card admin-form-card-narrow">
                 <div class="admin-card-heading admin-card-heading-danger">
                   <span class="admin-card-icon" aria-hidden="true">&#10005;</span>
-                  <div><h3>Dados da solicita&ccedil;&atilde;o</h3><p>Confira a identifica&ccedil;&atilde;o antes de continuar.</p></div>
+                  <div><h3>Identifica&ccedil;&atilde;o do aluno</h3><p>Confira os dados antes de cancelar.</p></div>
                 </div>
                 <div class="admin-form-body">
                   <div class="admin-field-grid">
-                    <label class="admin-field"><span>Identificador da matr&iacute;cula</span><input name="matricula" placeholder="Informe o identificador da matr&iacute;cula" required></label>
-                    <label class="admin-field"><span>CPF do aluno</span><input name="cpf" inputmode="numeric" placeholder="Informe o CPF do aluno" required></label>
-                    <label class="admin-field"><span>Data efetiva do cancelamento</span><input name="data" type="date" required></label>
-                    <div class="admin-field admin-field-unavailable"><span>Motivo</span><p>Op&ccedil;&otilde;es n&atilde;o dispon&iacute;veis.</p></div>
-                    <label class="admin-field admin-field-wide"><span>Observa&ccedil;&otilde;es</span><textarea name="observacoes" rows="4" placeholder="Registre detalhes relevantes"></textarea></label>
+                    <label class="admin-field"><span>RA ou e-mail institucional</span><input name="matricula" placeholder="Informe o RA ou e-mail" required></label>
+                    <label class="admin-field"><span>CPF do aluno</span><input name="cpf" inputmode="numeric" autocomplete="off" placeholder="Informe o CPF do aluno" required></label>
                   </div>
-                  <label class="admin-confirm-field"><input type="checkbox" name="confirmacao" required><span>Confirmo que revisei os dados e a solicita&ccedil;&atilde;o.</span></label>
+                  <label class="admin-confirm-field"><input type="checkbox" name="confirmacao" required><span>Confirmo que o cadastro e o acesso do aluno ser&atilde;o exclu&iacute;dos.</span></label>
                   <button class="admin-button admin-button-danger" type="button">Confirmar cancelamento</button>
+                  <p class="admin-local-note" role="status" aria-live="polite"></p>
                 </div>
               </section>
             </article>
@@ -44,5 +42,6 @@
       </div>
     </div>
     <script src="../../js/shared/app.js"></script>
+    <script src="../../js/admin/matriculas.js"></script>
   </body>
 </html>

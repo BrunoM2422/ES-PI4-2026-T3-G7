@@ -6,10 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let semestreSelecionado = Number(params.get('semestre')) || 0;
   const chaveGrade = () => `notadez_grade_${cursoId}_${semestreSelecionado}`;
   const dias = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-  const disciplinas = [
-    { id: 'estudos-bd-1', nome: 'Estudos de Banco de Dados 1', codigo: 'BD101' },
-    { id: 'programacao-python-1', nome: 'Programação em Python 1', codigo: 'PY101' }
-  ];
+  let disciplinas = [];
   const normalizar = texto => String(texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
   let cursos = [];
   let docentes = [];
@@ -83,11 +80,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       grade = grade.filter(item => item.id !== card.dataset.lesson);
       renderGrade();
     }));
-    root.querySelector('#save-schedule').addEventListener('click', () => {
+    root.querySelector('#save-schedule').addEventListener('click', async event => {
+      const button = event.currentTarget;
+      const status = root.querySelector('#schedule-status');
+      button.disabled = true;
+      status.textContent = 'Salvando grade...';
       try {
-        localStorage.setItem(chaveGrade(), JSON.stringify(grade));
-        root.querySelector('#schedule-status').textContent = `Grade salva neste navegador · ${grade.length} aula(s)`;
-      } catch (erro) { root.querySelector('#schedule-status').textContent = 'Não foi possível salvar a grade neste navegador.'; }
+        const resposta = await fetch('/api/admin/grades-horarios', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cursoId, semestre: semestreSelecionado, aulas: grade })
+        });
+        const dados = await resposta.json();
+        if (!resposta.ok) throw new Error(dados.mensagem || 'Não foi possível salvar a grade.');
+        grade = dados.grade.aulas || [];
+        localStorage.removeItem(chaveGrade());
+        renderGrade();
+        root.querySelector('#schedule-status').textContent = `${dados.mensagem} ${grade.length} aula(s)`;
+      } catch (erro) {
+        status.textContent = erro.message;
+      } finally {
+        const novoBotao = root.querySelector('#save-schedule');
+        if (novoBotao) novoBotao.disabled = false;
+      }
     });
   }
 
@@ -135,14 +150,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     modalRoot.querySelector('#teacher-search').focus();
   }
 
-  function renderizar() {
+  async function renderizar() {
     cursoAtual = cursos.find(curso => curso.id === cursoId);
     if (!cursoId) return renderCursos();
     if (!cursoAtual) { root.innerHTML = '<div class="schedule-empty">Curso não encontrado. <button class="schedule-back" data-back>Voltar aos cursos</button></div>'; root.querySelector('[data-back]').addEventListener('click', () => navegar()); return; }
     if (!semestreSelecionado) return renderSemestres();
     if (semestreSelecionado < 1 || semestreSelecionado > Number(cursoAtual.duracao)) { root.innerHTML = '<div class="schedule-empty">Semestre inválido para este curso.</div>'; return; }
-    try { grade = JSON.parse(localStorage.getItem(chaveGrade()) || '[]'); } catch { grade = []; }
-    renderGrade();
+    root.innerHTML = '<div class="schedule-loading">Carregando disciplinas...</div>';
+    try {
+      const consulta = new URLSearchParams({ cursoId, semestre: String(semestreSelecionado) });
+      const [data, gradeData] = await Promise.all([
+        carregarJson(`/api/admin/disciplinas?${consulta}`),
+        carregarJson(`/api/admin/grades-horarios?${consulta}`)
+      ]);
+      disciplinas = data.disciplinas || [];
+      grade = gradeData.grade?.aulas || [];
+      if (!gradeData.grade) {
+        try {
+          const gradeAntiga = JSON.parse(localStorage.getItem(chaveGrade()) || '[]');
+          if (gradeAntiga.length) {
+            const migracao = await fetch('/api/admin/grades-horarios', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ cursoId, semestre: semestreSelecionado, aulas: gradeAntiga })
+            });
+            const migracaoData = await migracao.json();
+            if (migracao.ok) {
+              grade = migracaoData.grade.aulas || [];
+              localStorage.removeItem(chaveGrade());
+            }
+          }
+        } catch (erro) {
+          console.warn('Não foi possível migrar a grade local para o banco:', erro);
+        }
+      }
+      renderGrade();
+    } catch (erro) {
+      root.innerHTML = `<div class="schedule-empty">${escapar(erro.message)}</div>`;
+    }
   }
   window.addEventListener('popstate', () => location.reload());
   try {

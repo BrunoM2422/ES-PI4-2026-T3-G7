@@ -27,7 +27,7 @@
                 </div>
                 <div class="admin-form-body">
                   <div class="admin-field-grid">
-                    <label class="admin-field"><span>Identificador da matr&iacute;cula</span><input name="matricula" placeholder="Informe o identificador da matr&iacute;cula" required></label>
+                    <label class="admin-field"><span>RA ou e-mail institucional</span><input name="matricula" placeholder="Informe o RA ou e-mail" required></label>
                     <label class="admin-field"><span>CPF do aluno</span><input name="cpf" inputmode="numeric" placeholder="Informe o CPF do aluno" required></label>
                     <label class="admin-field"><span>In&iacute;cio do trancamento</span><input name="inicio" type="date" required></label>
                     <label class="admin-field"><span>Previs&atilde;o de retorno</span><input name="retorno" type="date" required></label>
@@ -35,6 +35,7 @@
                   </div>
                   <label class="admin-confirm-field"><input type="checkbox" name="confirmacao" required><span>Confirmo que revisei os dados e o per&iacute;odo informado.</span></label>
                   <button class="admin-button" type="button">Confirmar trancamento</button>
+                  <p class="admin-local-note" role="status" aria-live="polite"></p>
                 </div>
               </section>
             </article>
@@ -44,5 +45,6 @@
       </div>
     </div>
     <script src="../../js/shared/app.js"></script>
+    <script src="../../js/admin/matriculas.js"></script>
   </body>
 </html>

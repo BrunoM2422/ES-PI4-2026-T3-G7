@@ -28,27 +28,46 @@
         <small>&copy; 2026 NotaDez Academic System. Todos os direitos reservados.</small>
       </section>
       <section class="loginpanel">
-        <form class="loginform" action="#">
+        <form class="loginform" id="recovery-request-form">
           <h1>
             Esqueceu sua senha?
           </h1>
           <p>
             Informe seu e-mail institucional para continuar a recupera&#231;&#227;o.
           </p>
-          <div class="field">
+          <div class="field" id="recovery-email-field">
             <label for="email">
               Endere&#231;o de e-mail
             </label>
             <input id="email" name="email" type="email" placeholder="Digite seu e-mail" autocomplete="email" required>
           </div>
-          <button class="btn primary full" type="button">
+          <button class="btn primary full" id="request-code-button" type="submit">
             Enviar instru&#231;&#245;es
           </button>
+          <div id="recovery-code-step" hidden>
+            <p id="recovery-email-message" class="recovery-message"></p>
+            <div class="field">
+              <label for="recovery-code">C&oacute;digo de 6 d&iacute;gitos</label>
+              <input id="recovery-code" name="codigo" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required disabled>
+            </div>
+            <div class="field">
+              <label for="new-password">Nova senha</label>
+              <input id="new-password" name="novaSenha" type="password" autocomplete="new-password" minlength="8" placeholder="M&iacute;nimo de 8 caracteres" required disabled>
+            </div>
+            <div class="field">
+              <label for="confirm-password">Confirme a nova senha</label>
+              <input id="confirm-password" name="confirmarSenha" type="password" autocomplete="new-password" minlength="8" placeholder="Digite a senha novamente" required disabled>
+            </div>
+            <button class="btn primary full" id="reset-password-button" type="button">Redefinir senha</button>
+            <button class="recovery-resend" id="resend-code-button" type="button">Enviar outro c&oacute;digo</button>
+          </div>
+          <p id="recovery-status" class="recovery-status" role="status" aria-live="polite"></p>
           <p class="login-links recovery-back">
             <a href="login.html">Voltar para o login</a>
           </p>
         </form>
       </section>
     </main>
+    <script src="js/shared/recuperacao.js"></script>
   </body>
 </html>

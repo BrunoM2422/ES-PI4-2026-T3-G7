@@ -32,7 +32,8 @@ router.get('/', async (req, res) => {
         email: usuario.email,
         papeis: usuario.papeis,
         ra: usuario.ra,
-        rp: usuario.rp
+        rp: usuario.rp,
+        statusAcademico: detalhesPerfil?.statusAcademico || 'ativo'
       },
       detalhes: detalhesPerfil || {}
     });
