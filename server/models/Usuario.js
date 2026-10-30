@@ -5,6 +5,8 @@ const usuarioSchema = new mongoose.Schema({
   senha: { type: String, required: true },
   papeis: { type: [String], enum: ['estudante', 'docente', 'admin'], required: true },
   nome: { type: String, required: true },
+  telefone: { type: String, trim: true },
+  nivelPermissao: { type: String, trim: true },
   ra: { type: String },
   rp: { type: String }
 });

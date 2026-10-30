@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Organiza&ccedil;&atilde;o de Hor&aacute;rios | NotaDez</title>
+    <link rel="stylesheet" href="../../css/shared/style.css">
+    <link rel="stylesheet" href="../../css/admin/paginas.css">
+  </head>
+  <body>
+    <div
+      id="app"
+      data-page="organizacao-horarios"
+      data-role="admin"
+      data-title="Organiza&ccedil;&atilde;o de Hor&aacute;rios"
+    >
+      <div class="shell">
+        <aside class="side" data-component="sidebar"></aside>
+        <main class="main">
+          <div data-component="header"></div>
+          <section class="content">
+            <article class="admin-page">
+              <div class="admin-page-intro">
+                <span class="admin-eyebrow">Planejamento acad&ecirc;mico</span>
+                <h2>Organiza&ccedil;&atilde;o de Hor&aacute;rios</h2>
+                <p>Escolha um curso, um semestre e organize as aulas da semana.</p>
+              </div>
+              <div id="schedule-content" aria-live="polite">
+                <div class="schedule-loading">Carregando cursos...</div>
+              </div>
+            </article>
+          </section>
+          <div data-component="footer"></div>
+        </main>
+      </div>
+    </div>
+    <div id="teacher-modal-root"></div>
+    <script src="../../js/shared/app.js"></script>
+    <script src="../../js/admin/organizacao-horarios.js"></script>
+  </body>
+</html>

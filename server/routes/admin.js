@@ -24,6 +24,37 @@ router.get('/cursos', async (req, res) => {
   }
 });
 
+router.get('/docentes', async (req, res) => {
+  try {
+    const docentes = await Docente.find().select('nome email rp especialidade').sort({ nome: 1 }).lean();
+    return res.json({ docentes: docentes.map(docente => ({ ...docente, id: String(docente._id) })) });
+  } catch (erro) {
+    console.error('Erro ao listar docentes:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível carregar os docentes.' });
+  }
+});
+
+router.post('/administradores', async (req, res) => {
+  try {
+    const { nome, email, telefone, nivelPermissao } = req.body;
+    if (![nome, email, telefone, nivelPermissao].every(valor => typeof valor === 'string' && valor.trim())) {
+      return res.status(400).json({ mensagem: 'Preencha nome, e-mail, telefone e nível de permissão.' });
+    }
+    const emailTratado = email.trim().toLowerCase();
+    const senha = await bcrypt.hash('123456', 10);
+    const administrador = new Usuario({
+      nome: nome.trim(), email: emailTratado, telefone: telefone.trim(),
+      nivelPermissao: nivelPermissao.trim(), senha, papeis: ['admin']
+    });
+    await administrador.save();
+    return res.status(201).json({ mensagem: 'Administrador cadastrado com sucesso.' });
+  } catch (erro) {
+    console.error('Erro ao cadastrar administrador:', erro);
+    if (erro.code === 11000) return res.status(409).json({ mensagem: 'Este e-mail já está cadastrado.' });
+    return res.status(500).json({ mensagem: 'Não foi possível cadastrar o administrador.' });
+  }
+});
+
 router.post('/cursos', async (req, res) => {
   try {
     const { codigo, nome, unidade, grau, modalidade, duracao, descricao } = req.body;
