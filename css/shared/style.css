@@ -231,6 +231,18 @@ button {
   margin-top: 6px;
 }
 
+.header-avatar-link img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.header-avatar-link img[hidden],
+.header-avatar-link svg[hidden] {
+  display: none;
+}
+
 .page-heading {
   display: flex;
   align-items: center;

@@ -26,7 +26,7 @@
         sessionStorage.setItem('notadez_user', JSON.stringify(user));
       }
     } catch (erro) {
-      console.error('N\u00e3o foi poss\u00edvel atualizar a situa\u00e7\u00e3o acad\u00eamica do aluno:', erro);
+      console.error('Não foi possível atualizar a situação acadêmica do aluno:', erro);
     }
 
     if (user.statusAcademico === 'trancado' && !paginasAlunoTrancado.includes(page)) {
@@ -82,13 +82,13 @@
   const componentBase = new URL('../../components/', scriptUrl);
   Promise.all(['sidebar.html', 'header.html', 'footer.html'].map(async file => {
     const response = await fetch(new URL(file, componentBase));
-    if (!response.ok) throw new Error(`N\u00e3o foi poss\u00edvel carregar ${file}`);
+    if (!response.ok) throw new Error(`Não foi possível carregar ${file}`);
     return response.text();
   })).then(([sidebarMarkup, headerMarkup, footerMarkup]) => {
     const sidebarDocument = new DOMParser().parseFromString(sidebarMarkup, 'text/html');
     const sidebarTemplate = sidebarDocument.getElementById(`sidebar-${role}`);
     const sidebarSlot = app.querySelector('[data-component="sidebar"]');
-    if (!sidebarTemplate || !sidebarSlot) throw new Error(`Componente de navega\u00e7\u00e3o ausente para ${role}`);
+    if (!sidebarTemplate || !sidebarSlot) throw new Error(`Componente de navegação ausente para ${role}`);
     sidebarSlot.replaceChildren(sidebarTemplate.content.cloneNode(true));
 
     if (role === 'aluno') {
@@ -115,7 +115,7 @@
           link.classList.add('disabled');
           link.setAttribute('aria-disabled', 'true');
           link.tabIndex = -1;
-          link.title = 'Acesso indispon\u00edvel durante o trancamento da matr\u00edcula.';
+          link.title = 'Acesso indisponível durante o trancamento da matrícula.';
           link.addEventListener('click', event => event.preventDefault());
         });
       }
@@ -136,21 +136,48 @@
     const insertFragment = (markup, selector) => {
       const parsed = new DOMParser().parseFromString(markup, 'text/html');
       const slot = app.querySelector(`[data-component="${selector}"]`);
-      if (!slot) throw new Error(`Espa\u00e7o do componente ${selector} ausente`);
+      if (!slot) throw new Error(`Espaço do componente ${selector} ausente`);
       slot.replaceWith(...parsed.body.childNodes);
     };
     insertFragment(headerMarkup, 'header');
     insertFragment(footerMarkup, 'footer');
 
     app.querySelectorAll('[data-user-name]').forEach(element => {
-      element.textContent = user.nome || 'Usu\u00e1rio';
-    });
-    app.querySelectorAll('[data-user-email]').forEach(element => {
-      element.textContent = user.email || '';
+      element.textContent = user.nome || 'Usuário';
     });
     app.querySelectorAll('[data-profile-link]').forEach(link => {
       link.href = role === 'admin' ? '../../pages/admin/dashboard.html' : `../../pages/${role}/perfil.html`;
     });
+    const atualizarAvatar = origem => {
+      const link = app.querySelector('.header-avatar-link');
+      if (!link) return;
+      const imagem = link.querySelector('[data-profile-avatar]');
+      const padrao = link.querySelector('svg');
+      if (!imagem || !padrao) return;
+      if (origem) {
+        imagem.onerror = () => {
+          console.error('A imagem de perfil recebida não pôde ser exibida.');
+          atualizarAvatar('');
+        };
+        imagem.alt = `Foto de ${user.nome || 'perfil'}`;
+        imagem.src = origem;
+        imagem.hidden = false;
+        padrao.hidden = true;
+      } else {
+        imagem.removeAttribute('src');
+        imagem.hidden = true;
+        padrao.hidden = false;
+      }
+    };
+    const carregarFotoPerfil = () => {
+      if (role !== 'aluno' && role !== 'professor') return;
+      const consulta = new URLSearchParams({ email: user.email || '', versao: String(Date.now()) });
+      atualizarAvatar(`/api/perfis/foto?${consulta}`);
+    };
+    document.addEventListener('notadez:foto-perfil-atualizada', carregarFotoPerfil);
+    if (role === 'aluno' || role === 'professor') {
+      carregarFotoPerfil();
+    }
     const pageTitle = app.querySelector('[data-page-title]');
     if (pageTitle) pageTitle.textContent = app.dataset.title || '';
     app.querySelectorAll('[data-nav-page]').forEach(link => {

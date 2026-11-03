@@ -130,6 +130,52 @@ router.get('/cursos', async (req, res) => {
   }
 });
 
+router.put('/cursos/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { codigo, nome, unidade, grau, modalidade, duracao, descricao } = req.body;
+    const duracaoNumerica = Number(duracao);
+    const grausPermitidos = ['Bacharelado', 'Licenciatura', 'Tecnólogo', 'Pós-Graduação', 'Mestrado', 'Pós Doutorado'];
+    const modalidadesPermitidas = ['Presencial', 'Semipresencial', 'Ensino a Distância (EAD)'];
+    if (!mongoose.isValidObjectId(id)) return res.status(400).json({ mensagem: 'Curso inválido.' });
+    if (![codigo, nome, unidade].every(valor => typeof valor === 'string' && valor.trim()) || !grausPermitidos.includes(grau) || !modalidadesPermitidas.includes(modalidade) || !Number.isInteger(duracaoNumerica) || duracaoNumerica < 1 || duracaoNumerica > 20 || (descricao !== undefined && typeof descricao !== 'string')) {
+      return res.status(400).json({ mensagem: 'Preencha os dados do curso com valores válidos.' });
+    }
+    const cursoAtual = await Curso.findById(id).select('duracao');
+    if (!cursoAtual) return res.status(404).json({ mensagem: 'Curso não encontrado.' });
+    if (duracaoNumerica < cursoAtual.duracao) {
+      const [disciplinaForaDaDuracao, gradeForaDaDuracao] = await Promise.all([
+        Disciplina.exists({ cursoId: id, semestre: { $gt: duracaoNumerica } }),
+        GradeHorario.exists({ cursoId: id, semestre: { $gt: duracaoNumerica } })
+      ]);
+      if (disciplinaForaDaDuracao || gradeForaDaDuracao) return res.status(409).json({ mensagem: 'A duração não pode ser menor que o semestre de disciplinas ou grades já cadastradas.' });
+    }
+    const curso = await Curso.findByIdAndUpdate(id, { codigo: codigo.trim().toUpperCase(), nome: nome.trim(), unidade: unidade.trim(), grau, modalidade, duracao: duracaoNumerica, descricao: String(descricao || '').trim() }, { new: true, runValidators: true });
+    if (!curso) return res.status(404).json({ mensagem: 'Curso não encontrado.' });
+    return res.json({ mensagem: 'Curso atualizado com sucesso.', curso: { ...curso.toObject(), id: String(curso._id) } });
+  } catch (erro) {
+    if (erro.code === 11000) return res.status(409).json({ mensagem: 'Já existe um curso com este código.' });
+    console.error('Erro ao atualizar curso:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível atualizar o curso.' });
+  }
+});
+
+router.delete('/cursos/:id', async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ mensagem: 'Curso inválido.' });
+    const curso = await Curso.findById(req.params.id);
+    if (!curso) return res.status(404).json({ mensagem: 'Curso não encontrado.' });
+    if (await Disciplina.exists({ cursoId: curso._id })) return res.status(409).json({ mensagem: 'Remova todas as disciplinas deste curso antes de excluí-lo.' });
+    if (await Turma.exists({ cursoId: curso._id })) return res.status(409).json({ mensagem: 'Não é possível excluir um curso que ainda possui turmas cadastradas.' });
+    await GradeHorario.deleteMany({ cursoId: curso._id });
+    await curso.deleteOne();
+    return res.json({ mensagem: 'Curso excluído com sucesso.' });
+  } catch (erro) {
+    console.error('Erro ao excluir curso:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível excluir o curso.' });
+  }
+});
+
 router.get('/turmas', async (req, res) => {
   try {
     const filtro = {};
@@ -235,6 +281,38 @@ router.get('/grades-horarios', async (req, res) => {
   } catch (erro) {
     console.error('Erro ao carregar grade horária:', erro);
     return res.status(500).json({ mensagem: 'Não foi possível carregar a grade horária.' });
+  }
+});
+
+router.get('/docentes-ocupados', async (req, res) => {
+  try {
+    const { cursoId, semestre, dia, hora } = req.query;
+    const semestreNumero = Number(semestre);
+    const diaNumero = Number(dia);
+    const horaNumero = Number(hora);
+    if (
+      !mongoose.isValidObjectId(cursoId) ||
+      !Number.isInteger(semestreNumero) || semestreNumero < 1 || semestreNumero > 20 ||
+      !Number.isInteger(diaNumero) || diaNumero < 0 || diaNumero > 6 ||
+      !Number.isInteger(horaNumero) || horaNumero < 7 || horaNumero > 22
+    ) {
+      return res.status(400).json({ mensagem: 'Informe curso, semestre, dia e horário válidos.' });
+    }
+
+    const grades = await GradeHorario.find({
+      $nor: [{ cursoId, semestre: semestreNumero }],
+      aulas: { $elemMatch: { dia: diaNumero, hora: horaNumero } }
+    }).select('aulas.docenteId aulas.dia aulas.hora').lean();
+    const docenteIds = [...new Set(grades.flatMap(grade =>
+      grade.aulas
+        .filter(aula => aula.dia === diaNumero && aula.hora === horaNumero)
+        .map(aula => String(aula.docenteId))
+    ))];
+
+    return res.json({ docenteIds });
+  } catch (erro) {
+    console.error('Erro ao consultar disponibilidade dos docentes:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível consultar a disponibilidade dos docentes.' });
   }
 });
 
@@ -489,6 +567,45 @@ router.get('/disciplinas', async (req, res) => {
   }
 });
 
+router.put('/disciplinas/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nome, codigo, cursoId, semestre, descricao } = req.body;
+    const semestreNumero = Number(semestre);
+    if (!mongoose.isValidObjectId(id) || !mongoose.isValidObjectId(cursoId) || ![nome, codigo, descricao].every(valor => typeof valor === 'string' && valor.trim()) || !Number.isInteger(semestreNumero) || semestreNumero < 1) {
+      return res.status(400).json({ mensagem: 'Preencha os dados da disciplina com valores válidos.' });
+    }
+    const curso = await Curso.findById(cursoId).select('duracao');
+    if (!curso) return res.status(404).json({ mensagem: 'Curso não encontrado.' });
+    if (semestreNumero > curso.duracao) return res.status(400).json({ mensagem: 'O semestre deve estar dentro da duração do curso.' });
+    const disciplina = await Disciplina.findByIdAndUpdate(id, { nome: nome.trim(), codigo: codigo.trim().toUpperCase(), cursoId: curso._id, semestre: semestreNumero, descricao: descricao.trim() }, { new: true, runValidators: true });
+    if (!disciplina) return res.status(404).json({ mensagem: 'Disciplina não encontrada.' });
+    return res.json({ mensagem: 'Disciplina atualizada com sucesso.', disciplina: { id: String(disciplina._id), nome: disciplina.nome, codigo: disciplina.codigo, cursoId: String(disciplina.cursoId), semestre: disciplina.semestre, descricao: disciplina.descricao } });
+  } catch (erro) {
+    if (erro.code === 11000) return res.status(409).json({ mensagem: 'Já existe uma disciplina com este código neste curso.' });
+    console.error('Erro ao atualizar disciplina:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível atualizar a disciplina.' });
+  }
+});
+
+router.delete('/disciplinas/:id', async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ mensagem: 'Disciplina inválida.' });
+    const disciplina = await Disciplina.findById(req.params.id);
+    if (!disciplina) return res.status(404).json({ mensagem: 'Disciplina não encontrada.' });
+    const [grade, turma] = await Promise.all([
+      GradeHorario.exists({ 'aulas.disciplinaId': disciplina._id }),
+      Turma.exists({ 'horarios.disciplinaId': disciplina._id })
+    ]);
+    if (grade || turma) return res.status(409).json({ mensagem: 'Remova os horários de aula associados antes de excluir esta disciplina.' });
+    await disciplina.deleteOne();
+    return res.json({ mensagem: 'Disciplina excluída com sucesso.' });
+  } catch (erro) {
+    console.error('Erro ao excluir disciplina:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível excluir a disciplina.' });
+  }
+});
+
 router.post('/disciplinas', async (req, res) => {
   try {
     const { nome, codigo, cursoId, semestre, descricao } = req.body;
@@ -540,11 +657,63 @@ router.post('/disciplinas', async (req, res) => {
 
 router.get('/docentes', async (req, res) => {
   try {
-    const docentes = await Docente.find().select('nome email rp especialidade').sort({ nome: 1 }).lean();
+    const docentes = await Docente.find().select('nome email rp cpf telefone especialidade endereco descricao instituicao').sort({ nome: 1 }).lean();
     return res.json({ docentes: docentes.map(docente => ({ ...docente, id: String(docente._id) })) });
   } catch (erro) {
     console.error('Erro ao listar docentes:', erro);
     return res.status(500).json({ mensagem: 'Não foi possível carregar os docentes.' });
+  }
+});
+
+router.put('/docentes/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const campos = ['nome', 'email', 'cpf', 'telefone', 'especialidade', 'endereco', 'descricao'];
+    if (!mongoose.isValidObjectId(id) || !['nome', 'email'].every(campo => typeof req.body[campo] === 'string' && req.body[campo].trim())) return res.status(400).json({ mensagem: 'Informe nome e e-mail válidos.' });
+    const atualizacao = {};
+    for (const campo of campos) if (req.body[campo] !== undefined) atualizacao[campo] = String(req.body[campo]).trim();
+    atualizacao.email = atualizacao.email.toLowerCase();
+    for (const campo of ['instituicaoNome', 'instituicaoCodigo']) if (req.body[campo] !== undefined) atualizacao[campo === 'instituicaoNome' ? 'instituicao.nome' : 'instituicao.codigo'] = String(req.body[campo]).trim();
+    const docenteAtual = await Docente.findById(id).select('rp email');
+    if (!docenteAtual) return res.status(404).json({ mensagem: 'Docente não encontrado.' });
+    const usuarioEmailEmUso = atualizacao.email !== docenteAtual.email
+      ? await Usuario.exists({ email: atualizacao.email })
+      : false;
+    if (usuarioEmailEmUso) return res.status(409).json({ mensagem: 'Este e-mail já está vinculado a outro usuário docente.' });
+    const docente = await Docente.findByIdAndUpdate(id, { $set: atualizacao }, { new: true, runValidators: true });
+    if (!docente) return res.status(404).json({ mensagem: 'Docente não encontrado.' });
+    const filtrosUsuario = [{ email: req.body.emailAnterior || docenteAtual.email }];
+    if (docente.rp) filtrosUsuario.push({ rp: docente.rp });
+    await Usuario.updateMany({ $or: filtrosUsuario, papeis: 'docente' }, { $set: { nome: docente.nome, email: docente.email, telefone: docente.telefone || '' } });
+    return res.json({ mensagem: 'Docente atualizado com sucesso.', docente: { ...docente.toObject(), id: String(docente._id) } });
+  } catch (erro) {
+    if (erro.code === 11000) return res.status(409).json({ mensagem: 'Este e-mail ou RP já está cadastrado.' });
+    console.error('Erro ao atualizar docente:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível atualizar o docente.' });
+  }
+});
+
+router.delete('/docentes/:id', async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ mensagem: 'Docente inválido.' });
+    const docente = await Docente.findById(req.params.id);
+    if (!docente) return res.status(404).json({ mensagem: 'Docente não encontrado.' });
+    const [aulaEmGrade, horarioEmTurma] = await Promise.all([
+      GradeHorario.exists({ 'aulas.docenteId': docente._id }),
+      Turma.exists({ 'horarios.docenteId': docente._id })
+    ]);
+    if (aulaEmGrade || horarioEmTurma) return res.status(409).json({ mensagem: 'Remova as aulas atribuídas a este docente antes de excluí-lo.' });
+    const usuarioFiltro = { papeis: 'docente', $or: [{ email: docente.email }, ...(docente.rp ? [{ rp: docente.rp }] : [])] };
+    const usuarios = await Usuario.find(usuarioFiltro).select('_id papeis');
+    for (const usuario of usuarios) {
+      if (usuario.papeis.length > 1) { usuario.papeis = usuario.papeis.filter(papel => papel !== 'docente'); usuario.rp = undefined; await usuario.save(); }
+      else await Usuario.deleteOne({ _id: usuario._id });
+    }
+    await docente.deleteOne();
+    return res.json({ mensagem: 'Docente removido com sucesso.' });
+  } catch (erro) {
+    console.error('Erro ao remover docente:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível remover o docente.' });
   }
 });
 

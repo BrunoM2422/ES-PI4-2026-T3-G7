@@ -251,6 +251,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const resultado = await response.json();
         if (response.ok) {
+          document.dispatchEvent(new CustomEvent('notadez:foto-perfil-atualizada', { detail: { foto: fotoBase64 } }));
           alert('Alterações salvas com sucesso!');
         } else {
           alert(resultado.mensagem || 'Erro ao salvar alterações.');

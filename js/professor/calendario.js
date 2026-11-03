@@ -69,14 +69,14 @@
 
     const previousEvent = editingId ? events.find(item => item.id === editingId) : null;
     if (record.date < todayKey() && (!previousEvent || previousEvent.date !== record.date)) {
-      fields.date.setCustomValidity('N\u00e3o \u00e9 poss\u00edvel criar eventos em datas anteriores a hoje.');
+      fields.date.setCustomValidity('Não é possível criar eventos em datas anteriores a hoje.');
       fields.date.reportValidity();
       fields.date.setCustomValidity('');
       return;
     }
 
     if (record.end <= record.start) {
-      fields.end.setCustomValidity('O t\u00e9rmino precisa ser depois do in\u00edcio.');
+      fields.end.setCustomValidity('O término precisa ser depois do início.');
       fields.end.reportValidity();
       fields.end.setCustomValidity('');
       return;

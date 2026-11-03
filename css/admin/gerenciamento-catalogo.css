@@ -1,0 +1,207 @@
+.catalog-course-summary,
+.catalog-section-heading,
+.teacher-editor-actions,
+.catalog-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.catalog-course-summary {
+  margin: 22px 0 30px;
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface, #fff);
+}
+
+.catalog-course-summary h3,
+.catalog-section-heading h3 { margin: 0; color: var(--ink); font-size: 18px; }
+.catalog-course-summary p,
+.catalog-section-heading p { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+.catalog-edit-button { width: auto; margin: 0; }
+.catalog-subject-section { margin-top: 30px; }
+.catalog-subject-section > .schedule-search { margin: 16px 0; }
+.catalog-subject-card { min-height: 168px; }
+.schedule-semester-card.is-selected { border-color: var(--primary); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 18%, transparent); }
+
+.catalog-modal-backdrop {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  overflow-y: auto;
+  background: rgb(13 22 37 / 58%);
+}
+
+.catalog-modal {
+  position: relative;
+  width: min(760px, 100%);
+  max-height: min(900px, 94vh);
+  overflow-y: auto;
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface, #fff);
+  box-shadow: 0 24px 80px rgb(9 17 31 / 28%);
+}
+
+.catalog-modal-close {
+  position: absolute;
+  top: 17px;
+  right: 19px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.catalog-modal .admin-page-intro { padding-right: 25px; }
+.catalog-modal .admin-field-grid { margin: 22px 0; }
+.catalog-modal-actions > div { display: flex; justify-content: flex-end; gap: 10px; }
+.catalog-modal-actions .admin-button { width: auto; margin: 0; }
+.admin-button-secondary,
+.catalog-delete-button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.catalog-delete-button { border-color: #efc4c4; color: #b42318; }
+.catalog-delete-button:hover { background: #fff3f2; }
+.catalog-feedback { min-height: 20px; margin: 10px 0; color: #b42318; font-size: 13px; }
+
+.teacher-management {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.6fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.teacher-list-panel,
+.teacher-editor-panel {
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface, #fff);
+}
+
+.teacher-list-panel > .schedule-search { margin: 16px 0; }
+.teacher-list { display: grid; gap: 8px; max-height: 680px; overflow-y: auto; }
+.teacher-list-item {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 14px;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 11px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.teacher-list-item:hover,
+.teacher-list-item.is-selected { border-color: var(--line); background: color-mix(in srgb, var(--primary) 7%, var(--surface, #fff)); }
+.teacher-list-item > span:nth-child(2) { display: grid; gap: 4px; min-width: 0; }
+.teacher-list-item strong,
+.teacher-list-item small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.teacher-list-item strong { font-size: 13px; }
+.teacher-list-item small { color: var(--muted); font-size: 11px; }
+.teacher-avatar { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--primary) 14%, white); color: var(--primary); font-weight: 750; }
+.teacher-rp { color: var(--muted); font-size: 13px; }
+.teacher-editor-panel .admin-field-grid { margin: 22px 0; }
+.teacher-editor-actions .admin-button { width: auto; margin: 0; }
+
+.teacher-confirm-backdrop {
+  position: fixed;
+  z-index: 1100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(13 22 37 / 58%);
+  backdrop-filter: blur(3px);
+}
+
+.teacher-confirm-dialog {
+  width: min(440px, 100%);
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface, #fff);
+  box-shadow: 0 24px 80px rgb(9 17 31 / 28%);
+  text-align: center;
+  animation: teacher-confirm-appear .18s ease-out;
+}
+
+.teacher-confirm-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 15px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff1f0;
+  color: #b42318;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.teacher-confirm-dialog h2 { margin: 0; color: var(--ink); font-size: 21px; }
+.teacher-confirm-dialog > p:not(.teacher-confirm-feedback) { margin: 10px 0 0; color: var(--muted); line-height: 1.55; }
+.teacher-confirm-dialog strong { color: var(--ink); }
+.teacher-confirm-actions { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+.teacher-confirm-actions button { min-width: 140px; }
+.teacher-confirm-actions .catalog-delete-button { background: #b42318; color: white; }
+.teacher-confirm-actions .catalog-delete-button:hover { background: #912018; }
+
+@keyframes teacher-confirm-appear {
+  from { opacity: 0; transform: translateY(8px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+body.theme-dark .catalog-course-summary,
+body.theme-dark .catalog-modal,
+body.theme-dark .teacher-list-panel,
+body.theme-dark .teacher-editor-panel { border-color: var(--line); background: #182337; }
+
+body.theme-dark .catalog-modal-close { color: var(--ink); }
+body.theme-dark .catalog-delete-button { border-color: #703a42; color: #ffb4ad; }
+body.theme-dark .catalog-delete-button:hover { background: #3a252d; }
+body.theme-dark .teacher-confirm-dialog { border-color: var(--line); background: #182337; }
+body.theme-dark .teacher-confirm-icon { background: #3a252d; color: #ffb4ad; }
+body.theme-dark .teacher-confirm-actions .catalog-delete-button { border-color: #b42318; background: #b42318; color: white; }
+body.theme-dark .admin-button-secondary { border-color: var(--line); color: var(--ink); }
+body.theme-dark .teacher-avatar { background: #293a58; color: #bcd0ff; }
+
+@media (max-width: 900px) {
+  .teacher-management { grid-template-columns: 1fr; }
+  .teacher-list { max-height: 360px; }
+}
+
+@media (max-width: 560px) {
+  .catalog-modal { padding: 22px 18px; }
+  .catalog-modal-actions,
+  .catalog-modal-actions > div,
+  .teacher-editor-actions { align-items: stretch; flex-direction: column; }
+  .catalog-modal-actions .admin-button,
+  .catalog-modal-actions .admin-button-secondary,
+  .catalog-modal-actions .catalog-delete-button,
+  .teacher-editor-actions .admin-button,
+  .teacher-editor-actions .catalog-delete-button { width: 100%; }
+  .catalog-course-summary { align-items: flex-start; flex-direction: column; }
+}

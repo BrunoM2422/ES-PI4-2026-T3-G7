@@ -218,6 +218,10 @@
   font-weight: 700;
 }
 
+.admin-form-body > .admin-button {
+  margin-top: 12px;
+}
+
 .admin-button:hover {
   filter: brightness(.96);
 }
