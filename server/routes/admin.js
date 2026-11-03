@@ -506,13 +506,21 @@ router.post('/disciplinas', async (req, res) => {
 
     const curso = await Curso.findById(cursoId).select('codigo nome duracao');
     if (!curso) return res.status(404).json({ mensagem: 'O curso selecionado não foi encontrado.' });
+    if (!/^\d{2}$/.test(curso.codigo)) {
+      return res.status(400).json({ mensagem: 'O curso precisa ter um código de dois dígitos antes do cadastro da disciplina.' });
+    }
     if (semestreNumerico > curso.duracao) {
       return res.status(400).json({ mensagem: 'O semestre informado não pertence à duração deste curso.' });
     }
 
+    const codigoCompleto = codigo.trim().toUpperCase();
+    if (!new RegExp(`^${curso.codigo}[A-Z0-9]{1,8}$`).test(codigoCompleto)) {
+      return res.status(400).json({ mensagem: `O código da disciplina deve começar com ${curso.codigo} e conter de 1 a 8 caracteres adicionais.` });
+    }
+
     const disciplina = await Disciplina.create({
       nome: nome.trim(),
-      codigo: codigo.trim().toUpperCase(),
+      codigo: codigoCompleto,
       cursoId: curso._id,
       semestre: semestreNumerico,
       descricao: descricao.trim()
@@ -550,19 +558,20 @@ router.get('/docentes', async (req, res) => {
 
 router.post('/administradores', async (req, res) => {
   try {
-    const { nome, email, telefone, nivelPermissao } = req.body;
+    const { nome, email, telefone, senha, nivelPermissao } = req.body;
     const niveisPermitidos = ['admin_mestre', 'admin_2', 'admin_3'];
     if (
       ![nome, email, telefone].every(valor => typeof valor === 'string' && valor.trim()) ||
+      typeof senha !== 'string' || senha.length < 8 ||
       !niveisPermitidos.includes(nivelPermissao)
     ) {
-      return res.status(400).json({ mensagem: 'Preencha nome, e-mail, telefone e nível de permissão.' });
+      return res.status(400).json({ mensagem: 'Preencha os campos obrigatórios e informe uma senha com pelo menos 8 caracteres.' });
     }
     const emailTratado = email.trim().toLowerCase();
-    const senha = await bcrypt.hash('123456', 10);
+    const senhaHash = await bcrypt.hash(senha, 10);
     const administrador = new Usuario({
       nome: nome.trim(), email: emailTratado, telefone: telefone.trim(),
-      nivelPermissao, senha, papeis: ['admin']
+      nivelPermissao, senha: senhaHash, papeis: ['admin']
     });
     await administrador.save();
     return res.status(201).json({ mensagem: 'Administrador cadastrado com sucesso.' });
@@ -580,7 +589,7 @@ router.post('/cursos', async (req, res) => {
     const grausPermitidos = ['Bacharelado', 'Licenciatura', 'Tecnólogo', 'Pós-Graduação', 'Mestrado', 'Pós Doutorado'];
     const modalidadesPermitidas = ['Presencial', 'Semipresencial', 'Ensino a Distância (EAD)'];
 
-    if (!codigo || !nome || !unidade || !grausPermitidos.includes(grau) || !modalidadesPermitidas.includes(modalidade) || !Number.isInteger(duracaoNumerica)) {
+    if (typeof codigo !== 'string' || !/^\d{2}$/.test(codigo.trim()) || !nome || !unidade || !grausPermitidos.includes(grau) || !modalidadesPermitidas.includes(modalidade) || !Number.isInteger(duracaoNumerica)) {
       return res.status(400).json({ mensagem: 'Preencha os campos obrigatórios do curso.' });
     }
 

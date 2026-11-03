@@ -27,7 +27,7 @@
                 </div>
                 <div class="admin-form-body">
                   <div class="admin-field-grid">
-                    <label class="admin-field"><span>C&oacute;digo do curso</span><input name="codigo" placeholder="Informe o c&oacute;digo do curso" required></label>
+                    <label class="admin-field"><span>C&oacute;digo do curso (2 d&iacute;gitos)</span><input name="codigo" type="text" inputmode="numeric" maxlength="2" pattern="[0-9]{2}" placeholder="Ex.: 01" title="Informe exatamente dois dígitos." required></label>
                     <label class="admin-field"><span>Nome do curso</span><input name="nome" required></label>
                     <label class="admin-field"><span>Unidade acad&ecirc;mica</span><input name="unidade" required></label>
                     <label class="admin-field"><span>Grau acad&ecirc;mico</span><select name="grau" required><option value="" selected disabled>Selecione o grau acad&ecirc;mico</option><option value="Bacharelado">Bacharelado</option><option value="Licenciatura">Licenciatura</option><option value="Tecnólogo">Tecnólogo</option><option value="Pós-Graduação">Pós-Graduação</option><option value="Mestrado">Mestrado</option><option value="Pós Doutorado">Pós Doutorado</option></select></label>

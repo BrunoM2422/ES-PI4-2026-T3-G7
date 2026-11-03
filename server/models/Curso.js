@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const cursoSchema = new mongoose.Schema({
-  codigo: { type: String, required: true, unique: true, trim: true, uppercase: true },
+  codigo: { type: String, required: true, unique: true, trim: true, match: /^\d{2}$/ },
   nome: { type: String, required: true, trim: true },
   unidade: { type: String, required: true, trim: true },
   grau: {

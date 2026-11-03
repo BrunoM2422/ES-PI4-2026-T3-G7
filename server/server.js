@@ -8,9 +8,11 @@ const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const perfisRoutes = require('./routes/perfis');
 const opcoesRoutes = require('./routes/opcoes');
+const calendarioRoutes = require('./routes/calendario');
 const Disciplina = require('./models/Disciplina');
 const Turma = require('./models/Turma');
 const GradeHorario = require('./models/GradeHorario');
+const Evento = require('./models/Evento');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,6 +28,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/perfis',perfisRoutes);
 app.use('/api/opcoes', opcoesRoutes);
+app.use('/api/calendario', calendarioRoutes);
 
 async function iniciarServidor() {
   try {
@@ -33,6 +36,7 @@ async function iniciarServidor() {
     await Disciplina.init();
     await Turma.init();
     await GradeHorario.init();
+    await Evento.init();
 
     app.get('/', (req, res) => {
       res.sendFile(path.join(__dirname, '..', 'login.html'));

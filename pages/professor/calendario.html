@@ -94,7 +94,14 @@
                       <span>Data</span>
                       <input id="event-date" name="date" type="date" required>
                     </label>
-                    <div class="event-field event-field-unavailable"><span>Categoria</span><small>Op&ccedil;&otilde;es n&atilde;o dispon&iacute;veis.</small></div>
+                    <label class="event-field">
+                      <span>Categoria</span>
+                      <select id="event-category" name="category" required>
+                        <option value="" selected disabled>Selecione uma categoria</option>
+                        <option value="feriado">Feriado</option>
+                        <option value="institucional">Evento Institucional</option>
+                      </select>
+                    </label>
                   </div>
                   <div class="event-fields-row">
                     <label class="event-field">

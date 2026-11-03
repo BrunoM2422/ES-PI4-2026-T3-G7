@@ -3,12 +3,13 @@
   const cloneTemplate = id => document.getElementById(id).content.cloneNode(true);
   const { role } = document.querySelector('#app').dataset;
   const user = JSON.parse(sessionStorage.getItem('notadez_user') || 'null');
-  const storageKey = `notadez_calendar_${role}_${user?.email || 'usuario'}`;
+  const legacyStorageKey = `notadez_calendar_${role}_${user?.email || 'usuario'}`;
+  const migrationStorageKey = `${legacyStorageKey}_migrated`;
   const now = new Date();
   let displayedMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   let selectedDate = formatDate(now);
   let editingId = null;
-  let events = loadEvents();
+  let events = [];
 
   host.classList.add('calendar-host');
   
@@ -18,6 +19,7 @@
   const fields = {
     title: host.querySelector('#event-title'),
     date: host.querySelector('#event-date'),
+    category: host.querySelector('#event-category'),
     start: host.querySelector('#event-start'),
     end: host.querySelector('#event-end'),
     location: host.querySelector('#event-location'),
@@ -37,6 +39,7 @@
   });
   host.querySelector('#event-close').addEventListener('click', closeEditor);
   host.querySelector('#event-cancel').addEventListener('click', closeEditor);
+  fields.category.addEventListener('change', updateCategoryFields);
 
   host.querySelector('#calendar-days').addEventListener('click', event => {
     const day = event.target.closest('[data-date]');
@@ -53,7 +56,7 @@
     openEditor(selectedDate);
   });
 
-  form.addEventListener('submit', event => {
+  form.addEventListener('submit', async event => {
     event.preventDefault();
     if (!form.reportValidity()) return;
 
@@ -61,9 +64,10 @@
       id: editingId || createId(),
       title: fields.title.value.trim(),
       date: fields.date.value,
-      start: fields.start.value,
-      end: fields.end.value,
-      location: fields.location.value.trim(),
+      category: fields.category.value,
+      start: fields.category.value === 'feriado' ? '' : fields.start.value,
+      end: fields.category.value === 'feriado' ? '' : fields.end.value,
+      location: fields.category.value === 'feriado' ? '' : fields.location.value.trim(),
       description: fields.description.value.trim()
     };
 
@@ -75,29 +79,48 @@
       return;
     }
 
-    if (record.end <= record.start) {
+    if (record.category !== 'feriado' && record.end <= record.start) {
       fields.end.setCustomValidity('O t\u00e9rmino precisa ser depois do in\u00edcio.');
       fields.end.reportValidity();
       fields.end.setCustomValidity('');
       return;
     }
 
-    events = events.filter(item => item.id !== record.id);
-    events.push(record);
-    saveEvents();
-    selectedDate = record.date;
-    const [year, month] = record.date.split('-').map(Number);
-    displayedMonth = new Date(year, month - 1, 1);
-    closeEditor();
-    render();
+    const submitButton = form.querySelector('[type="submit"]');
+    submitButton.disabled = true;
+    try {
+      await enviarRequisicao(
+        editingId ? `/api/calendario/eventos/${editingId}` : '/api/calendario/eventos',
+        editingId ? 'PUT' : 'POST',
+        record
+      );
+      selectedDate = record.date;
+      const [year, month] = record.date.split('-').map(Number);
+      displayedMonth = new Date(year, month - 1, 1);
+      await loadEvents();
+      closeEditor();
+      render();
+    } catch (erro) {
+      window.alert(erro.message || 'Não foi possível salvar o evento.');
+    } finally {
+      submitButton.disabled = false;
+    }
   });
 
-  host.querySelector('#event-delete').addEventListener('click', () => {
+  host.querySelector('#event-delete').addEventListener('click', async () => {
     if (!editingId) return;
-    events = events.filter(item => item.id !== editingId);
-    saveEvents();
-    closeEditor();
-    render();
+    const deleteButton = host.querySelector('#event-delete');
+    deleteButton.disabled = true;
+    try {
+      await enviarRequisicao(`/api/calendario/eventos/${editingId}`, 'DELETE');
+      await loadEvents();
+      closeEditor();
+      render();
+    } catch (erro) {
+      window.alert(erro.message || 'Não foi possível excluir o evento.');
+    } finally {
+      deleteButton.disabled = false;
+    }
   });
 
   modal.addEventListener('click', event => {
@@ -138,9 +161,9 @@
       const stack = day.querySelector('.calendar-event-stack');
       dayEvents.slice(0, 2).forEach(item => {
         const eventButton = cloneTemplate('calendar-event-template').querySelector('.calendar-event');
-        if (item.category) eventButton.classList.add(`event-${item.category}`);
+        eventButton.classList.add(`event-${item.category === 'feriado' ? 'feriado' : 'institucional'}`);
         eventButton.dataset.eventId = item.id;
-        eventButton.title = `${item.start} ${item.title}`;
+        eventButton.title = item.category === 'feriado' ? item.title : `${item.start} ${item.title}`;
         eventButton.querySelector('span').textContent = item.title;
         stack.append(eventButton);
       });
@@ -185,15 +208,14 @@
       }).format(date).replace('.', '');
       const button = cloneTemplate('agenda-event-template').querySelector('.agenda-event');
       button.dataset.agendaId = item.id;
-      if (item.category) button.querySelector('.agenda-event-marker').classList.add(`event-${item.category}`);
+      button.querySelector('.agenda-event-marker').classList.add(`event-${item.category === 'feriado' ? 'feriado' : 'institucional'}`);
       button.querySelector('.agenda-event-date strong').textContent = dateLabel;
       button.querySelector('.agenda-event-date small').textContent = weekday;
       button.querySelector('.agenda-event-info strong').textContent = item.title;
-      const timeDetails = [
-    item.start,
-    item.end ? `- ${item.end}` : '',
-    item.location ? `· ${item.location}` : ''
-  ].filter(Boolean).join(' ');
+      const categoryLabel = item.category === 'feriado' ? 'Feriado' : 'Evento Institucional';
+      const timeDetails = item.category === 'feriado'
+        ? categoryLabel
+        : [categoryLabel, item.start, item.end ? `- ${item.end}` : '', item.location].filter(Boolean).join(' · ');
       button.querySelector('.agenda-event-info small').textContent = timeDetails;
       agenda.append(button);
     });
@@ -213,10 +235,12 @@
     fields.title.value = item?.title || '';
     fields.date.value = item?.date || date;
     fields.date.min = item?.date < todayKey() ? item.date : todayKey();
+    fields.category.value = item?.category === 'feriado' ? 'feriado' : item ? 'institucional' : '';
     fields.start.value = item?.start || '';
     fields.end.value = item?.end || '';
     fields.location.value = item?.location || '';
     fields.description.value = item?.description || '';
+    updateCategoryFields();
     host.querySelector('#event-modal-title').textContent = item ? 'Editar evento' : 'Novo evento';
     host.querySelector('#event-delete').hidden = !item;
     modal.showModal();
@@ -226,6 +250,17 @@
   function closeEditor() {
     if (modal.open) modal.close();
     editingId = null;
+  }
+
+  function updateCategoryFields() {
+    const feriado = fields.category.value === 'feriado';
+    [fields.start, fields.end, fields.location].forEach(field => {
+      field.disabled = feriado;
+      field.closest('.event-field').classList.toggle('is-disabled', feriado);
+      if (feriado) field.value = '';
+    });
+    fields.start.required = !feriado;
+    fields.end.required = !feriado;
   }
 
   function changeMonth(amount) {
@@ -246,17 +281,60 @@
       .sort((a, b) => a.start.localeCompare(b.start));
   }
 
-  function loadEvents() {
+  async function loadEvents() {
     try {
-      const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      return Array.isArray(saved) ? saved.filter(item => item && item.id && item.date && item.title) : [];
-    } catch {
-      return [];
+      await migrateLegacyEvents();
+      const response = await fetch('/api/calendario/eventos');
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.mensagem || 'Não foi possível carregar os eventos.');
+      events = Array.isArray(data.eventos) ? data.eventos : [];
+      render();
+    } catch (erro) {
+      console.error('Erro ao carregar eventos do calendário:', erro);
+      events = [];
+      render();
+      const mensagem = document.createElement('div');
+      mensagem.className = 'agenda-empty';
+      mensagem.textContent = 'Não foi possível carregar os eventos. Verifique a conexão com o servidor.';
+      host.querySelector('#agenda-list').replaceChildren(mensagem);
     }
   }
 
-  function saveEvents() {
-    localStorage.setItem(storageKey, JSON.stringify(events));
+  async function migrateLegacyEvents() {
+    if (localStorage.getItem(migrationStorageKey) === 'true') return;
+    try {
+      const antigos = JSON.parse(localStorage.getItem(legacyStorageKey) || '[]');
+      const eventos = Array.isArray(antigos)
+        ? antigos.filter(item => item && item.id && item.date && item.title).map(item => ({
+          legacyKey: `${legacyStorageKey}:${item.id}`,
+          title: item.title,
+          date: item.date,
+          category: item.category === 'feriado' ? 'feriado' : 'institucional',
+          start: item.start || '',
+          end: item.end || '',
+          location: item.location || '',
+          description: item.description || ''
+        }))
+        : [];
+
+      if (eventos.length) {
+        await enviarRequisicao('/api/calendario/eventos/migrar-legado', 'POST', { eventos });
+      }
+      localStorage.setItem(migrationStorageKey, 'true');
+    } catch (erro) {
+      console.error('Não foi possível migrar os eventos locais:', erro);
+    }
+  }
+
+  async function enviarRequisicao(url, method, body) {
+    const response = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      ...(body ? { body: JSON.stringify(body) } : {})
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.mensagem || 'Não foi possível atualizar o calendário.');
+    return data;
   }
 
   function parseDate(value) {
@@ -283,5 +361,5 @@
     return value.charAt(0).toLocaleUpperCase('pt-BR') + value.slice(1);
   }
 
-  render();
+  loadEvents();
 })();
