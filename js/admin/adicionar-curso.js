@@ -1,9 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
   const botaoCadastrar = document.querySelector('.admin-button');
   if (!botaoCadastrar) return;
+  const codigoInput = document.querySelector('input[name="codigo"]');
+
+  codigoInput.addEventListener('input', () => {
+    codigoInput.value = codigoInput.value.replace(/\D/g, '').slice(0, 2);
+  });
 
   botaoCadastrar.addEventListener('click', async () => {
-    const codigoInput = document.querySelector('input[name="codigo"]');
     const nomeInput = document.querySelector('input[name="nome"]');
     const unidadeInput = document.querySelector('input[name="unidade"]');
     const grauInput = document.querySelector('select[name="grau"]');
@@ -20,6 +24,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!codigo || !nome || !unidade || !grau || !modalidade || !duracaoInput.value) {
       alert('Preencha os campos obrigatórios do curso.');
+      return;
+    }
+
+    if (!codigoInput.checkValidity()) {
+      codigoInput.reportValidity();
       return;
     }
 

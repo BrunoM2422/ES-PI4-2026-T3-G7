@@ -33,10 +33,10 @@
                       Hoje
                     </button>
                     <button class="calendar-icon-button" id="calendar-prev" type="button" aria-label="Mês anterior">
-                      ‹
+                      &lsaquo;
                     </button>
                     <button class="calendar-icon-button" id="calendar-next" type="button" aria-label="Próximo mês">
-                      ›
+                      &rsaquo;
                     </button>
                     <button class="calendar-button calendar-add" id="calendar-add" type="button">
                       <span aria-hidden="true">+</span>Novo evento
@@ -82,7 +82,7 @@
                       </h2>
                     </div>
                     <button class="modal-close" id="event-close" type="button" aria-label="Fechar">
-                      ×
+                      &times;
                     </button>
                   </div>
                   <label class="event-field event-field-wide">
@@ -94,7 +94,14 @@
                       <span>Data</span>
                       <input id="event-date" name="date" type="date" required>
                     </label>
-                    <div class="event-field event-field-unavailable"><span>Categoria</span><small>Opções não disponíveis.</small></div>
+                    <label class="event-field">
+                      <span>Categoria</span>
+                      <select id="event-category" name="category" required>
+                        <option value="" selected disabled>Selecione uma categoria</option>
+                        <option value="feriado">Feriado</option>
+                        <option value="institucional">Evento Institucional</option>
+                      </select>
+                    </label>
                   </div>
                   <div class="event-fields-row">
                     <label class="event-field">

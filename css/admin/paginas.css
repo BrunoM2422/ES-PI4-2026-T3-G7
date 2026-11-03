@@ -131,6 +131,31 @@
   color: #9aa5b7;
 }
 
+.admin-discipline-code {
+  display: flex;
+  min-width: 0;
+}
+
+.admin-discipline-prefix {
+  display: grid;
+  min-width: 48px;
+  min-height: 39px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-right: 0;
+  border-radius: 7px 0 0 7px;
+  background: #f7f8fb;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-discipline-code input {
+  flex: 1;
+  min-width: 0;
+  border-radius: 0 7px 7px 0;
+}
+
 .admin-course-field > label {
   color: #45546c;
   font-size: 11px;

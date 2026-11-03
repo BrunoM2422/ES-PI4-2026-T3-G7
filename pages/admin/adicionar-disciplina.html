@@ -40,19 +40,23 @@
                       <input name="nome" required>
                     </label>
                     <label class="admin-field">
+                      <span>Curso</span>
+                      <select name="curso" required>
+                        <option value="" selected disabled>Carregando cursos...</option>
+                      </select>
+                    </label>
+                    <label class="admin-field">
                       <span>Código</span>
-                      <input name="codigo" required>
+                      <div class="admin-discipline-code">
+                        <span class="admin-discipline-prefix" data-course-code-prefix aria-hidden="true">--</span>
+                        <input name="codigoComplemento" type="text" maxlength="8" pattern="[A-Za-z0-9]{1,8}" placeholder="Ex.: MAT01" title="Use de 1 a 8 letras ou números para completar o código." autocomplete="off" required disabled>
+                      </div>
+                      <small class="admin-local-note">O prefixo de dois dígitos vem do curso selecionado.</small>
                     </label>
                     <label class="admin-field">
                       <span>Semestre</span>
                       <select name="semestre" required>
                         <option value="" selected disabled>Selecione o semestre</option>
-                      </select>
-                    </label>
-                    <label class="admin-field">
-                      <span>Curso</span>
-                      <select name="curso" required>
-                        <option value="" selected disabled>Carregando cursos...</option>
                       </select>
                     </label>
                     <label class="admin-field admin-field-wide">
@@ -61,7 +65,7 @@
                     </label>
                   </div>
                   <button class="admin-button" type="button">Cadastrar disciplina</button>
-                  <p class="admin-local-note" role="status" aria-live="polite"></p>
+                  <p class="admin-local-note" data-discipline-status role="status" aria-live="polite"></p>
                 </div>
               </section>
             </article>
