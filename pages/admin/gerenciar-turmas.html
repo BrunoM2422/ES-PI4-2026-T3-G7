@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Alterar/Remover Turmas | NotaDez</title>
+    <link rel="stylesheet" href="../../css/shared/style.css">
+    <link rel="stylesheet" href="../../css/admin/paginas.css">
+    <link rel="stylesheet" href="../../css/admin/gerenciamento-catalogo.css">
+  </head>
+  <body>
+    <div id="app" data-page="gerenciar-turmas" data-role="admin" data-title="Alterar/Remover Turmas">
+      <div class="shell">
+        <aside class="side" data-component="sidebar"></aside>
+        <main class="main">
+          <div data-component="header"></div>
+          <section class="content">
+            <article class="admin-page">
+              <div class="admin-page-intro">
+                <span class="admin-eyebrow">Gestão acadêmica</span>
+                <h2>Alterar/Remover Turmas</h2>
+                <p>Encontre uma turma navegando pelos cursos e disciplinas vinculadas.</p>
+              </div>
+              <div id="turma-management-content" aria-live="polite"><div class="schedule-loading">Carregando cursos...</div></div>
+            </article>
+          </section>
+          <div data-component="footer"></div>
+        </main>
+      </div>
+    </div>
+    <div id="turma-management-modal-root"></div>
+    <script src="../../js/shared/app.js"></script>
+    <script src="../../js/admin/gerenciar-turmas.js"></script>
+  </body>
+</html>

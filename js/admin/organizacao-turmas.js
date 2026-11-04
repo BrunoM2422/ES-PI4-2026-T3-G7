@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function renderSemestres() {
     const quantidade = Math.max(0, Math.min(20, Number(cursoAtual.duracao) || 0));
-    root.innerHTML = `<div class="schedule-breadcrumb"><button class="schedule-back" data-back>&larr; Cursos</button><span>${escapar(cursoAtual.nome)} · ${escapar(cursoAtual.codigo)}</span></div><div class="schedule-step-heading"><h3>Semestres do curso</h3><p>Selecione o semestre para organizar as turmas.</p></div><div class="schedule-semester-grid">${Array.from({ length: quantidade }, (_, indice) => `<button class="schedule-semester-card" data-semester="${indice + 1}"><span class="schedule-semester-number">${String(indice + 1).padStart(2, '0')}</span><strong>${indice + 1}º semestre</strong><small>Associar turmas às aulas</small></button>`).join('') || '<div class="schedule-empty">Este curso não informa a duração em semestres.</div>'}</div>`;
+    root.innerHTML = `<div class="schedule-breadcrumb"><button class="schedule-back" data-back>← Cursos</button><span>${escapar(cursoAtual.nome)} · ${escapar(cursoAtual.codigo)}</span></div><div class="schedule-step-heading"><h3>Semestres do curso</h3><p>Selecione o semestre para organizar as turmas.</p></div><div class="schedule-semester-grid">${Array.from({ length: quantidade }, (_, indice) => `<button class="schedule-semester-card" data-semester="${indice + 1}"><span class="schedule-semester-number">${String(indice + 1).padStart(2, '0')}</span><strong>${indice + 1}º semestre</strong><small>Associar turmas às aulas</small></button>`).join('') || '<div class="schedule-empty">Este curso não informa a duração em semestres.</div>'}</div>`;
     root.querySelector('[data-back]').addEventListener('click', () => navegar());
     root.querySelectorAll('[data-semester]').forEach(card => card.addEventListener('click', () => navegar(cursoId, card.dataset.semester)));
   }
@@ -56,7 +56,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function turmaDaAula(aula) {
-    if (aula.turmaId) return turmas.find(turma => turma.id === String(aula.turmaId)) || null;
     return turmas.find(turma => atribuicoes(turma, aula).length > 0) || null;
   }
 
@@ -81,7 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }).join('');
       return `<div class="schedule-hour-label">${String(hora).padStart(2, '0')}:00</div>${slotsMarkup}`;
     }).join('');
-    root.innerHTML = `<div class="schedule-breadcrumb"><button class="schedule-back" data-back>&larr; Semestres</button><span>${escapar(cursoAtual.nome)} · ${semestreSelecionado}º semestre</span></div><div class="schedule-builder"><aside class="schedule-subject-panel"><div class="schedule-step-heading"><h3>Turmas</h3><p>Arraste uma turma até a aula correspondente.</p></div><label class="schedule-search"><span>Buscar turma</span><input id="class-search" type="search" placeholder="Código ou período letivo"></label><div id="class-list" class="schedule-subject-list"></div></aside><section class="schedule-calendar-panel"><div class="schedule-calendar-heading"><div><h3>Grade semanal</h3><p>As aulas cadastradas em Organização de Horários aparecem aqui.</p></div></div><div class="schedule-calendar-scroll"><div class="schedule-calendar"><div class="schedule-time-label">Horário</div>${daysMarkup}${rowsMarkup}</div></div></section></div><div class="schedule-savebar"><span id="class-organization-status" role="status">${aulas.length} aula(s) disponíveis · ${turmas.length} turma(s) no curso</span></div>`;
+    root.innerHTML = `<div class="schedule-breadcrumb"><button class="schedule-back" data-back>← Semestres</button><span>${escapar(cursoAtual.nome)} · ${semestreSelecionado}º semestre</span></div><div class="schedule-builder"><aside class="schedule-subject-panel"><div class="schedule-step-heading"><h3>Turmas</h3><p>Arraste uma turma até a aula correspondente.</p></div><label class="schedule-search"><span>Buscar turma</span><input id="class-search" type="search" placeholder="Código ou período letivo"></label><div id="class-list" class="schedule-subject-list"></div></aside><section class="schedule-calendar-panel"><div class="schedule-calendar-heading"><div><h3>Grade semanal</h3><p>As aulas cadastradas em Organização de Horários aparecem aqui.</p></div></div><div class="schedule-calendar-scroll"><div class="schedule-calendar"><div class="schedule-time-label">Horário</div>${daysMarkup}${rowsMarkup}</div></div></section></div><div class="schedule-savebar"><span id="class-organization-status" role="status">${aulas.length} aula(s) disponíveis · ${turmas.length} turma(s) no curso</span></div>`;
 
     root.querySelector('[data-back]').addEventListener('click', () => navegar(cursoId));
     const list = root.querySelector('#class-list');
@@ -90,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const termo = normalizar(search.value);
       const filtradas = turmas.filter(turma => normalizar(`${turma.codigo} ${turma.periodoLetivo}`).includes(termo));
       list.innerHTML = filtradas.length
-        ? filtradas.map(turma => `<button class="schedule-subject-card" draggable="true" data-turma="${escapar(turma.id)}"><span class="schedule-subject-grip">&#8942;&#8942;</span><strong>Turma ${escapar(turma.codigo)}</strong><small>${escapar(turma.periodoLetivo)} · ${turma.vagas} vagas</small></button>`).join('')
+        ? filtradas.map(turma => `<button class="schedule-subject-card" draggable="true" data-turma="${escapar(turma.id)}"><span class="schedule-subject-grip">&#8942;&#8942;</span><strong>Turma ${escapar(turma.codigo)}</strong><small>${escapar(turma.periodoLetivo)}º semestre · ${turma.vagas} vagas</small></button>`).join('')
         : '<div class="schedule-empty">Nenhuma turma encontrada para este curso.</div>';
       list.querySelectorAll('[data-turma]').forEach(card => card.addEventListener('dragstart', event => event.dataTransfer.setData('text/plain', card.dataset.turma)));
     };
@@ -120,6 +119,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       status.textContent = 'Não foi possível identificar a turma ou a aula selecionada.';
       return;
     }
+    if (Number(turma.periodoLetivo) !== Number(semestreSelecionado)) {
+      status.textContent = 'A turma só pode ser associada às aulas do semestre letivo cadastrado para ela.';
+      return;
+    }
     if (turmaDaAula(aula)) {
       status.textContent = 'Esta aula já possui uma turma associada.';
       return;
@@ -139,8 +142,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       const dados = await resposta.json();
       if (!resposta.ok) throw new Error(dados.mensagem || 'Não foi possível associar a turma.');
-      const atualizadas = await carregarJson(`/api/admin/turmas?cursoId=${encodeURIComponent(cursoId)}&semestre=${semestreSelecionado}`);
-      turmas = atualizadas.turmas || [];
+      const consulta = new URLSearchParams({ cursoId, semestre: String(semestreSelecionado) });
+      const [dadosGrade, dadosTurmas] = await Promise.all([
+        carregarJson(`/api/admin/grades-horarios?${consulta}`),
+        carregarJson(`/api/admin/turmas?${consulta}`)
+      ]);
+      grade = dadosGrade.grade;
+      turmas = dadosTurmas.turmas || [];
       renderGrade();
       root.querySelector('#class-organization-status').textContent = dados.mensagem;
     } catch (erro) {
@@ -155,8 +163,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       const resposta = await fetch(`/api/admin/turmas/${encodeURIComponent(turmaId)}/horarios/${encodeURIComponent(gradeId)}/${encodeURIComponent(aulaId)}`, { method: 'DELETE' });
       const dados = await resposta.json();
       if (!resposta.ok) throw new Error(dados.mensagem || 'Não foi possível remover a associação.');
-      const atualizadas = await carregarJson(`/api/admin/turmas?cursoId=${encodeURIComponent(cursoId)}&semestre=${semestreSelecionado}`);
-      turmas = atualizadas.turmas || [];
+      const consulta = new URLSearchParams({ cursoId, semestre: String(semestreSelecionado) });
+      const [dadosGrade, dadosTurmas] = await Promise.all([
+        carregarJson(`/api/admin/grades-horarios?${consulta}`),
+        carregarJson(`/api/admin/turmas?${consulta}`)
+      ]);
+      grade = dadosGrade.grade;
+      turmas = dadosTurmas.turmas || [];
       renderGrade();
       root.querySelector('#class-organization-status').textContent = dados.mensagem;
     } catch (erro) {
@@ -187,7 +200,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       grade = dadosGrade.grade;
       turmas = dadosTurmas.turmas || [];
       if (!grade) {
-        root.innerHTML = `<div class="schedule-breadcrumb"><button class="schedule-back" data-back>&larr; Semestres</button><span>${escapar(cursoAtual.nome)} · ${semestreSelecionado}º semestre</span></div><div class="schedule-empty">Ainda não há aulas cadastradas para este semestre. Organize os horários primeiro.</div>`;
+        root.innerHTML = `<div class="schedule-breadcrumb"><button class="schedule-back" data-back>← Semestres</button><span>${escapar(cursoAtual.nome)} · ${semestreSelecionado}º semestre</span></div><div class="schedule-empty">Ainda não há aulas cadastradas para este semestre. Organize os horários primeiro.</div>`;
         root.querySelector('[data-back]').addEventListener('click', () => navegar(cursoId));
         return;
       }

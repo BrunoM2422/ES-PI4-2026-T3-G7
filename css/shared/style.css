@@ -35,6 +35,99 @@ button {
   min-height: 100vh;
 }
 
+.app-message-region {
+  position: fixed;
+  z-index: 2500;
+  right: 24px;
+  bottom: 24px;
+  width: min(420px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.app-message {
+  padding: 13px 16px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--primary);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 12px 36px rgb(19 31 51 / 18%);
+  font-size: 13px;
+  line-height: 1.5;
+  animation: app-message-appear .18s ease-out;
+}
+
+.app-message-error { border-left-color: #b42318; }
+
+.app-confirm-backdrop {
+  position: fixed;
+  z-index: 2600;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(13 22 37 / 58%);
+  backdrop-filter: blur(3px);
+}
+
+.app-confirm-dialog {
+  width: min(440px, 100%);
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 24px 80px rgb(9 17 31 / 28%);
+  text-align: center;
+  animation: app-message-appear .18s ease-out;
+}
+
+.app-confirm-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 15px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff1f0;
+  color: #b42318;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.app-confirm-dialog h2 { margin: 0; font-size: 20px; }
+.app-confirm-dialog p { margin: 10px 0 0; color: var(--muted); line-height: 1.55; }
+.app-confirm-actions { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+.app-confirm-actions button { min-width: 130px; }
+.app-confirm-actions .admin-button-secondary,
+.app-confirm-actions .catalog-delete-button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 650;
+}
+.app-confirm-actions .catalog-delete-button { border-color: #b42318; background: #b42318; color: #fff; }
+.app-confirm-actions .catalog-delete-button:hover { background: #912018; }
+
+@keyframes app-message-appear {
+  from { opacity: 0; transform: translateY(8px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+body.theme-dark .app-message,
+body.theme-dark .app-confirm-dialog { border-color: var(--line); background: #182337; }
+body.theme-dark .app-confirm-icon { background: #3a252d; color: #ffb4ad; }
+
+@media (max-width: 560px) {
+  .app-message-region { right: 16px; bottom: 16px; }
+  .app-confirm-actions { flex-direction: column-reverse; }
+  .app-confirm-actions button { width: 100%; }
+}
+
 .side {
   position: sticky;
   top: 0;
@@ -229,6 +322,18 @@ button {
   width: 30px;
   height: 30px;
   margin-top: 6px;
+}
+
+.header-avatar-link img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.header-avatar-link img[hidden],
+.header-avatar-link svg[hidden] {
+  display: none;
 }
 
 .page-heading {

@@ -76,10 +76,10 @@
   function saveSettings() {
     try {
       localStorage.setItem(storageKey, JSON.stringify(settings));
-      host.querySelector('#settings-saved').textContent = 'Configura\u00e7\u00f5es salvas neste navegador.';
+      host.querySelector('#settings-saved').textContent = 'Configurações salvas neste navegador.';
     } catch {
       host.querySelector('#settings-saved').textContent =
-        'N\u00e3o foi poss\u00edvel salvar as configura\u00e7\u00f5es neste navegador.';
+        'Não foi possível salvar as configurações neste navegador.';
     }
     syncFinanceNav();
   }

@@ -16,64 +16,50 @@
           <section class="content">
             <article class="admin-page">
               <div class="admin-page-intro">
-                <span class="admin-eyebrow">Organiza&ccedil;&atilde;o acad&ecirc;mica</span>
+                <span class="admin-eyebrow">Organização acadêmica</span>
                 <h2>Cadastro de turmas</h2>
-                <p>Cadastre uma turma e associe-a ao curso e per&iacute;odo letivo.</p>
+                <p>Cadastre uma turma e associe-a ao curso e período letivo.</p>
               </div>
-              <div class="admin-form-grid">
-                <section class="admin-form-card">
-                  <div class="admin-card-heading">
-                    <span class="admin-card-icon" aria-hidden="true">&#43;</span>
-                    <div><h3>Dados da turma</h3><p>Preencha os dados da oferta.</p></div>
-                  </div>
-                  <div class="admin-form-body">
-                    <div class="admin-field-grid">
-                      <label class="admin-field">
-                        <span>C&oacute;digo da turma</span>
-                        <input name="codigo" placeholder="Ex.: ADS-2026-1A" required>
-                      </label>
-                      <label class="admin-field">
-                        <span>Curso</span>
-                        <select name="cursoId" required>
-                          <option value="" selected disabled>Carregando cursos...</option>
-                        </select>
-                      </label>
-                      <label class="admin-field">
-                        <span>Per&iacute;odo letivo</span>
-                        <input name="periodoLetivo" placeholder="Ex.: 2026.1" maxlength="30" required>
-                      </label>
-                      <label class="admin-field">
-                        <span>Vagas</span>
-                        <input name="vagas" type="number" min="1" max="300" step="1" required>
-                      </label>
-                    </div>
-                    <button class="admin-button" type="button">Cadastrar turma</button>
-                    <p class="admin-local-note" role="status" aria-live="polite"></p>
-                  </div>
-                </section>
-                <section class="admin-form-card" data-importacao-csv="turmas">
-                  <div class="admin-card-heading">
-                    <span class="admin-card-icon" aria-hidden="true">&#8645;</span>
-                    <div><h3>Importa&ccedil;&atilde;o por CSV</h3><p>Confira os registros antes de importar.</p></div>
-                  </div>
-                  <div class="admin-form-body">
-                    <label class="admin-file-field">
-                      <strong>Arquivo CSV</strong>
-                      <small></small>
-                      <input type="file" accept=".csv,text/csv">
+              <section class="admin-form-card admin-form-card-narrow">
+                <div class="admin-card-heading">
+                  <span class="admin-card-icon" aria-hidden="true">&#43;</span>
+                  <div><h3>Dados da turma</h3><p>Preencha os dados da oferta.</p></div>
+                </div>
+                <div class="admin-form-body">
+                  <div class="admin-field-grid">
+                    <label class="admin-field">
+                      <span>Número da turma</span>
+                      <div class="admin-discipline-code">
+                        <span class="admin-discipline-prefix" data-code-prefix>--</span>
+                        <input name="numeroTurma" type="number" min="1" max="99" step="1" placeholder="1" required>
+                      </div>
+                      <small class="admin-local-note" data-code-preview>Selecione o semestre para montar o código.</small>
                     </label>
-                    <p role="status">Selecione um CSV para visualizar os registros.</p>
-                    <div class="admin-table-wrap">
-                      <table class="admin-table" aria-label="Pr&eacute;via da importa&ccedil;&atilde;o">
-                        <thead><tr></tr></thead>
-                        <tbody></tbody>
-                      </table>
-                    </div>
-                    <button class="admin-button" type="button" disabled>Importar registros v&aacute;lidos</button>
+                    <label class="admin-field admin-field-select">
+                      <span>Curso</span>
+                      <select class="admin-select-balanced" name="cursoId" required>
+                        <option value="" selected disabled>Carregando cursos...</option>
+                      </select>
+                    </label>
+                    <label class="admin-field">
+                      <span>Período letivo</span>
+                      <select name="periodoLetivo" required disabled>
+                        <option value="" selected>Selecione um curso primeiro</option>
+                      </select>
+                    </label>
+                    <label class="admin-field">
+                      <span>Vagas</span>
+                      <input name="vagas" type="number" min="1" max="300" step="1" required>
+                    </label>
                   </div>
-                </section>
-              </div>
-            </article>
+                  <button class="admin-button" type="button">Cadastrar turma</button>
+                  <p class="admin-local-note" role="status" aria-live="polite"></p>
+                </div>
+              </section>
+              <section class="admin-form-card" data-importacao-csv="turmas">
+                <div class="admin-card-heading"><span class="admin-card-icon" aria-hidden="true">&#8645;</span><div><h3>Importação por CSV</h3><p>Confira os registros antes de importar.</p></div></div>
+                <div class="admin-form-body"><label class="admin-file-field"><strong>Arquivo CSV</strong><small></small><input type="file" accept=".csv,text/csv"></label><p role="status">Selecione um CSV para visualizar os registros.</p><div class="admin-table-wrap"><table class="admin-table" aria-label="Prévia da importação"><thead><tr></tr></thead><tbody></tbody></table></div><button class="admin-button" type="button" disabled>Importar registros válidos</button></div>
+              </section>            </article>
           </section>
           <div data-component="footer"></div>
         </main>

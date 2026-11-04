@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let docentes = [];
   let grade = [];
   let cursoAtual;
+  let sequenciaDisponibilidade = 0;
 
   const carregarJson = async url => {
     const response = await fetch(url);
@@ -20,6 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return data;
   };
   const navegar = (curso, semestre) => {
+    sequenciaDisponibilidade += 1;
     cursoId = curso || null;
     semestreSelecionado = Number(semestre) || 0;
     const query = new URLSearchParams();
@@ -52,6 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function renderGrade() {
+    sequenciaDisponibilidade += 1;
     root.innerHTML = `<div class="schedule-breadcrumb"><button class="schedule-back" data-back>← Semestres</button><span>${escapar(cursoAtual.nome)} · ${semestreSelecionado}º semestre</span></div><div class="schedule-builder"><aside class="schedule-subject-panel"><div class="schedule-step-heading"><h3>Disciplinas</h3><p>Arraste uma disciplina para um horário.</p></div><label class="schedule-search"><span>Buscar disciplina</span><input id="subject-search" type="search" placeholder="Nome ou código"></label><div id="subject-list" class="schedule-subject-list"></div></aside><section class="schedule-calendar-panel"><div class="schedule-calendar-heading"><div><h3>Grade semanal</h3><p>Arraste disciplinas para os horários de 7h a 23h.</p></div></div><div class="schedule-calendar-scroll"><div class="schedule-calendar"><div class="schedule-time-label">Horário</div>${dias.map((dia, indice) => `<div class="schedule-day-label" data-day="${indice}">${dia}</div>`).join('')}${Array.from({ length: 16 }, (_, row) => { const hora = row + 7; return `<div class="schedule-hour-label">${String(hora).padStart(2, '0')}:00</div>${dias.map((_, dia) => { const aulas = grade.filter(item => item.dia === dia && item.hora === hora); return `<div class="schedule-slot${aulas.length ? ' is-filled' : ''}" data-day="${dia}" data-hour="${hora}" aria-label="${dias[dia]} às ${hora}:00">${aulas.map(aula => `<div class="schedule-lesson" data-lesson="${escapar(aula.id)}"><strong>${escapar(aula.disciplinaNome)}</strong><small>${escapar(aula.disciplinaCodigo)} · ${escapar(aula.docenteNome)}</small><button type="button" class="schedule-remove" aria-label="Remover aula">×</button></div>`).join('')}<span class="schedule-drop-hint">+</span></div>`; }).join('')}`; }).join('')}</div></div></section></div><div class="schedule-savebar"><span id="schedule-status" role="status">${grade.length} aula(s) na grade</span><button class="admin-button" id="save-schedule" type="button">Salvar Alterações</button></div>`;
     root.querySelector('[data-back]').addEventListener('click', () => navegar(cursoId));
     const subjectList = root.querySelector('#subject-list');
@@ -106,15 +109,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  function abrirModalDocente(disciplina, dia, hora) {
-    const disciplinaNoMesmoHorario = grade.some(item =>
-      item.disciplinaId === disciplina.id && item.dia === dia && item.hora === hora
-    );
-    if (disciplinaNoMesmoHorario) {
-      alert('Esta disciplina já está neste horário. Escolha outro bloco para adicionar outra aula.');
-      return;
-    }
-
+  async function abrirModalDocente(disciplina, dia, hora) {
+    const sequenciaConsulta = ++sequenciaDisponibilidade;
     const aulasNoHorario = grade.filter(item => item.dia === dia && item.hora === hora);
     try {
       for (let indice = 0; indice < localStorage.length; indice += 1) {
@@ -129,6 +125,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.warn('Não foi possível conferir todas as grades salvas:', erro);
     }
     const docentesOcupados = new Set(aulasNoHorario.map(item => item.docenteId));
+    try {
+      const consulta = new URLSearchParams({ cursoId, semestre: String(semestreSelecionado), dia: String(dia), hora: String(hora) });
+      const disponibilidade = await carregarJson(`/api/admin/docentes-ocupados?${consulta}`);
+      if (sequenciaConsulta !== sequenciaDisponibilidade) return;
+      (disponibilidade.docenteIds || []).forEach(id => docentesOcupados.add(id));
+    } catch (erro) {
+      if (sequenciaConsulta !== sequenciaDisponibilidade) return;
+      console.error('Falha ao consultar disponibilidade dos docentes:', erro);
+      window.showAppMessage(erro.message || 'Não foi possível verificar a disponibilidade dos docentes.');
+      return;
+    }
     modalRoot.innerHTML = `<div class="schedule-modal-backdrop"><section class="schedule-modal" role="dialog" aria-modal="true" aria-labelledby="teacher-modal-title"><button type="button" class="schedule-modal-close" aria-label="Fechar">×</button><span class="admin-eyebrow">${dias[dia]} · ${String(hora).padStart(2, '0')}:00–${String(hora + 1).padStart(2, '0')}:00</span><h3 id="teacher-modal-title">Atribuir docente</h3><p>${escapar(disciplina.nome)} (${escapar(disciplina.codigo)})</p><label class="schedule-search"><span>Buscar docente</span><input id="teacher-search" type="search" placeholder="Nome do docente"></label><div id="teacher-options" class="schedule-teacher-options"></div><p class="schedule-modal-note">Um docente não pode estar em duas aulas no mesmo horário.</p></section></div>`;
     const drawTeachers = () => {
       const term = normalizar(modalRoot.querySelector('#teacher-search').value);

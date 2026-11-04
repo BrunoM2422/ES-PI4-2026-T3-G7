@@ -15,7 +15,7 @@ document.querySelector('#login').addEventListener('submit', async event => {
     const data = await response.json();
 
     if (!response.ok) {
-      error.textContent = data.mensagem || 'N\u00e3o foi poss\u00edvel entrar.';
+      error.textContent = data.mensagem || 'Não foi possível entrar.';
       return;
     }
 
@@ -23,7 +23,7 @@ document.querySelector('#login').addEventListener('submit', async event => {
     const roles = { aluno: 'aluno', professor: 'professor', administrador: 'admin' };
     const role = roles[user.tipo];
     if (!role) {
-      error.textContent = 'Tipo de usu\u00e1rio n\u00e3o reconhecido.';
+      error.textContent = 'Tipo de usuário não reconhecido.';
       return;
     }
 
@@ -44,6 +44,6 @@ document.querySelector('#login').addEventListener('submit', async event => {
       ? 'pages/aluno/perfil.html'
       : dashboards[role];
   } catch {
-    error.textContent = 'N\u00e3o foi poss\u00edvel conectar ao servidor. Tente novamente.';
+    error.textContent = 'Não foi possível conectar ao servidor. Tente novamente.';
   }
 });

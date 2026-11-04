@@ -223,13 +223,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!file) return;
 
       if (!['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {
-        alert('Apenas arquivos nos formatos JPG ou PNG são permitidos (GIF não é aceito).');
+        window.showAppMessage('Apenas arquivos nos formatos JPG ou PNG são permitidos (GIF não é aceito).');
         inputFileFoto.value = '';
         return;
       }
 
       if (file.size > 10 * 1024 * 1024) {
-        alert('A imagem é muito grande. O tamanho máximo permitido é de 10 MB.');
+        window.showAppMessage('A imagem é muito grande. O tamanho máximo permitido é de 10 MB.');
         inputFileFoto.value = '';
         return;
       }
@@ -241,8 +241,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (btnRemoverFoto) {
-    btnRemoverFoto.addEventListener('click', () => {
-      if (!confirm('Deseja remover sua foto de perfil?')) return;
+    btnRemoverFoto.addEventListener('click', async () => {
+      if (!await window.confirmAppAction('Deseja remover sua foto de perfil?', 'Remover foto de perfil?')) return;
       fotoBase64 = '';
       atualizarExibicaoFoto('');
       inputFileFoto.value = '';
@@ -269,13 +269,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const resultado = await response.json();
         if (response.ok) {
-          alert('Alterações salvas com sucesso!');
+          document.dispatchEvent(new CustomEvent('notadez:foto-perfil-atualizada', { detail: { foto: fotoBase64 } }));
+          window.showAppMessage('Alterações salvas com sucesso!');
         } else {
-          alert(resultado.mensagem || 'Erro ao salvar alterações.');
+          window.showAppMessage(resultado.mensagem || 'Erro ao salvar alterações.');
         }
       } catch (erro) {
         console.error('Erro na requisição:', erro);
-        alert('Não foi possível conectar ao servidor.');
+        window.showAppMessage('Não foi possível conectar ao servidor.');
       }
     });
   }
@@ -291,12 +292,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       const confirmaSenha = inputConfirmaSenha ? inputConfirmaSenha.value.trim() : '';
 
       if (!novaSenha || !confirmaSenha) {
-        alert('Preencha os campos de nova senha e confirmação.');
+        window.showAppMessage('Preencha os campos de nova senha e confirmação.');
         return;
       }
 
       if (novaSenha !== confirmaSenha) {
-        alert('As senhas digitadas não coincidem.');
+        window.showAppMessage('As senhas digitadas não coincidem.');
         return;
       }
 
@@ -313,15 +314,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const resultado = await response.json();
         if (response.ok) {
-          alert('Senha alterada com sucesso! Utilize-a no próximo login.');
+          window.showAppMessage('Senha alterada com sucesso! Utilize-a no próximo login.');
           if (inputNovaSenha) inputNovaSenha.value = '';
           if (inputConfirmaSenha) inputConfirmaSenha.value = '';
         } else {
-          alert(resultado.mensagem || 'Erro ao alterar senha.');
+          window.showAppMessage(resultado.mensagem || 'Erro ao alterar senha.');
         }
       } catch (erro) {
         console.error('Erro na requisição:', erro);
-        alert('Não foi possível conectar ao servidor.');
+        window.showAppMessage('Não foi possível conectar ao servidor.');
       }
     });
   }

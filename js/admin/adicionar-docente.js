@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const instituicao = document.querySelector('input[name="instituicao"]').value.trim();
 
     if (!nome || !email || !cpf || !especialidade) {
-      alert('Preencha os campos obrigatórios (Nome, E-mail, CPF e Especialidade).');
+      window.showAppMessage('Preencha os campos obrigatórios (Nome, E-mail, CPF e Especialidade).');
       return;
     }
 
@@ -33,15 +33,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.mensagem || 'Não foi possível cadastrar o docente.');
+        window.showAppMessage(data.mensagem || 'Não foi possível cadastrar o docente.');
         return;
       }
 
-      alert('Docente cadastrado com sucesso!');
-      window.location.reload();
+      window.showAppMessage('Docente cadastrado com sucesso!');
+      ['nome', 'email', 'cpf', 'telefone', 'especialidade', 'instituicao'].forEach(name => {
+        const field = document.querySelector(`[name="${name}"]`);
+        if (field) field.value = '';
+      });
     } catch (erro) {
       console.error('Erro na requisição:', erro);
-      alert('Erro ao conectar com o servidor.');
+      window.showAppMessage('Erro ao conectar com o servidor.');
     }
   });
 });

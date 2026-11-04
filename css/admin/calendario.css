@@ -245,6 +245,16 @@
   color: #5146ee;
 }
 
+.event-feriado {
+  background: #fff0e8;
+  color: #a64b1d;
+}
+
+.event-institucional {
+  background: #e7f5f2;
+  color: #147567;
+}
+
 .calendar-more {
   padding: 2px 5px;
   color: var(--muted);
@@ -471,6 +481,16 @@
 .event-field textarea:focus {
   border-color: #938dff;
   box-shadow: 0 0 0 3px rgb(81 70 238 / 10%);
+}
+
+.event-field.is-disabled {
+  color: #929bad;
+}
+
+.event-field input:disabled {
+  cursor: not-allowed;
+  background: #f1f3f6;
+  color: #929bad;
 }
 
 .event-form-footer,

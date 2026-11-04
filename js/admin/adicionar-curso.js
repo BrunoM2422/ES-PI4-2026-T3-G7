@@ -1,9 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
   const botaoCadastrar = document.querySelector('.admin-button');
   if (!botaoCadastrar) return;
+  const codigoInput = document.querySelector('input[name="codigo"]');
+
+  codigoInput.addEventListener('input', () => {
+    codigoInput.value = codigoInput.value.replace(/\D/g, '').slice(0, 2);
+  });
 
   botaoCadastrar.addEventListener('click', async () => {
-    const codigoInput = document.querySelector('input[name="codigo"]');
     const nomeInput = document.querySelector('input[name="nome"]');
     const unidadeInput = document.querySelector('input[name="unidade"]');
     const grauInput = document.querySelector('select[name="grau"]');
@@ -19,12 +23,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const duracao = Number(duracaoInput.value);
 
     if (!codigo || !nome || !unidade || !grau || !modalidade || !duracaoInput.value) {
-      alert('Preencha os campos obrigatórios do curso.');
+      window.showAppMessage('Preencha os campos obrigatórios do curso.');
+      return;
+    }
+
+    if (!codigoInput.checkValidity()) {
+      window.validateAppField(codigoInput);
       return;
     }
 
     if (!duracaoInput.checkValidity()) {
-      duracaoInput.reportValidity();
+      window.validateAppField(duracaoInput);
       return;
     }
 
@@ -49,15 +58,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.mensagem || 'Não foi possível cadastrar o curso.');
+        window.showAppMessage(data.mensagem || 'Não foi possível cadastrar o curso.');
         return;
       }
 
-      alert(data.mensagem || 'Curso cadastrado com sucesso!');
-      window.location.reload();
+      window.showAppMessage(data.mensagem || 'Curso cadastrado com sucesso!');
+      codigoInput.value = '';
+      nomeInput.value = '';
+      unidadeInput.value = '';
+      grauInput.value = '';
+      modalidadeInput.value = '';
+      duracaoInput.value = '';
+      descricaoInput.value = '';
     } catch (erro) {
       console.error('Erro na requisição:', erro);
-      alert('Erro ao conectar com o servidor.');
+      window.showAppMessage('Erro ao conectar com o servidor.');
     } finally {
       botaoCadastrar.disabled = false;
       botaoCadastrar.textContent = 'Cadastrar curso';

@@ -10,6 +10,7 @@
   });
   form.addEventListener('submit', event => {
     event.preventDefault();
-    feedback.textContent = 'O envio de mensagens ainda n\u00e3o est\u00e1 dispon\u00edvel.';
+    if (!window.validateAppForm(form)) return;
+    feedback.textContent = 'O envio de mensagens ainda não está disponível.';
   });
 })();

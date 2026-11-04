@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const enviarCodigo = async () => {
     const email = emailRecuperacao || emailInput.value.trim().toLowerCase();
     if (!email) {
-      emailInput.reportValidity();
+      window.validateAppField(emailInput);
       return false;
     }
 
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   form.addEventListener('submit', event => {
     event.preventDefault();
-    if (!emailInput.reportValidity()) return;
+    if (!window.validateAppField(emailInput)) return;
     emailRecuperacao = emailInput.value.trim().toLowerCase();
     enviarCodigo();
   });
@@ -93,10 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   resetButton.addEventListener('click', async () => {
-    if (![codeInput, newPasswordInput, confirmPasswordInput].every(input => input.reportValidity())) return;
+    if (!window.validateAppFields([codeInput, newPasswordInput, confirmPasswordInput])) return;
     if (newPasswordInput.value !== confirmPasswordInput.value) {
       confirmPasswordInput.setCustomValidity('As senhas não coincidem.');
-      confirmPasswordInput.reportValidity();
+      window.showAppMessage(confirmPasswordInput.validationMessage, 'error');
+      confirmPasswordInput.focus();
       confirmPasswordInput.addEventListener('input', () => confirmPasswordInput.setCustomValidity(''), { once: true });
       return;
     }

@@ -4,13 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
-      Calend&#225;rio | NotaDez
+      Calendário | NotaDez
     </title>
     <link rel="stylesheet" href="../../css/shared/style.css">
     <link rel="stylesheet" href="../../css/admin/calendario.css">
   </head>
   <body>
-    <div id="app" data-page="calendario" data-role="admin" data-title="Calend&#225;rio">
+    <div id="app" data-page="calendario" data-role="admin" data-title="Calendário">
       <div class="shell">
         <aside class="side" data-component="sidebar">
         </aside>
@@ -23,7 +23,7 @@
                 <div class="calendar-toolbar">
                   <div>
                     <p class="calendar-eyebrow">
-                      Agenda acad&ecirc;mica
+                      Agenda acadêmica
                     </p>
                     <h2 id="calendar-month">
                     </h2>
@@ -32,10 +32,10 @@
                     <button class="calendar-button calendar-today" id="calendar-today" type="button">
                       Hoje
                     </button>
-                    <button class="calendar-icon-button" id="calendar-prev" type="button" aria-label="M&ecirc;s anterior">
+                    <button class="calendar-icon-button" id="calendar-prev" type="button" aria-label="Mês anterior">
                       &lsaquo;
                     </button>
-                    <button class="calendar-icon-button" id="calendar-next" type="button" aria-label="Pr&oacute;ximo m&ecirc;s">
+                    <button class="calendar-icon-button" id="calendar-next" type="button" aria-label="Próximo mês">
                       &rsaquo;
                     </button>
                     <button class="calendar-button calendar-add" id="calendar-add" type="button">
@@ -44,9 +44,9 @@
                   </div>
                 </div>
                 <div class="calendar-layout">
-                  <section class="calendar-month-view" aria-label="Calend&aacute;rio mensal">
+                  <section class="calendar-month-view" aria-label="Calendário mensal">
                     <div class="calendar-weekdays" aria-hidden="true">
-                      <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>S&aacute;b</span><span>Dom</span>
+                      <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span>
                     </div>
                     <div class="calendar-days" id="calendar-days">
                     </div>
@@ -55,7 +55,7 @@
                     <div class="agenda-heading">
                       <div>
                         <p class="calendar-eyebrow">
-                          Eventos do m&ecirc;s
+                          Eventos do mês
                         </p>
                         <h3 id="agenda-month">
                         </h3>
@@ -65,17 +65,17 @@
                     <div class="agenda-list" id="agenda-list">
                     </div>
                     <p class="calendar-hint">
-                      Selecione um dia para adicionar um evento. Clique em um evento para edit&aacute;-lo.
+                      Selecione um dia para adicionar um evento. Clique em um evento para editá-lo.
                     </p>
                   </aside>
                 </div>
               </div>
               <dialog class="event-modal" id="event-modal" aria-labelledby="event-modal-title">
-                <form class="event-form" id="event-form">
+                <form class="event-form" id="event-form" novalidate>
                   <div class="modal-heading">
                     <div>
                       <p class="calendar-eyebrow">
-                        Agenda acad&ecirc;mica
+                        Agenda acadêmica
                       </p>
                       <h2 id="event-modal-title">
                         Novo evento
@@ -94,15 +94,22 @@
                       <span>Data</span>
                       <input id="event-date" name="date" type="date" required>
                     </label>
-                    <div class="event-field event-field-unavailable"><span>Categoria</span><small>Op&ccedil;&otilde;es n&atilde;o dispon&iacute;veis.</small></div>
+                    <label class="event-field">
+                      <span>Categoria</span>
+                      <select id="event-category" name="category" required>
+                        <option value="" selected disabled>Selecione uma categoria</option>
+                        <option value="feriado">Feriado</option>
+                        <option value="institucional">Evento Institucional</option>
+                      </select>
+                    </label>
                   </div>
                   <div class="event-fields-row">
                     <label class="event-field">
-                      <span>In&iacute;cio</span>
+                      <span>Início</span>
                       <input id="event-start" name="start" type="time" required>
                     </label>
                     <label class="event-field">
-                      <span>T&eacute;rmino</span>
+                      <span>Término</span>
                       <input id="event-end" name="end" type="time" required>
                     </label>
                   </div>
@@ -111,7 +118,7 @@
                     <input id="event-location" name="location" maxlength="100" placeholder="Sala, bloco ou link">
                   </label>
                   <label class="event-field event-field-wide">
-                    <span>Descri&ccedil;&atilde;o</span>
+                    <span>Descrição</span>
                     <textarea id="event-description" name="description" rows="3" maxlength="400" placeholder="Detalhes adicionais (opcional)">
                     </textarea>
                   </label>
@@ -159,7 +166,7 @@
     </template>
     <template id="agenda-empty-template">
       <div class="agenda-empty">
-        <span class="agenda-empty-icon">&#10022;</span><strong>Nenhum evento neste m&ecirc;s</strong><small>N&atilde;o h&aacute; eventos dispon&iacute;veis.</small>
+        <span class="agenda-empty-icon">&#10022;</span><strong>Nenhum evento neste mês</strong><small>Não há eventos disponíveis.</small>
       </div>
     </template>
     <template id="agenda-event-template">
