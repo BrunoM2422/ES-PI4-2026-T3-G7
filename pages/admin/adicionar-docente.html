@@ -38,7 +38,10 @@
                   <button class="admin-button" type="button">Cadastrar docente</button>
                 </div>
               </section>
-            </article>
+              <section class="admin-form-card" data-importacao-csv="docentes">
+                <div class="admin-card-heading"><span class="admin-card-icon" aria-hidden="true">&#8645;</span><div><h3>Importação por CSV</h3><p>Confira os registros antes de importar.</p></div></div>
+                <div class="admin-form-body"><label class="admin-file-field"><strong>Arquivo CSV</strong><small></small><input type="file" accept=".csv,text/csv"></label><p role="status">Selecione um CSV para visualizar os registros.</p><div class="admin-table-wrap"><table class="admin-table" aria-label="Prévia da importação"><thead><tr></tr></thead><tbody></tbody></table></div><button class="admin-button" type="button" disabled>Importar registros válidos</button></div>
+              </section>            </article>
           </section>
           <div data-component="footer"></div>
         </main>
@@ -46,5 +49,6 @@
     </div>
     <script src="../../js/shared/app.js"></script>
     <script src="../../js/admin/adicionar-docente.js"></script>
+    <script src="../../js/admin/importacao-csv.js"></script>
   </body>
 </html>
