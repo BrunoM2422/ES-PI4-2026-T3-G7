@@ -5,6 +5,17 @@ const Evento = require('../models/Evento');
 const router = express.Router();
 const categoriasValidas = ['feriado', 'institucional'];
 
+function dataAtualDoCalendario() {
+  const partes = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(new Date());
+  const valores = Object.fromEntries(partes.map(parte => [parte.type, parte.value]));
+  return `${valores.year}-${valores.month}-${valores.day}`;
+}
+
 function dataValida(data) {
   if (typeof data !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(data)) return false;
   const [ano, mes, dia] = data.split('-').map(Number);
@@ -97,7 +108,7 @@ router.post('/eventos', async (req, res) => {
   try {
     const erroValidacao = validarEvento(req.body);
     if (erroValidacao) return res.status(400).json({ mensagem: erroValidacao });
-    if (req.body.date < new Date().toISOString().slice(0, 10)) {
+    if (req.body.date < dataAtualDoCalendario()) {
       return res.status(400).json({ mensagem: 'Não é possível criar eventos em datas passadas.' });
     }
 
@@ -128,7 +139,7 @@ router.put('/eventos/:eventoId', async (req, res) => {
 
     const erroValidacao = validarEvento(req.body);
     if (erroValidacao) return res.status(400).json({ mensagem: erroValidacao });
-    if (req.body.date < new Date().toISOString().slice(0, 10) && req.body.date !== existente.date) {
+    if (req.body.date < dataAtualDoCalendario() && req.body.date !== existente.date) {
       return res.status(400).json({ mensagem: 'Não é possível mover um evento para uma data passada.' });
     }
 

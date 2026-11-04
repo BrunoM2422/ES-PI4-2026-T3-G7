@@ -56,7 +56,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function turmaDaAula(aula) {
-    if (aula.turmaId) return turmas.find(turma => turma.id === String(aula.turmaId)) || null;
     return turmas.find(turma => atribuicoes(turma, aula).length > 0) || null;
   }
 
@@ -90,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const termo = normalizar(search.value);
       const filtradas = turmas.filter(turma => normalizar(`${turma.codigo} ${turma.periodoLetivo}`).includes(termo));
       list.innerHTML = filtradas.length
-        ? filtradas.map(turma => `<button class="schedule-subject-card" draggable="true" data-turma="${escapar(turma.id)}"><span class="schedule-subject-grip">&#8942;&#8942;</span><strong>Turma ${escapar(turma.codigo)}</strong><small>${escapar(turma.periodoLetivo)} · ${turma.vagas} vagas</small></button>`).join('')
+        ? filtradas.map(turma => `<button class="schedule-subject-card" draggable="true" data-turma="${escapar(turma.id)}"><span class="schedule-subject-grip">&#8942;&#8942;</span><strong>Turma ${escapar(turma.codigo)}</strong><small>${escapar(turma.periodoLetivo)}º semestre · ${turma.vagas} vagas</small></button>`).join('')
         : '<div class="schedule-empty">Nenhuma turma encontrada para este curso.</div>';
       list.querySelectorAll('[data-turma]').forEach(card => card.addEventListener('dragstart', event => event.dataTransfer.setData('text/plain', card.dataset.turma)));
     };
@@ -120,6 +119,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       status.textContent = 'Não foi possível identificar a turma ou a aula selecionada.';
       return;
     }
+    if (Number(turma.periodoLetivo) !== Number(semestreSelecionado)) {
+      status.textContent = 'A turma só pode ser associada às aulas do semestre letivo cadastrado para ela.';
+      return;
+    }
     if (turmaDaAula(aula)) {
       status.textContent = 'Esta aula já possui uma turma associada.';
       return;
@@ -139,8 +142,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       const dados = await resposta.json();
       if (!resposta.ok) throw new Error(dados.mensagem || 'Não foi possível associar a turma.');
-      const atualizadas = await carregarJson(`/api/admin/turmas?cursoId=${encodeURIComponent(cursoId)}&semestre=${semestreSelecionado}`);
-      turmas = atualizadas.turmas || [];
+      const consulta = new URLSearchParams({ cursoId, semestre: String(semestreSelecionado) });
+      const [dadosGrade, dadosTurmas] = await Promise.all([
+        carregarJson(`/api/admin/grades-horarios?${consulta}`),
+        carregarJson(`/api/admin/turmas?${consulta}`)
+      ]);
+      grade = dadosGrade.grade;
+      turmas = dadosTurmas.turmas || [];
       renderGrade();
       root.querySelector('#class-organization-status').textContent = dados.mensagem;
     } catch (erro) {
@@ -155,8 +163,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       const resposta = await fetch(`/api/admin/turmas/${encodeURIComponent(turmaId)}/horarios/${encodeURIComponent(gradeId)}/${encodeURIComponent(aulaId)}`, { method: 'DELETE' });
       const dados = await resposta.json();
       if (!resposta.ok) throw new Error(dados.mensagem || 'Não foi possível remover a associação.');
-      const atualizadas = await carregarJson(`/api/admin/turmas?cursoId=${encodeURIComponent(cursoId)}&semestre=${semestreSelecionado}`);
-      turmas = atualizadas.turmas || [];
+      const consulta = new URLSearchParams({ cursoId, semestre: String(semestreSelecionado) });
+      const [dadosGrade, dadosTurmas] = await Promise.all([
+        carregarJson(`/api/admin/grades-horarios?${consulta}`),
+        carregarJson(`/api/admin/turmas?${consulta}`)
+      ]);
+      grade = dadosGrade.grade;
+      turmas = dadosTurmas.turmas || [];
       renderGrade();
       root.querySelector('#class-organization-status').textContent = dados.mensagem;
     } catch (erro) {

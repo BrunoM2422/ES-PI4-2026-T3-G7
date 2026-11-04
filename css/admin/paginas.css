@@ -94,6 +94,10 @@
   font-weight: 600;
 }
 
+.admin-field-select {
+  align-content: start;
+}
+
 .admin-field-wide {
   grid-column: 1 / -1;
 }
@@ -112,6 +116,23 @@
   font: inherit;
   font-size: 12px;
   font-weight: 400;
+}
+
+.admin-field select.admin-select-balanced {
+  box-sizing: border-box;
+  height: 39px;
+  min-height: 39px;
+  padding: 0 34px 0 11px;
+  appearance: none;
+  line-height: 1.2;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #78869c 50%),
+    linear-gradient(135deg, #78869c 50%, transparent 50%);
+  background-position:
+    calc(100% - 15px) 16px,
+    calc(100% - 10px) 16px;
+  background-repeat: no-repeat;
+  background-size: 5px 5px;
 }
 
 .admin-field textarea {

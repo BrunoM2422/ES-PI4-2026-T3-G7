@@ -28,18 +28,24 @@
                 <div class="admin-form-body">
                   <div class="admin-field-grid">
                     <label class="admin-field">
-                      <span>Código da turma</span>
-                      <input name="codigo" placeholder="Ex.: ADS-2026-1A" required>
+                      <span>Número da turma</span>
+                      <div class="admin-discipline-code">
+                        <span class="admin-discipline-prefix" data-code-prefix>--</span>
+                        <input name="numeroTurma" type="number" min="1" max="99" step="1" placeholder="1" required>
+                      </div>
+                      <small class="admin-local-note" data-code-preview>Selecione o semestre para montar o código.</small>
                     </label>
-                    <label class="admin-field">
+                    <label class="admin-field admin-field-select">
                       <span>Curso</span>
-                      <select name="cursoId" required>
+                      <select class="admin-select-balanced" name="cursoId" required>
                         <option value="" selected disabled>Carregando cursos...</option>
                       </select>
                     </label>
                     <label class="admin-field">
                       <span>Período letivo</span>
-                      <input name="periodoLetivo" placeholder="Ex.: 2026.1" maxlength="30" required>
+                      <select name="periodoLetivo" required disabled>
+                        <option value="" selected>Selecione um curso primeiro</option>
+                      </select>
                     </label>
                     <label class="admin-field">
                       <span>Vagas</span>
