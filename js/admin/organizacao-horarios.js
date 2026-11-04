@@ -111,14 +111,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function abrirModalDocente(disciplina, dia, hora) {
     const sequenciaConsulta = ++sequenciaDisponibilidade;
-    const disciplinaNoMesmoHorario = grade.some(item =>
-      item.disciplinaId === disciplina.id && item.dia === dia && item.hora === hora
-    );
-    if (disciplinaNoMesmoHorario) {
-      alert('Esta disciplina já está neste horário. Escolha outro bloco para adicionar outra aula.');
-      return;
-    }
-
     const aulasNoHorario = grade.filter(item => item.dia === dia && item.hora === hora);
     try {
       for (let indice = 0; indice < localStorage.length; indice += 1) {
@@ -141,7 +133,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (erro) {
       if (sequenciaConsulta !== sequenciaDisponibilidade) return;
       console.error('Falha ao consultar disponibilidade dos docentes:', erro);
-      alert(erro.message || 'Não foi possível verificar a disponibilidade dos docentes.');
+      window.showAppMessage(erro.message || 'Não foi possível verificar a disponibilidade dos docentes.');
       return;
     }
     modalRoot.innerHTML = `<div class="schedule-modal-backdrop"><section class="schedule-modal" role="dialog" aria-modal="true" aria-labelledby="teacher-modal-title"><button type="button" class="schedule-modal-close" aria-label="Fechar">×</button><span class="admin-eyebrow">${dias[dia]} · ${String(hora).padStart(2, '0')}:00–${String(hora + 1).padStart(2, '0')}:00</span><h3 id="teacher-modal-title">Atribuir docente</h3><p>${escapar(disciplina.nome)} (${escapar(disciplina.codigo)})</p><label class="schedule-search"><span>Buscar docente</span><input id="teacher-search" type="search" placeholder="Nome do docente"></label><div id="teacher-options" class="schedule-teacher-options"></div><p class="schedule-modal-note">Um docente não pode estar em duas aulas no mesmo horário.</p></section></div>`;

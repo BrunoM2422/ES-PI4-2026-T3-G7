@@ -23,17 +23,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const duracao = Number(duracaoInput.value);
 
     if (!codigo || !nome || !unidade || !grau || !modalidade || !duracaoInput.value) {
-      alert('Preencha os campos obrigatórios do curso.');
+      window.showAppMessage('Preencha os campos obrigatórios do curso.');
       return;
     }
 
     if (!codigoInput.checkValidity()) {
-      codigoInput.reportValidity();
+      window.validateAppField(codigoInput);
       return;
     }
 
     if (!duracaoInput.checkValidity()) {
-      duracaoInput.reportValidity();
+      window.validateAppField(duracaoInput);
       return;
     }
 
@@ -58,15 +58,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.mensagem || 'Não foi possível cadastrar o curso.');
+        window.showAppMessage(data.mensagem || 'Não foi possível cadastrar o curso.');
         return;
       }
 
-      alert(data.mensagem || 'Curso cadastrado com sucesso!');
-      window.location.reload();
+      window.showAppMessage(data.mensagem || 'Curso cadastrado com sucesso!');
+      codigoInput.value = '';
+      nomeInput.value = '';
+      unidadeInput.value = '';
+      grauInput.value = '';
+      modalidadeInput.value = '';
+      duracaoInput.value = '';
+      descricaoInput.value = '';
     } catch (erro) {
       console.error('Erro na requisição:', erro);
-      alert('Erro ao conectar com o servidor.');
+      window.showAppMessage('Erro ao conectar com o servidor.');
     } finally {
       botaoCadastrar.disabled = false;
       botaoCadastrar.textContent = 'Cadastrar curso';

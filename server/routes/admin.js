@@ -442,12 +442,8 @@ router.put('/grades-horarios', async (req, res) => {
     }
 
     const docenteKeys = new Set();
-    const disciplinaHorarioKeys = new Set();
     for (const aula of aulas) {
       const key = `${aula.dia}:${aula.hora}`;
-      const disciplinaHorarioKey = `${aula.disciplinaId}:${key}`;
-      if (disciplinaHorarioKeys.has(disciplinaHorarioKey)) return res.status(409).json({ mensagem: 'A mesma disciplina não pode ser adicionada duas vezes no mesmo horário.' });
-      disciplinaHorarioKeys.add(disciplinaHorarioKey);
       const docenteKey = `${aula.docenteId}:${key}`;
       if (docenteKeys.has(docenteKey)) return res.status(409).json({ mensagem: 'Um docente não pode estar em duas aulas no mesmo horário.' });
       docenteKeys.add(docenteKey);

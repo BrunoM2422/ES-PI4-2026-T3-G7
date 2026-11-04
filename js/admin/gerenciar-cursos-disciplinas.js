@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const root = document.querySelector('#catalog-content');
   const modalRoot = document.querySelector('#catalog-modal-root');
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
@@ -63,11 +63,12 @@
   }
 
   function showModal(title, description, fields, onSave, onDelete) {
-    modalRoot.innerHTML = `<div class="catalog-modal-backdrop" data-close><section class="catalog-modal" role="dialog" aria-modal="true" aria-labelledby="catalog-modal-title"><button class="catalog-modal-close" type="button" aria-label="Fechar" data-close>×</button><div class="admin-page-intro"><span class="admin-eyebrow">Editar cadastro</span><h2 id="catalog-modal-title">${escapeHtml(title)}</h2><p>${escapeHtml(description)}</p></div><form id="catalog-edit-form"><div class="admin-field-grid">${fields}</div><p class="catalog-feedback" role="status" aria-live="polite"></p><div class="catalog-modal-actions"><button class="catalog-delete-button" type="button" data-delete>Excluir</button><div><button class="admin-button-secondary" type="button" data-close>Cancelar</button><button class="admin-button" type="submit">Salvar alterações</button></div></div></form></section></div>`;
+    modalRoot.innerHTML = `<div class="catalog-modal-backdrop" data-close><section class="catalog-modal" role="dialog" aria-modal="true" aria-labelledby="catalog-modal-title"><button class="catalog-modal-close" type="button" aria-label="Fechar" data-close>×</button><div class="admin-page-intro"><span class="admin-eyebrow">Editar cadastro</span><h2 id="catalog-modal-title">${escapeHtml(title)}</h2><p>${escapeHtml(description)}</p></div><form id="catalog-edit-form" novalidate><div class="admin-field-grid">${fields}</div><p class="catalog-feedback" role="status" aria-live="polite"></p><div class="catalog-modal-actions"><button class="catalog-delete-button" type="button" data-delete>Excluir</button><div><button class="admin-button-secondary" type="button" data-close>Cancelar</button><button class="admin-button" type="submit">Salvar alterações</button></div></div></form></section></div>`;
     const backdrop = modalRoot.querySelector('.catalog-modal-backdrop');
     modalRoot.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', event => { if (event.target === backdrop || button.tagName === 'BUTTON') modalRoot.innerHTML = ''; }));
     modalRoot.querySelector('#catalog-edit-form').addEventListener('submit', async event => {
       event.preventDefault();
+      if (!window.validateAppForm(event.currentTarget)) return;
       const button = event.currentTarget.querySelector('[type="submit"]');
       button.disabled = true;
       try { await onSave(new FormData(event.currentTarget)); modalRoot.innerHTML = ''; }

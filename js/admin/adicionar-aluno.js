@@ -141,12 +141,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const cursoId = cursoIdInput.value;
 
     if (!nome || !email || !cpf) {
-      alert('Preencha os campos obrigatórios (Nome, E-mail e CPF).');
+      window.showAppMessage('Preencha os campos obrigatórios (Nome, E-mail e CPF).');
       return;
     }
 
     if (!cursoId) {
-      alert('Selecione um curso válido na lista de sugestões.');
+      window.showAppMessage('Selecione um curso válido na lista de sugestões.');
       campoCurso.focus();
       return;
     }
@@ -170,15 +170,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.mensagem || 'Não foi possível cadastrar o aluno.');
+        window.showAppMessage(data.mensagem || 'Não foi possível cadastrar o aluno.');
         return;
       }
 
-      alert('Aluno cadastrado com sucesso!');
-      window.location.reload();
+      window.showAppMessage('Aluno cadastrado com sucesso!');
+      ['nome', 'email', 'cpf', 'telefone', 'endereco', 'instituicao'].forEach(name => {
+        const field = document.querySelector(`[name="${name}"]`);
+        if (field) field.value = '';
+      });
+      campoCurso.value = '';
+      cursoIdInput.value = '';
+      statusCursos.textContent = '';
     } catch (erro) {
       console.error('Erro na requisição:', erro);
-      alert('Erro ao conectar com o servidor.');
+      window.showAppMessage('Erro ao conectar com o servidor.');
     }
   });
 });

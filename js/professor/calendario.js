@@ -58,7 +58,7 @@
 
   form.addEventListener('submit', async event => {
     event.preventDefault();
-    if (!form.reportValidity()) return;
+    if (!window.validateAppForm(form)) return;
 
     const record = {
       id: editingId || createId(),
@@ -74,14 +74,16 @@
     const previousEvent = editingId ? events.find(item => item.id === editingId) : null;
     if (record.date < todayKey() && (!previousEvent || previousEvent.date !== record.date)) {
       fields.date.setCustomValidity('Não é possível criar eventos em datas anteriores a hoje.');
-      fields.date.reportValidity();
+      window.showAppMessage(fields.date.validationMessage, 'error');
+      fields.date.focus();
       fields.date.setCustomValidity('');
       return;
     }
 
     if (record.category !== 'feriado' && record.end <= record.start) {
       fields.end.setCustomValidity('O término precisa ser depois do início.');
-      fields.end.reportValidity();
+      window.showAppMessage(fields.end.validationMessage, 'error');
+      fields.end.focus();
       fields.end.setCustomValidity('');
       return;
     }
@@ -101,7 +103,7 @@
       closeEditor();
       render();
     } catch (erro) {
-      window.alert(erro.message || 'Não foi possível salvar o evento.');
+      window.showAppMessage(erro.message || 'Não foi possível salvar o evento.');
     } finally {
       submitButton.disabled = false;
     }
@@ -117,7 +119,7 @@
       closeEditor();
       render();
     } catch (erro) {
-      window.alert(erro.message || 'Não foi possível excluir o evento.');
+      window.showAppMessage(erro.message || 'Não foi possível excluir o evento.');
     } finally {
       deleteButton.disabled = false;
     }

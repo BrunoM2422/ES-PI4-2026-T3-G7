@@ -65,8 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
   numeroTurmaInput.addEventListener('input', atualizarCodigoPreview);
 
   submitButton.addEventListener('click', async () => {
-    if (!numeroTurmaInput.reportValidity() || !cursoSelect.reportValidity() ||
-        !periodoInput.reportValidity() || !vagasInput.reportValidity()) return;
+    if (!window.validateAppFields([numeroTurmaInput, cursoSelect, periodoInput, vagasInput])) return;
 
     submitButton.disabled = true;
     submitButton.textContent = 'Cadastrando...';

@@ -13,10 +13,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const permissao = document.querySelector('[name="permissao"]');
       const campos = [nome, email, telefone, senha, confirmarSenha, permissao];
 
-      if (!campos.every(campo => campo.reportValidity())) return;
+      if (!window.validateAppFields(campos)) return;
       if (senha.value !== confirmarSenha.value) {
         confirmarSenha.setCustomValidity('As senhas não coincidem.');
-        confirmarSenha.reportValidity();
+        window.showAppMessage(confirmarSenha.validationMessage, 'error');
+        confirmarSenha.focus();
         confirmarSenha.addEventListener('input', () => confirmarSenha.setCustomValidity(''), { once: true });
         return;
       }
@@ -41,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
             throw new Error(data.mensagem || 'Não foi possível cadastrar o administrador.');
           }
 
-          alert(data.mensagem);
           document.querySelector('.admin-local-note').textContent =
             'Administrador cadastrado com sucesso.';
           document.querySelectorAll('#app input').forEach(campo => {
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
           });
           permissao.value = '';
         })
-        .catch(erro => alert(erro.message))
+        .catch(erro => window.showAppMessage(erro.message))
         .finally(() => {
           botao.disabled = false;
           botao.textContent = 'Cadastrar administrador';
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector(`[name="${nome}"]`)
       );
 
-      if (!campos.every(campo => campo.reportValidity())) return;
+      if (!window.validateAppFields(campos)) return;
 
       const [nome, complemento, semestre, cursoSelect, descricao] = campos;
       const cursoSelecionado = cursos.find(item => item.id === cursoSelect.value);

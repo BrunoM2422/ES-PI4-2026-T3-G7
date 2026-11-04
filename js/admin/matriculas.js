@@ -19,11 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   button.addEventListener('click', async () => {
     const entradas = [...Object.values(campos), ...dadosExtras].filter(Boolean);
-    let valido = true;
-    entradas.forEach(entrada => {
-      if (!entrada.reportValidity()) valido = false;
-    });
-    if (!valido) return;
+    if (!window.validateAppFields(entradas)) return;
 
     button.disabled = true;
     const textoOriginal = button.textContent;

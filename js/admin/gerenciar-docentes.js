@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       ['Especialidade', 'especialidade', teacher.especialidade], ['Instituição', 'instituicaoNome', teacher.instituicao?.nome], ['Código da instituição', 'instituicaoCodigo', teacher.instituicao?.codigo],
       ['Endereço', 'endereco', teacher.endereco, 'text', true], ['Descrição', 'descricao', teacher.descricao, 'text', true]
     ];
-    return `<div class="catalog-section-heading"><div><h3>Perfil do docente</h3><p>Edite os dados e salve as alterações.</p></div><span class="teacher-rp">RP ${escapeHtml(teacher.rp || '—')}</span></div><form id="teacher-form"><div class="admin-field-grid">${fields.map(([label, name, value, type = 'text', wide = false]) => `<label class="admin-field${wide ? ' admin-field-wide' : ''}"><span>${label}</span><input name="${name}" type="${type}" value="${escapeHtml(value)}"${['nome', 'email'].includes(name) ? ' required' : ''}></label>`).join('')}</div><p class="catalog-feedback" role="status" aria-live="polite"></p><div class="teacher-editor-actions"><button class="catalog-delete-button" type="button" data-delete-teacher>Remover docente</button><button class="admin-button" type="submit">Salvar alterações</button></div></form>`;
+    return `<div class="catalog-section-heading"><div><h3>Perfil do docente</h3><p>Edite os dados e salve as alterações.</p></div><span class="teacher-rp">RP ${escapeHtml(teacher.rp || '—')}</span></div><form id="teacher-form" novalidate><div class="admin-field-grid">${fields.map(([label, name, value, type = 'text', wide = false]) => `<label class="admin-field${wide ? ' admin-field-wide' : ''}"><span>${label}</span><input name="${name}" type="${type}" value="${escapeHtml(value)}"${['nome', 'email'].includes(name) ? ' required' : ''}></label>`).join('')}</div><p class="catalog-feedback" role="status" aria-live="polite"></p><div class="teacher-editor-actions"><button class="catalog-delete-button" type="button" data-delete-teacher>Remover docente</button><button class="admin-button" type="submit">Salvar alterações</button></div></form>`;
   }
 
   function confirmarRemocao(teacher) {
@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const form = root.querySelector('#teacher-form');
     form.addEventListener('submit', async event => {
       event.preventDefault();
+      if (!window.validateAppForm(form)) return;
       const button = form.querySelector('[type="submit"]'); button.disabled = true;
       try {
         const payload = Object.fromEntries(new FormData(form).entries());
