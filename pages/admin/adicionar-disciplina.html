@@ -25,45 +25,68 @@
                 <h2>Cadastro de disciplinas</h2>
                 <p>Cadastre disciplinas e associe cada uma ao semestre e curso correspondentes.</p>
               </div>
-              <section class="admin-form-card admin-form-card-narrow">
-                <div class="admin-card-heading">
-                  <span class="admin-card-icon" aria-hidden="true">&#43;</span>
-                  <div>
-                    <h3>Dados da disciplina</h3>
-                    <p>Defina os dados principais da disciplina.</p>
+              <div class="admin-form-grid">
+                <section class="admin-form-card">
+                  <div class="admin-card-heading">
+                    <span class="admin-card-icon" aria-hidden="true">&#43;</span>
+                    <div>
+                      <h3>Dados da disciplina</h3>
+                      <p>Defina os dados principais da disciplina.</p>
+                    </div>
                   </div>
-                </div>
-                <div class="admin-form-body">
-                  <div class="admin-field-grid">
-                    <label class="admin-field">
-                      <span>Nome</span>
-                      <input name="nome" required>
-                    </label>
-                    <label class="admin-field">
-                      <span>C&oacute;digo</span>
-                      <input name="codigo" required>
-                    </label>
-                    <label class="admin-field">
-                      <span>Semestre</span>
-                      <select name="semestre" required>
-                        <option value="" selected disabled>Selecione o semestre</option>
-                      </select>
-                    </label>
-                    <label class="admin-field">
-                      <span>Curso</span>
-                      <select name="curso" required>
-                        <option value="" selected disabled>Carregando cursos...</option>
-                      </select>
-                    </label>
-                    <label class="admin-field admin-field-wide">
-                      <span>Descri&ccedil;&atilde;o</span>
-                      <textarea name="descricao" rows="4" required></textarea>
-                    </label>
+                  <div class="admin-form-body">
+                    <div class="admin-field-grid">
+                      <label class="admin-field">
+                        <span>Nome</span>
+                        <input name="nome" required>
+                      </label>
+                      <label class="admin-field">
+                        <span>C&oacute;digo</span>
+                        <input name="codigo" required>
+                      </label>
+                      <label class="admin-field">
+                        <span>Semestre</span>
+                        <select name="semestre" required>
+                          <option value="" selected disabled>Selecione o semestre</option>
+                        </select>
+                      </label>
+                      <label class="admin-field">
+                        <span>Curso</span>
+                        <select name="curso" required>
+                          <option value="" selected disabled>Carregando cursos...</option>
+                        </select>
+                      </label>
+                      <label class="admin-field admin-field-wide">
+                        <span>Descri&ccedil;&atilde;o</span>
+                        <textarea name="descricao" rows="4" required></textarea>
+                      </label>
+                    </div>
+                    <button class="admin-button" type="button">Cadastrar disciplina</button>
+                    <p class="admin-local-note" role="status" aria-live="polite"></p>
                   </div>
-                  <button class="admin-button" type="button">Cadastrar disciplina</button>
-                  <p class="admin-local-note" role="status" aria-live="polite"></p>
-                </div>
-              </section>
+                </section>
+                <section class="admin-form-card" data-importacao-csv="disciplinas">
+                  <div class="admin-card-heading">
+                    <span class="admin-card-icon" aria-hidden="true">&#8645;</span>
+                    <div><h3>Importa&ccedil;&atilde;o por CSV</h3><p>Confira os registros antes de importar.</p></div>
+                  </div>
+                  <div class="admin-form-body">
+                    <label class="admin-file-field">
+                      <strong>Arquivo CSV</strong>
+                      <small></small>
+                      <input type="file" accept=".csv,text/csv">
+                    </label>
+                    <p role="status">Selecione um CSV para visualizar os registros.</p>
+                    <div class="admin-table-wrap">
+                      <table class="admin-table" aria-label="Pr&eacute;via da importa&ccedil;&atilde;o">
+                        <thead><tr></tr></thead>
+                        <tbody></tbody>
+                      </table>
+                    </div>
+                    <button class="admin-button" type="button" disabled>Importar registros v&aacute;lidos</button>
+                  </div>
+                </section>
+              </div>
             </article>
           </section>
           <div data-component="footer"></div>
@@ -72,5 +95,6 @@
     </div>
     <script src="../../js/shared/app.js"></script>
     <script src="../../js/admin/cadastros-locais.js"></script>
+    <script src="../../js/admin/importacao-csv.js"></script>
   </body>
 </html>

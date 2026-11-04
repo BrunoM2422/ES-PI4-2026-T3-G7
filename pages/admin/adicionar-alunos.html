@@ -47,24 +47,25 @@
                     <button class="admin-button" type="button">Cadastrar aluno</button>
                   </div>
                 </section>
-                <section class="admin-form-card">
+                <section class="admin-form-card" data-importacao-csv="alunos">
                   <div class="admin-card-heading">
                     <span class="admin-card-icon" aria-hidden="true">&#8645;</span>
-                    <div><h3>Importa&ccedil;&atilde;o por CSV</h3><p>Confira os dados antes de importar.</p></div>
+                    <div><h3>Importa&ccedil;&atilde;o por CSV</h3><p>Confira os registros antes de importar.</p></div>
                   </div>
                   <div class="admin-form-body">
-                    <div class="admin-file-field">
-                      <span class="admin-file-icon" aria-hidden="true">&#128196;</span>
+                    <label class="admin-file-field">
                       <strong>Arquivo CSV</strong>
-                      <small>Colunas esperadas: nome, email, cpf, telefone, endereco, curso</small>
-                      <span class="admin-file-action">Escolher arquivo</span>
-                    </div>
+                      <small></small>
+                      <input type="file" accept=".csv,text/csv">
+                    </label>
+                    <p role="status">Selecione um CSV para visualizar os registros.</p>
                     <div class="admin-table-wrap">
-                      <table class="admin-table">
-                        <thead><tr><th>Nome</th><th>E-mail</th><th>CPF</th><th>Telefone</th><th>Endere&ccedil;o</th><th>Curso</th></tr></thead>
-                        <tbody><tr><td colspan="6">A pr&eacute;via dos registros aparecer&aacute; aqui.</td></tr></tbody>
+                      <table class="admin-table" aria-label="Pr&eacute;via da importa&ccedil;&atilde;o">
+                        <thead><tr></tr></thead>
+                        <tbody></tbody>
                       </table>
                     </div>
+                    <button class="admin-button" type="button" disabled>Importar registros v&aacute;lidos</button>
                   </div>
                 </section>
               </div>
@@ -76,5 +77,6 @@
     </div>
     <script src="../../js/shared/app.js"></script>
     <script src="../../js/admin/adicionar-aluno.js"></script>
+    <script src="../../js/admin/importacao-csv.js"></script>
   </body>
 </html>

@@ -20,36 +20,59 @@
                 <h2>Cadastro de turmas</h2>
                 <p>Cadastre uma turma e associe-a ao curso e per&iacute;odo letivo.</p>
               </div>
-              <section class="admin-form-card admin-form-card-narrow">
-                <div class="admin-card-heading">
-                  <span class="admin-card-icon" aria-hidden="true">&#43;</span>
-                  <div><h3>Dados da turma</h3><p>Preencha os dados da oferta.</p></div>
-                </div>
-                <div class="admin-form-body">
-                  <div class="admin-field-grid">
-                    <label class="admin-field">
-                      <span>C&oacute;digo da turma</span>
-                      <input name="codigo" placeholder="Ex.: ADS-2026-1A" required>
-                    </label>
-                    <label class="admin-field">
-                      <span>Curso</span>
-                      <select name="cursoId" required>
-                        <option value="" selected disabled>Carregando cursos...</option>
-                      </select>
-                    </label>
-                    <label class="admin-field">
-                      <span>Per&iacute;odo letivo</span>
-                      <input name="periodoLetivo" placeholder="Ex.: 2026.1" maxlength="30" required>
-                    </label>
-                    <label class="admin-field">
-                      <span>Vagas</span>
-                      <input name="vagas" type="number" min="1" max="300" step="1" required>
-                    </label>
+              <div class="admin-form-grid">
+                <section class="admin-form-card">
+                  <div class="admin-card-heading">
+                    <span class="admin-card-icon" aria-hidden="true">&#43;</span>
+                    <div><h3>Dados da turma</h3><p>Preencha os dados da oferta.</p></div>
                   </div>
-                  <button class="admin-button" type="button">Cadastrar turma</button>
-                  <p class="admin-local-note" role="status" aria-live="polite"></p>
-                </div>
-              </section>
+                  <div class="admin-form-body">
+                    <div class="admin-field-grid">
+                      <label class="admin-field">
+                        <span>C&oacute;digo da turma</span>
+                        <input name="codigo" placeholder="Ex.: ADS-2026-1A" required>
+                      </label>
+                      <label class="admin-field">
+                        <span>Curso</span>
+                        <select name="cursoId" required>
+                          <option value="" selected disabled>Carregando cursos...</option>
+                        </select>
+                      </label>
+                      <label class="admin-field">
+                        <span>Per&iacute;odo letivo</span>
+                        <input name="periodoLetivo" placeholder="Ex.: 2026.1" maxlength="30" required>
+                      </label>
+                      <label class="admin-field">
+                        <span>Vagas</span>
+                        <input name="vagas" type="number" min="1" max="300" step="1" required>
+                      </label>
+                    </div>
+                    <button class="admin-button" type="button">Cadastrar turma</button>
+                    <p class="admin-local-note" role="status" aria-live="polite"></p>
+                  </div>
+                </section>
+                <section class="admin-form-card" data-importacao-csv="turmas">
+                  <div class="admin-card-heading">
+                    <span class="admin-card-icon" aria-hidden="true">&#8645;</span>
+                    <div><h3>Importa&ccedil;&atilde;o por CSV</h3><p>Confira os registros antes de importar.</p></div>
+                  </div>
+                  <div class="admin-form-body">
+                    <label class="admin-file-field">
+                      <strong>Arquivo CSV</strong>
+                      <small></small>
+                      <input type="file" accept=".csv,text/csv">
+                    </label>
+                    <p role="status">Selecione um CSV para visualizar os registros.</p>
+                    <div class="admin-table-wrap">
+                      <table class="admin-table" aria-label="Pr&eacute;via da importa&ccedil;&atilde;o">
+                        <thead><tr></tr></thead>
+                        <tbody></tbody>
+                      </table>
+                    </div>
+                    <button class="admin-button" type="button" disabled>Importar registros v&aacute;lidos</button>
+                  </div>
+                </section>
+              </div>
             </article>
           </section>
           <div data-component="footer"></div>
@@ -58,5 +81,6 @@
     </div>
     <script src="../../js/shared/app.js"></script>
     <script src="../../js/admin/adicionar-turma.js"></script>
+    <script src="../../js/admin/importacao-csv.js"></script>
   </body>
 </html>

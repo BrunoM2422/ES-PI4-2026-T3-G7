@@ -20,24 +20,47 @@
                 <h2>Cadastro de cursos</h2>
                 <p>Cadastre um curso para organizar disciplinas, turmas e matr&iacute;culas.</p>
               </div>
-              <section class="admin-form-card admin-form-card-narrow">
-                <div class="admin-card-heading">
-                  <span class="admin-card-icon" aria-hidden="true">&#43;</span>
-                  <div><h3>Dados do curso</h3><p>Defina as informa&ccedil;&otilde;es principais do programa.</p></div>
-                </div>
-                <div class="admin-form-body">
-                  <div class="admin-field-grid">
-                    <label class="admin-field"><span>C&oacute;digo do curso</span><input name="codigo" placeholder="Informe o c&oacute;digo do curso" required></label>
-                    <label class="admin-field"><span>Nome do curso</span><input name="nome" required></label>
-                    <label class="admin-field"><span>Unidade acad&ecirc;mica</span><input name="unidade" required></label>
-                    <label class="admin-field"><span>Grau acad&ecirc;mico</span><select name="grau" required><option value="" selected disabled>Selecione o grau acad&ecirc;mico</option><option value="Bacharelado">Bacharelado</option><option value="Licenciatura">Licenciatura</option><option value="Tecnólogo">Tecnólogo</option><option value="Pós-Graduação">Pós-Graduação</option><option value="Mestrado">Mestrado</option><option value="Pós Doutorado">Pós Doutorado</option></select></label>
-                    <label class="admin-field"><span>Dura&ccedil;&atilde;o (semestres)</span><input name="duracao" type="number" min="1" max="20" required></label>
-                    <label class="admin-field"><span>Modalidade</span><select name="modalidade" required><option value="" selected disabled>Selecione a modalidade</option><option value="Presencial">Presencial</option><option value="Semipresencial">Semipresencial</option><option value="Ensino a Distância (EAD)">Ensino a Distância (EAD)</option></select></label>
-                    <label class="admin-field admin-field-wide"><span>Descri&ccedil;&atilde;o</span><textarea name="descricao" rows="4" placeholder="Objetivos e informa&ccedil;&otilde;es do curso"></textarea></label>
+              <div class="admin-form-grid">
+                <section class="admin-form-card">
+                  <div class="admin-card-heading">
+                    <span class="admin-card-icon" aria-hidden="true">&#43;</span>
+                    <div><h3>Dados do curso</h3><p>Defina as informa&ccedil;&otilde;es principais do programa.</p></div>
                   </div>
-                  <button class="admin-button" type="button">Cadastrar curso</button>
-                </div>
-              </section>
+                  <div class="admin-form-body">
+                    <div class="admin-field-grid">
+                      <label class="admin-field"><span>C&oacute;digo do curso</span><input name="codigo" placeholder="Informe o c&oacute;digo do curso" required></label>
+                      <label class="admin-field"><span>Nome do curso</span><input name="nome" required></label>
+                      <label class="admin-field"><span>Unidade acad&ecirc;mica</span><input name="unidade" required></label>
+                      <label class="admin-field"><span>Grau acad&ecirc;mico</span><select name="grau" required><option value="" selected disabled>Selecione o grau acad&ecirc;mico</option><option value="Bacharelado">Bacharelado</option><option value="Licenciatura">Licenciatura</option><option value="Tecnólogo">Tecnólogo</option><option value="Pós-Graduação">Pós-Graduação</option><option value="Mestrado">Mestrado</option><option value="Pós Doutorado">Pós Doutorado</option></select></label>
+                      <label class="admin-field"><span>Dura&ccedil;&atilde;o (semestres)</span><input name="duracao" type="number" min="1" max="20" required></label>
+                      <label class="admin-field"><span>Modalidade</span><select name="modalidade" required><option value="" selected disabled>Selecione a modalidade</option><option value="Presencial">Presencial</option><option value="Semipresencial">Semipresencial</option><option value="Ensino a Distância (EAD)">Ensino a Distância (EAD)</option></select></label>
+                      <label class="admin-field admin-field-wide"><span>Descri&ccedil;&atilde;o</span><textarea name="descricao" rows="4" placeholder="Objetivos e informa&ccedil;&otilde;es do curso"></textarea></label>
+                    </div>
+                    <button class="admin-button" type="button">Cadastrar curso</button>
+                  </div>
+                </section>
+                <section class="admin-form-card" data-importacao-csv="cursos">
+                  <div class="admin-card-heading">
+                    <span class="admin-card-icon" aria-hidden="true">&#8645;</span>
+                    <div><h3>Importa&ccedil;&atilde;o por CSV</h3><p>Confira os registros antes de importar.</p></div>
+                  </div>
+                  <div class="admin-form-body">
+                    <label class="admin-file-field">
+                      <strong>Arquivo CSV</strong>
+                      <small></small>
+                      <input type="file" accept=".csv,text/csv">
+                    </label>
+                    <p role="status">Selecione um CSV para visualizar os registros.</p>
+                    <div class="admin-table-wrap">
+                      <table class="admin-table" aria-label="Pr&eacute;via da importa&ccedil;&atilde;o">
+                        <thead><tr></tr></thead>
+                        <tbody></tbody>
+                      </table>
+                    </div>
+                    <button class="admin-button" type="button" disabled>Importar registros v&aacute;lidos</button>
+                  </div>
+                </section>
+              </div>
             </article>
           </section>
           <div data-component="footer"></div>
@@ -46,5 +69,6 @@
     </div>
     <script src="../../js/shared/app.js"></script>
     <script src="../../js/admin/adicionar-curso.js"></script>
+    <script src="../../js/admin/importacao-csv.js"></script>
   </body>
 </html>

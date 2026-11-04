@@ -20,24 +20,47 @@
                 <h2>Cadastro de docente</h2>
                 <p>Registre os dados do docente e as &aacute;reas em que atua.</p>
               </div>
-              <section class="admin-form-card admin-form-card-narrow">
-                <div class="admin-card-heading">
-                  <span class="admin-card-icon" aria-hidden="true">&#43;</span>
-                  <div><h3>Dados do docente</h3><p>Os campos marcados s&atilde;o obrigat&oacute;rios.</p></div>
-                </div>
-                <div class="admin-form-body">
-                  <div class="admin-field-grid">
-                    <label class="admin-field admin-field-wide"><span>Nome completo</span><input name="nome" autocomplete="name" required></label>
-                    <label class="admin-field"><span>E-mail institucional</span><input name="email" type="email" autocomplete="email" required></label>
-                    <label class="admin-field"><span>CPF</span><input name="cpf" inputmode="numeric" placeholder="Informe o CPF" required></label>
-                    <label class="admin-field"><span>Instituição</span><input name="instituicao" placeholder="Informe o nome da instituição" required></label>
-                    <div class="admin-field admin-field-unavailable"><span>Departamento</span><p>Op&ccedil;&otilde;es n&atilde;o dispon&iacute;veis.</p></div>
-                    <label class="admin-field"><span>Especialidade</span><input name="especialidade" required></label>
-                    <label class="admin-field admin-field-wide"><span>Telefone</span><input name="telefone" type="tel" autocomplete="tel"></label>
+              <div class="admin-form-grid">
+                <section class="admin-form-card">
+                  <div class="admin-card-heading">
+                    <span class="admin-card-icon" aria-hidden="true">&#43;</span>
+                    <div><h3>Dados do docente</h3><p>Os campos marcados s&atilde;o obrigat&oacute;rios.</p></div>
                   </div>
-                  <button class="admin-button" type="button">Cadastrar docente</button>
-                </div>
-              </section>
+                  <div class="admin-form-body">
+                    <div class="admin-field-grid">
+                      <label class="admin-field admin-field-wide"><span>Nome completo</span><input name="nome" autocomplete="name" required></label>
+                      <label class="admin-field"><span>E-mail institucional</span><input name="email" type="email" autocomplete="email" required></label>
+                      <label class="admin-field"><span>CPF</span><input name="cpf" inputmode="numeric" placeholder="Informe o CPF" required></label>
+                      <label class="admin-field"><span>Instituição</span><input name="instituicao" placeholder="Informe o nome da instituição" required></label>
+                      <div class="admin-field admin-field-unavailable"><span>Departamento</span><p>Op&ccedil;&otilde;es n&atilde;o dispon&iacute;veis.</p></div>
+                      <label class="admin-field"><span>Especialidade</span><input name="especialidade" required></label>
+                      <label class="admin-field admin-field-wide"><span>Telefone</span><input name="telefone" type="tel" autocomplete="tel"></label>
+                    </div>
+                    <button class="admin-button" type="button">Cadastrar docente</button>
+                  </div>
+                </section>
+                <section class="admin-form-card" data-importacao-csv="docentes">
+                  <div class="admin-card-heading">
+                    <span class="admin-card-icon" aria-hidden="true">&#8645;</span>
+                    <div><h3>Importa&ccedil;&atilde;o por CSV</h3><p>Confira os registros antes de importar.</p></div>
+                  </div>
+                  <div class="admin-form-body">
+                    <label class="admin-file-field">
+                      <strong>Arquivo CSV</strong>
+                      <small></small>
+                      <input type="file" accept=".csv,text/csv">
+                    </label>
+                    <p role="status">Selecione um CSV para visualizar os registros.</p>
+                    <div class="admin-table-wrap">
+                      <table class="admin-table" aria-label="Pr&eacute;via da importa&ccedil;&atilde;o">
+                        <thead><tr></tr></thead>
+                        <tbody></tbody>
+                      </table>
+                    </div>
+                    <button class="admin-button" type="button" disabled>Importar registros v&aacute;lidos</button>
+                  </div>
+                </section>
+              </div>
             </article>
           </section>
           <div data-component="footer"></div>
@@ -46,5 +69,6 @@
     </div>
     <script src="../../js/shared/app.js"></script>
     <script src="../../js/admin/adicionar-docente.js"></script>
+    <script src="../../js/admin/importacao-csv.js"></script>
   </body>
 </html>
