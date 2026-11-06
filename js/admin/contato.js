@@ -60,14 +60,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="ticket-info">
               <div class="ticket-title-row">
                 <h3>${escapeHtml(chamado.assunto)}</h3>
+              </div>
+              <div>
                 <span class="ticket-status ${statusBadgeClass}">${statusTexto}</span>
               </div>
-              <p class="ticket-student">${escapeHtml(chamado.nome)} (RA: ${escapeHtml(chamado.ra || 'N/D')})</p>
-              <p class="ticket-preview">${escapeHtml(chamado.descricao)}</p>
-            </div>
-            <div class="ticket-meta">
-              <span>Curso: ${escapeHtml(chamado.curso || 'Não informado')}</span>
-              <span>${formatarData(chamado.criado_em)}</span>
+              <div>
+                <p class="ticket-student">${escapeHtml(chamado.nome)} <small>(RA: ${escapeHtml(chamado.ra || 'N/D')})</small></p>
+                <p class="ticket-preview">${escapeHtml(chamado.descricao)}</p>
+              </div>
+              <div class="ticket-meta">
+                <span>Curso: ${escapeHtml(chamado.curso || 'Não informado')}</span>
+                <span>${formatarData(chamado.criado_em)}</span>
+              </div>
             </div>
           </div>
           <div class="ticket-actions">
