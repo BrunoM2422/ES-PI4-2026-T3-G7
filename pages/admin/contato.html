@@ -1,0 +1,271 @@
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Gerenciar Chamados | NotaDez</title>
+
+    <link rel="stylesheet" href="../../css/shared/style.css">
+    <link rel="stylesheet" href="../../css/admin/paginas.css">
+  </head>
+
+  <body>
+    <div
+      id="app"
+      data-page="chamados"
+      data-role="admin"
+      data-title="Gerenciar Chamados"
+    >
+      <div class="shell">
+
+        <aside class="side" data-component="sidebar">
+        </aside>
+
+        <main class="main">
+
+          <div data-component="header">
+          </div>
+
+          <section class="content">
+
+            <article class="admin-page">
+
+              <div class="tickets-layout">
+
+                <!-- Cabeçalho -->
+                <section class="tickets-header">
+                  <div>
+                    <h2>Chamados e Mensagens</h2>
+                    <p>
+                      Gerencie as solicitações enviadas pelos estudantes.
+                    </p>
+                  </div>
+                </section>
+
+                <!-- Painel de chamados -->
+                <section class="student-page-panel tickets-panel">
+
+                  <!-- Filtros -->
+                  <div class="tickets-toolbar">
+
+                    <div class="tickets-filters">
+
+                      <button
+                        type="button"
+                        class="tickets-filter active"
+                        data-filter="todos"
+                      >
+                        Todos
+                      </button>
+
+                      <button
+                        type="button"
+                        class="tickets-filter"
+                        data-filter="ativos"
+                      >
+                        Ativos
+                      </button>
+
+                      <button
+                        type="button"
+                        class="tickets-filter"
+                        data-filter="finalizados"
+                      >
+                        Finalizados
+                      </button>
+
+                    </div>
+
+                    <!-- Pesquisa -->
+                    <div class="tickets-search">
+                      <input
+                        type="search"
+                        id="ticket-search"
+                        placeholder="Buscar chamado..."
+                        aria-label="Buscar chamado"
+                      >
+                    </div>
+
+                  </div>
+
+                  <!-- Lista de chamados -->
+                  <div class="tickets-list" id="tickets-list">
+
+                    <!-- Chamado 1 -->
+                    <article
+                      class="ticket-item"
+                      data-status="ativo"
+                    >
+
+                      <div class="ticket-main">
+
+                        <div class="ticket-info">
+
+                          <div class="ticket-title-row">
+                            <h3>Dúvida sobre notas</h3>
+
+                            <span class="ticket-status ticket-status-active">
+                              Ativo
+                            </span>
+                          </div>
+
+                          <p class="ticket-student">
+                            João Pedro Silva
+                          </p>
+
+                          <p class="ticket-preview">
+                            Gostaria de entender como foi calculada
+                            minha média do último bimestre...
+                          </p>
+
+                        </div>
+
+                        <div class="ticket-meta">
+                          <span>Turma: 3º A</span>
+                          <span>06/11/2026</span>
+                        </div>
+
+                      </div>
+
+                      <div class="ticket-actions">
+                        <button
+                          type="button"
+                          class="ticket-open"
+                          data-ticket-id="1"
+                        >
+                          Visualizar
+                        </button>
+                      </div>
+
+                    </article>
+
+                    <!-- Chamado 2 -->
+                    <article
+                      class="ticket-item"
+                      data-status="ativo"
+                    >
+
+                      <div class="ticket-main">
+
+                        <div class="ticket-info">
+
+                          <div class="ticket-title-row">
+                            <h3>Problema com acesso</h3>
+
+                            <span class="ticket-status ticket-status-active">
+                              Ativo
+                            </span>
+                          </div>
+
+                          <p class="ticket-student">
+                            Maria Eduarda Santos
+                          </p>
+
+                          <p class="ticket-preview">
+                            Não estou conseguindo acessar a plataforma
+                            de atividades...
+                          </p>
+
+                        </div>
+
+                        <div class="ticket-meta">
+                          <span>Turma: 2º B</span>
+                          <span>05/11/2026</span>
+                        </div>
+
+                      </div>
+
+                      <div class="ticket-actions">
+                        <button
+                          type="button"
+                          class="ticket-open"
+                          data-ticket-id="2"
+                        >
+                          Visualizar
+                        </button>
+                      </div>
+
+                    </article>
+
+                    <!-- Chamado 3 -->
+                    <article
+                      class="ticket-item"
+                      data-status="finalizado"
+                    >
+
+                      <div class="ticket-main">
+
+                        <div class="ticket-info">
+
+                          <div class="ticket-title-row">
+                            <h3>Solicitação de declaração</h3>
+
+                            <span class="ticket-status ticket-status-finished">
+                              Finalizado
+                            </span>
+                          </div>
+
+                          <p class="ticket-student">
+                            Pedro Henrique Oliveira
+                          </p>
+
+                          <p class="ticket-preview">
+                            Preciso solicitar uma declaração de
+                            matrícula para apresentar...
+                          </p>
+
+                        </div>
+
+                        <div class="ticket-meta">
+                          <span>Turma: 1º A</span>
+                          <span>03/11/2026</span>
+                        </div>
+
+                      </div>
+
+                      <div class="ticket-actions">
+                        <button
+                          type="button"
+                          class="ticket-open"
+                          data-ticket-id="3"
+                        >
+                          Visualizar
+                        </button>
+                      </div>
+
+                    </article>
+
+                  </div>
+
+                  
+                  <div
+                    class="tickets-empty"
+                    id="tickets-empty"
+                    hidden
+                  >
+                    Nenhum chamado encontrado.
+                  </div>
+
+                </section>
+
+              </div>
+
+            </article>
+
+          </section>
+
+          <div data-component="footer">
+          </div>
+
+        </main>
+
+      </div>
+    </div>
+
+    <script src="../../js/shared/app.js"></script>
+    <script src="../../js/admin/contato.js"></script>
+
+  </body>
+</html>
