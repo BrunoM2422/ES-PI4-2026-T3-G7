@@ -81,7 +81,7 @@ router.get('/:id', async (req, res) => {
 
 router.post('/:id/mensagens', async (req, res) => {
   try {
-    const { mensagem, remetente_nome } = req.body;
+    const { mensagem, remetente_nome, remetente_tipo } = req.body;
 
     if (!mensagem || !mensagem.trim()) {
       return res.status(400).json({ mensagem: 'A mensagem não pode estar vazia.' });
@@ -92,9 +92,12 @@ router.post('/:id/mensagens', async (req, res) => {
       return res.status(404).json({ mensagem: 'Chamado não encontrado.' });
     }
 
+    const tipo = remetente_tipo || 'admin';
+    const nome = remetente_nome || (tipo === 'estudante' ? chamado.nome : 'Administrador');
+
     chamado.mensagens.push({
-      remetente_tipo: 'admin',
-      remetente_nome: remetente_nome || 'Administrador',
+      remetente_tipo: tipo,
+      remetente_nome: nome,
       mensagem: mensagem.trim(),
       data_envio: new Date()
     });
