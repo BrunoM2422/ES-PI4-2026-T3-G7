@@ -9,6 +9,7 @@ const OpcoesSistema = require('../models/OpcoesSistema');
 const Disciplina = require('../models/Disciplina');
 const Turma = require('../models/Turma');
 const GradeHorario = require('../models/GradeHorario');
+const { autenticar } = require('../services/autenticacao');
 
 const router = express.Router();
 
@@ -949,9 +950,47 @@ async function obterOuCriarCodigoInstituicao(nomeInstituicao) {
   };
 }
 
+router.get('/estudantes/turmas', autenticar, async (req, res) => {
+  if (req.usuario.papel !== 'admin') return res.status(403).json({ mensagem: 'Apenas administradores podem gerenciar turmas de alunos.' });
+  try {
+    const estudantes = await Estudante.find().select('nome email cursoId turmaId').sort({ nome: 1 }).lean();
+    return res.json({ estudantes: estudantes.map(estudante => ({
+      id: String(estudante._id),
+      nome: estudante.nome,
+      email: estudante.email,
+      cursoId: estudante.cursoId ? String(estudante.cursoId) : null,
+      turmaId: estudante.turmaId ? String(estudante.turmaId) : null
+    })) });
+  } catch (erro) {
+    console.error('Erro ao carregar estudantes para vínculo de turma:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível carregar os estudantes.' });
+  }
+});
+
+router.put('/estudantes/:estudanteId/turma', autenticar, async (req, res) => {
+  if (req.usuario.papel !== 'admin') return res.status(403).json({ mensagem: 'Apenas administradores podem gerenciar turmas de alunos.' });
+  try {
+    const { estudanteId } = req.params;
+    const { turmaId } = req.body;
+    if (!mongoose.isValidObjectId(estudanteId) || !mongoose.isValidObjectId(turmaId)) {
+      return res.status(400).json({ mensagem: 'Selecione um estudante e uma turma válidos.' });
+    }
+    const estudante = await Estudante.findById(estudanteId);
+    if (!estudante) return res.status(404).json({ mensagem: 'Estudante não encontrado.' });
+    const turma = await Turma.findOne({ _id: turmaId, cursoId: estudante.cursoId }).select('_id codigo');
+    if (!turma) return res.status(400).json({ mensagem: 'A turma selecionada não pertence ao curso do estudante.' });
+    estudante.turmaId = turma._id;
+    await estudante.save();
+    return res.json({ mensagem: `Aluno vinculado à turma ${turma.codigo}.` });
+  } catch (erro) {
+    console.error('Erro ao vincular estudante à turma:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível vincular o estudante à turma.' });
+  }
+});
+
 router.post('/cadastrar', async (req, res) => {
   try {
-    const { nome, email, cpf, telefone, endereco, especialidade, tipo, instituicao, cursoId } = req.body;
+    const { nome, email, cpf, telefone, endereco, especialidade, tipo, instituicao, cursoId, turmaId } = req.body;
 
     if (!nome || !email || !cpf || !tipo) {
       return res.status(400).json({ mensagem: 'Preencha todos os campos obrigatórios.' });
@@ -977,6 +1016,14 @@ router.post('/cadastrar', async (req, res) => {
         return res.status(404).json({ mensagem: 'O curso selecionado não foi encontrado.' });
       }
 
+      if (!mongoose.isValidObjectId(turmaId)) {
+        return res.status(400).json({ mensagem: 'Selecione uma turma válida para o estudante.' });
+      }
+      const turmaSelecionada = await Turma.findOne({ _id: turmaId, cursoId: cursoSelecionado._id }).select('_id');
+      if (!turmaSelecionada) {
+        return res.status(400).json({ mensagem: 'A turma selecionada não pertence ao curso do estudante.' });
+      }
+
       const totalEstudantes = await Estudante.countDocuments();
       const sequencial = String(totalEstudantes).padStart(3, '0');
       codigoMatricula = `E2026${sequencial}`;
@@ -988,6 +1035,7 @@ router.post('/cadastrar', async (req, res) => {
         cpf,
         telefone,
         endereco,
+        turmaId: turmaSelecionada._id,
         cursoId: cursoSelecionado._id,
         curso: {
           codigo: cursoSelecionado.codigo,

@@ -255,6 +255,26 @@
   color: #147567;
 }
 
+.event-aula {
+  background: #eaf1ff;
+  color: #2861c8;
+}
+
+.event-atividade {
+  background: #e7f8f1;
+  color: #168663;
+}
+
+.event-avaliacao {
+  background: #fff4df;
+  color: #aa6b08;
+}
+
+.event-compromisso {
+  background: #f0eeff;
+  color: #5146ee;
+}
+
 .calendar-more {
   padding: 2px 5px;
   color: var(--muted);
@@ -491,6 +511,16 @@
   cursor: not-allowed;
   background: #f1f3f6;
   color: #929bad;
+}
+
+.event-field select:disabled {
+  cursor: not-allowed;
+  background: #f1f3f6;
+  color: #929bad;
+}
+
+.event-form [hidden] {
+  display: none !important;
 }
 
 .event-form-footer,

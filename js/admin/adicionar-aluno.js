@@ -1,9 +1,88 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const botaoCadastrar = document.querySelector('.admin-button');
+  const associacao = document.querySelector('[data-associar-estudante]');
+  if (associacao) {
+    const estudanteSelect = associacao.querySelector('[name="estudanteExistente"]');
+    const turmaExistenteSelect = associacao.querySelector('[name="turmaExistente"]');
+    const botaoVincular = associacao.querySelector('[data-vincular-turma]');
+    const statusVinculo = associacao.querySelector('[data-vinculo-status]');
+    let estudantes = [];
+
+    const carregarEstudantes = async () => {
+      try {
+        const response = await fetch('/api/admin/estudantes/turmas', {
+          headers: { Authorization: `Bearer ${sessionStorage.getItem('notadez_token') || ''}` }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.mensagem || 'Não foi possível carregar os alunos.');
+        estudantes = data.estudantes || [];
+        estudanteSelect.replaceChildren(new Option('Selecione um aluno', ''));
+        estudantes.forEach(estudante => {
+          estudanteSelect.add(new Option(`${estudante.nome} (${estudante.email})`, estudante.id));
+        });
+        estudanteSelect.disabled = estudantes.length === 0;
+      } catch (erro) {
+        statusVinculo.textContent = erro.message;
+        estudanteSelect.replaceChildren(new Option('Não foi possível carregar alunos', ''));
+        estudanteSelect.disabled = true;
+      }
+    };
+
+    estudanteSelect.addEventListener('change', async () => {
+      const estudante = estudantes.find(item => item.id === estudanteSelect.value);
+      turmaExistenteSelect.disabled = true;
+      turmaExistenteSelect.replaceChildren(new Option('Carregando turmas...', ''));
+      if (!estudante?.cursoId) {
+        turmaExistenteSelect.replaceChildren(new Option('Aluno sem curso associado', ''));
+        return;
+      }
+      try {
+        const response = await fetch(`/api/admin/turmas?cursoId=${encodeURIComponent(estudante.cursoId)}`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.mensagem || 'Não foi possível carregar as turmas.');
+        const turmas = data.turmas || [];
+        turmaExistenteSelect.replaceChildren(new Option('Selecione uma turma', ''));
+        turmas.forEach(turma => turmaExistenteSelect.add(new Option(`${turma.codigo} · ${turma.periodoLetivo}`, turma.id)));
+        turmaExistenteSelect.value = estudante.turmaId || '';
+        turmaExistenteSelect.disabled = turmas.length === 0;
+      } catch (erro) {
+        turmaExistenteSelect.replaceChildren(new Option(erro.message, ''));
+      }
+    });
+
+    botaoVincular.addEventListener('click', async () => {
+      if (!estudanteSelect.reportValidity() || !turmaExistenteSelect.reportValidity()) return;
+      botaoVincular.disabled = true;
+      statusVinculo.textContent = '';
+      try {
+        const response = await fetch(`/api/admin/estudantes/${estudanteSelect.value}/turma`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${sessionStorage.getItem('notadez_token') || ''}`
+          },
+          body: JSON.stringify({ turmaId: turmaExistenteSelect.value })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.mensagem || 'Não foi possível vincular o aluno.');
+        statusVinculo.textContent = data.mensagem;
+        const estudante = estudantes.find(item => item.id === estudanteSelect.value);
+        if (estudante) estudante.turmaId = turmaExistenteSelect.value;
+      } catch (erro) {
+        statusVinculo.textContent = erro.message;
+      } finally {
+        botaoVincular.disabled = false;
+      }
+    });
+
+    carregarEstudantes();
+  }
+
+  const botaoCadastrar = document.querySelector('[data-cadastrar-aluno]');
   if (!botaoCadastrar) return;
 
   const campoCurso = document.querySelector('input[name="cursoBusca"]');
   const cursoIdInput = document.querySelector('input[name="cursoId"]');
+  const turmaSelect = document.querySelector('select[name="turmaId"]');
   const listaCursos = document.querySelector('#curso-opcoes');
   const statusCursos = document.querySelector('#curso-status');
   let cursos = [];
@@ -25,7 +104,30 @@ document.addEventListener('DOMContentLoaded', () => {
     campoCurso.value = curso.nome;
     cursoIdInput.value = curso.id;
     statusCursos.textContent = `Curso selecionado: ${curso.nome} (${curso.codigo}).`;
+    carregarTurmas(curso.id);
     fecharLista();
+  };
+
+  const carregarTurmas = async cursoId => {
+    turmaSelect.disabled = true;
+    turmaSelect.replaceChildren(new Option('Carregando turmas...', ''));
+    try {
+      const response = await fetch(`/api/admin/turmas?cursoId=${encodeURIComponent(cursoId)}`);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.mensagem || 'Não foi possível carregar as turmas.');
+      const turmas = data.turmas || [];
+      turmaSelect.replaceChildren(new Option(
+        turmas.length ? 'Selecione uma turma' : 'Nenhuma turma cadastrada para este curso',
+        ''
+      ));
+      turmas.forEach(turma => {
+        turmaSelect.add(new Option(`${turma.codigo} · ${turma.periodoLetivo}`, turma.id));
+      });
+      turmaSelect.disabled = turmas.length === 0;
+    } catch (erro) {
+      console.error('Erro ao carregar turmas:', erro);
+      turmaSelect.replaceChildren(new Option('Não foi possível carregar turmas', ''));
+    }
   };
 
   const renderizarCursos = (termo = '') => {
@@ -103,6 +205,9 @@ document.addEventListener('DOMContentLoaded', () => {
   campoCurso.addEventListener('focus', () => renderizarCursos(campoCurso.value));
   campoCurso.addEventListener('input', () => {
     cursoIdInput.value = '';
+    turmaSelect.value = '';
+    turmaSelect.replaceChildren(new Option('Selecione um curso primeiro', ''));
+    turmaSelect.disabled = true;
     renderizarCursos(campoCurso.value);
     statusCursos.textContent = campoCurso.value.trim()
       ? 'Escolha um curso na lista de sugestões.'
@@ -139,6 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const endereco = document.querySelector('input[name="endereco"]').value.trim();
     const instituicao = document.querySelector('input[name="instituicao"]').value.trim();
     const cursoId = cursoIdInput.value;
+    const turmaId = turmaSelect.value;
 
     if (!nome || !email || !cpf) {
       window.showAppMessage('Preencha os campos obrigatórios (Nome, E-mail e CPF).');
@@ -148,6 +254,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!cursoId) {
       window.showAppMessage('Selecione um curso válido na lista de sugestões.');
       campoCurso.focus();
+      return;
+    }
+
+    if (!turmaId) {
+      window.showAppMessage('Selecione a turma do aluno.');
+      turmaSelect.focus();
       return;
     }
 
@@ -162,6 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
           telefone,
           endereco,
           cursoId,
+          turmaId,
           tipo: 'estudante',
           instituicao
         })
@@ -181,6 +294,9 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       campoCurso.value = '';
       cursoIdInput.value = '';
+      turmaSelect.value = '';
+      turmaSelect.replaceChildren(new Option('Selecione um curso primeiro', ''));
+      turmaSelect.disabled = true;
       statusCursos.textContent = '';
     } catch (erro) {
       console.error('Erro na requisição:', erro);
