@@ -69,7 +69,10 @@
           linha = [];
           if (caractere === '\r' && texto[i + 1] === '\n') i++;
         }
-      } else if (caractere === '"' && !valor && !aspasFechadas) {
+      } else if (aspasFechadas && (caractere === ' ' || caractere === '\t')) {
+        continue;
+      } else if (caractere === '"' && !valor.trim() && !aspasFechadas) {
+        valor = '';
         entreAspas = true;
       } else if (aspasFechadas || caractere === '"') {
         throw new Error('Há aspas em posição inválida no CSV.');
@@ -88,7 +91,7 @@
     const envio = { ...dados };
     let cursoSelecionado = null;
     for (const campo of campos) {
-      if (campo === 'curso' || campo === 'semestre') continue;
+      if (campo === 'curso' || campo === 'semestre' || (entidade === 'turmas' && campo === 'periodoLetivo')) continue;
       const controle = document.querySelector('[name="' + campo + '"]');
       if (!controle) continue;
       const teste = controle.cloneNode(true);
@@ -113,6 +116,12 @@
           Number(dados.semestre) < 1 || Number(dados.semestre) > curso.duracao)) {
         throw new Error('Semestre fora da duração do curso.');
       }
+      if (entidade === 'turmas') {
+        const periodo = Number(dados.periodoLetivo);
+        if (!Number.isInteger(periodo) || periodo < 1 || periodo > curso.duracao) {
+          throw new Error('Período letivo fora da duração do curso.');
+        }
+      }
     }
     if (entidade === 'disciplinas') {
       const semestre = Number(dados.semestre);
@@ -127,6 +136,18 @@
         throw new Error('Informe exatamente dois dígitos finais em codigo.');
       }
       envio.codigo = `${cursoSelecionado.codigo}${String(semestre).padStart(2, '0')}${sequencia}`;
+    }
+    if (entidade === 'turmas') {
+      const codigo = String(dados.codigo || '').trim();
+      const periodo = String(Number(dados.periodoLetivo)).padStart(2, '0');
+      const numeroTurma = codigo.slice(2);
+      if (
+        !/^\d{4}$/.test(codigo) || !codigo.startsWith(periodo) ||
+        !/^\d{2}$/.test(numeroTurma) || Number(numeroTurma) < 1 || Number(numeroTurma) > 99 ||
+        String(Number(numeroTurma)).padStart(2, '0') !== numeroTurma
+      ) {
+        throw new Error('O código da turma deve usar o semestre em dois dígitos e um número de turma de 01 a 99.');
+      }
     }
     if (dados.turma) {
       const turmaReferencia = normalizar(dados.turma);
