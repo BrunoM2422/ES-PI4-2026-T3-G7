@@ -3,13 +3,14 @@
   if (!painel) return;
 
   const configuracoes = {
-    alunos: ['cadastrar', 'nome email cpf instituicao telefone endereco curso', '', 'estudante'],
+    alunos: ['cadastrar', 'nome email cpf instituicao telefone endereco curso turma', '', 'estudante'],
     docentes: ['cadastrar', 'nome email cpf instituicao especialidade', 'telefone', 'professor'],
     disciplinas: ['disciplinas', 'nome codigo semestre curso descricao', ''],
     cursos: ['cursos', 'codigo nome unidade grau modalidade duracao', 'descricao'],
     turmas: ['turmas', 'codigo curso periodoLetivo vagas', '']
   };
   const [rota, obrigatorios, opcionais, tipo] = configuracoes[painel.dataset.importacaoCsv];
+  const entidade = painel.dataset.importacaoCsv;
   const camposObrigatorios = obrigatorios.split(' ');
   const campos = [...camposObrigatorios, ...opcionais.split(' ').filter(Boolean)];
   const arquivo = painel.querySelector('input');
@@ -31,6 +32,8 @@
     'Colunas obrigatórias: ' + camposObrigatorios.join(', ') +
     (opcionais ? '. Opcional: ' + opcionais : '') +
     (campos.includes('curso') ? '. Informe o código ou nome exato do curso.' : '') +
+    (entidade === 'disciplinas' ? ' Para disciplinas, codigo deve conter exatamente os dois dígitos finais.' : '') +
+    (campos.includes('turma') ? ' Informe o código exato da turma.' : '') +
     ' Use UTF-8 e vírgula ou ponto e vírgula como separador.';
   adicionarCelulas(tabela.tHead.rows[0], ['Registro', ...campos, 'Resultado'], 'th');
 
@@ -77,12 +80,13 @@
     return linhas;
   }
 
-  function prepararRegistro(dados, cursos) {
+  function prepararRegistro(dados, cursos, turmas) {
     for (const campo of camposObrigatorios) {
       if (!dados[campo]) throw new Error('Preencha ' + campo + '.');
     }
 
     const envio = { ...dados };
+    let cursoSelecionado = null;
     for (const campo of campos) {
       if (campo === 'curso' || campo === 'semestre') continue;
       const controle = document.querySelector('[name="' + campo + '"]');
@@ -102,12 +106,38 @@
         throw new Error(encontrados.length ? 'Nome de curso ambíguo. Use o código.' : 'Curso não encontrado.');
       }
       const [curso] = encontrados;
+      cursoSelecionado = curso;
       envio.cursoId = curso.id;
       delete envio.curso;
       if (dados.semestre && (!Number.isInteger(Number(dados.semestre)) ||
           Number(dados.semestre) < 1 || Number(dados.semestre) > curso.duracao)) {
         throw new Error('Semestre fora da duração do curso.');
       }
+    }
+    if (entidade === 'disciplinas') {
+      const semestre = Number(dados.semestre);
+      const sequencia = String(dados.codigo || '').trim();
+      if (!cursoSelecionado || !/^\d{2}$/.test(cursoSelecionado.codigo || '')) {
+        throw new Error('Disciplina precisa de um curso com código de dois dígitos.');
+      }
+      if (!Number.isInteger(semestre) || semestre < 1 || semestre > cursoSelecionado.duracao) {
+        throw new Error('Semestre fora da duração do curso.');
+      }
+      if (!/^\d{2}$/.test(sequencia)) {
+        throw new Error('Informe exatamente dois dígitos finais em codigo.');
+      }
+      envio.codigo = `${cursoSelecionado.codigo}${String(semestre).padStart(2, '0')}${sequencia}`;
+    }
+    if (dados.turma) {
+      const turmaReferencia = normalizar(dados.turma);
+      const turmasEncontradas = turmas.filter(turma =>
+        normalizar(turma.codigo) === turmaReferencia && turma.cursoId === envio.cursoId
+      );
+      if (turmasEncontradas.length !== 1) {
+        throw new Error(turmasEncontradas.length ? 'Código de turma ambíguo para este curso.' : 'Turma não encontrada para o curso informado.');
+      }
+      envio.turmaId = turmasEncontradas[0].id;
+      delete envio.turma;
     }
     if (tipo) envio.tipo = tipo;
     return envio;
@@ -138,6 +168,12 @@
         if (!resposta.ok) throw new Error('Não foi possível carregar os cursos.');
         ({ cursos } = await resposta.json());
       }
+      let turmas = [];
+      if (campos.includes('turma')) {
+        const resposta = await fetch('/api/admin/turmas');
+        if (!resposta.ok) throw new Error('Não foi possível carregar as turmas.');
+        ({ turmas } = await resposta.json());
+      }
 
       registros = linhas.map((linha, indice) => {
         const dados = Object.fromEntries(campos.map(campo => [campo, linha[colunas.indexOf(normalizar(campo))] ?? '']));
@@ -146,7 +182,7 @@
         const resultado = tr.lastElementChild;
         try {
           if (linha.length !== colunas.length) throw new Error('Número de campos diferente do cabeçalho.');
-          const envio = prepararRegistro(dados, cursos);
+          const envio = prepararRegistro(dados, cursos, turmas);
           resultado.textContent = 'Pronto';
           return { envio, resultado };
         } catch (erro) {

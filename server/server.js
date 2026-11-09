@@ -39,6 +39,7 @@ async function iniciarServidor() {
     await Turma.init();
     await GradeHorario.init();
     await Evento.init();
+    await Evento.updateMany({ scope: { $exists: false } }, { $set: { scope: 'global' } });
 
     app.get('/', (req, res) => {
       res.sendFile(path.join(__dirname, '..', 'login.html'));

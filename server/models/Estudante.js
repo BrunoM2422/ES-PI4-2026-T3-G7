@@ -14,6 +14,7 @@ const estudanteSchema = new mongoose.Schema({
     retorno: { type: Date },
     justificativa: { type: String, trim: true }
   },
+  turmaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Turma' },
   cursoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Curso' },
   curso: {
     codigo: { type: String, trim: true },

@@ -5,10 +5,19 @@
   const user = JSON.parse(sessionStorage.getItem('notadez_user') || 'null');
   const legacyStorageKey = `notadez_calendar_${role}_${user?.email || 'usuario'}`;
   const migrationStorageKey = `${legacyStorageKey}_migrated`;
+  const categoryLabels = {
+    feriado: 'Feriado',
+    institucional: 'Evento Institucional',
+    aula: 'Alteração de aula',
+    atividade: 'Atividade da turma',
+    avaliacao: 'Prova ou entrega',
+    compromisso: 'Compromisso pessoal'
+  };
   const now = new Date();
   let displayedMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   let selectedDate = formatDate(now);
   let editingId = null;
+  let editorReadOnly = false;
   let events = [];
 
   host.classList.add('calendar-host');
@@ -20,6 +29,7 @@
     title: host.querySelector('#event-title'),
     date: host.querySelector('#event-date'),
     category: host.querySelector('#event-category'),
+    turma: host.querySelector('#event-turma'),
     start: host.querySelector('#event-start'),
     end: host.querySelector('#event-end'),
     location: host.querySelector('#event-location'),
@@ -58,6 +68,7 @@
 
   form.addEventListener('submit', async event => {
     event.preventDefault();
+    if (editorReadOnly) return;
     if (!window.validateAppForm(form)) return;
 
     const record = {
@@ -65,6 +76,7 @@
       title: fields.title.value.trim(),
       date: fields.date.value,
       category: fields.category.value,
+      turmaId: fields.turma?.value || '',
       start: fields.category.value === 'feriado' ? '' : fields.start.value,
       end: fields.category.value === 'feriado' ? '' : fields.end.value,
       location: fields.category.value === 'feriado' ? '' : fields.location.value.trim(),
@@ -163,7 +175,7 @@
       const stack = day.querySelector('.calendar-event-stack');
       dayEvents.slice(0, 2).forEach(item => {
         const eventButton = cloneTemplate('calendar-event-template').querySelector('.calendar-event');
-        eventButton.classList.add(`event-${item.category === 'feriado' ? 'feriado' : 'institucional'}`);
+        eventButton.classList.add(`event-${item.category}`);
         eventButton.dataset.eventId = item.id;
         eventButton.title = item.category === 'feriado' ? item.title : `${item.start} ${item.title}`;
         eventButton.querySelector('span').textContent = item.title;
@@ -210,11 +222,11 @@
       }).format(date).replace('.', '');
       const button = cloneTemplate('agenda-event-template').querySelector('.agenda-event');
       button.dataset.agendaId = item.id;
-      button.querySelector('.agenda-event-marker').classList.add(`event-${item.category === 'feriado' ? 'feriado' : 'institucional'}`);
+      button.querySelector('.agenda-event-marker').classList.add(`event-${item.category}`);
       button.querySelector('.agenda-event-date strong').textContent = dateLabel;
       button.querySelector('.agenda-event-date small').textContent = weekday;
       button.querySelector('.agenda-event-info strong').textContent = item.title;
-      const categoryLabel = item.category === 'feriado' ? 'Feriado' : 'Evento Institucional';
+      const categoryLabel = categoryLabels[item.category] || 'Evento';
       const timeDetails = item.category === 'feriado'
         ? categoryLabel
         : [categoryLabel, item.start, item.end ? `- ${item.end}` : '', item.location].filter(Boolean).join(' · ');
@@ -233,18 +245,30 @@
   function openEditor(date, id = null) {
     const item = id ? events.find(event => event.id === id) : null;
     editingId = item?.id || null;
+    editorReadOnly = Boolean(item && !item.canManage);
+    fields.category.querySelectorAll('[data-readonly-category]').forEach(option => option.remove());
     form.reset();
     fields.title.value = item?.title || '';
     fields.date.value = item?.date || date;
     fields.date.min = item?.date < todayKey() ? item.date : todayKey();
-    fields.category.value = item?.category === 'feriado' ? 'feriado' : item ? 'institucional' : '';
+    if (item && !Array.from(fields.category.options).some(option => option.value === item.category)) {
+      const categoriaLegada = new Option(categoryLabels[item.category] || 'Evento', item.category);
+      categoriaLegada.dataset.readonlyCategory = 'true';
+      fields.category.add(categoriaLegada);
+    }
+    fields.category.value = item?.category || '';
+    if (fields.turma) fields.turma.value = item?.turmaId || '';
     fields.start.value = item?.start || '';
     fields.end.value = item?.end || '';
     fields.location.value = item?.location || '';
     fields.description.value = item?.description || '';
+    form.querySelectorAll('input, select, textarea').forEach(field => {
+      field.disabled = editorReadOnly;
+    });
     updateCategoryFields();
-    host.querySelector('#event-modal-title').textContent = item ? 'Editar evento' : 'Novo evento';
-    host.querySelector('#event-delete').hidden = !item;
+    form.querySelector('[type="submit"]').hidden = editorReadOnly;
+    host.querySelector('#event-modal-title').textContent = editorReadOnly ? 'Detalhes do evento' : item ? 'Editar evento' : 'Novo evento';
+    host.querySelector('#event-delete').hidden = !item || !item.canManage;
     modal.showModal();
     fields.title.focus();
   }
@@ -257,12 +281,12 @@
   function updateCategoryFields() {
     const feriado = fields.category.value === 'feriado';
     [fields.start, fields.end, fields.location].forEach(field => {
-      field.disabled = feriado;
+      field.disabled = editorReadOnly || feriado;
       field.closest('.event-field').classList.toggle('is-disabled', feriado);
       if (feriado) field.value = '';
     });
-    fields.start.required = !feriado;
-    fields.end.required = !feriado;
+    fields.start.required = !editorReadOnly && !feriado;
+    fields.end.required = !editorReadOnly && !feriado;
   }
 
   function changeMonth(amount) {
@@ -286,9 +310,7 @@
   async function loadEvents() {
     try {
       await migrateLegacyEvents();
-      const response = await fetch('/api/calendario/eventos');
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.mensagem || 'Não foi possível carregar os eventos.');
+      const data = await enviarRequisicao('/api/calendario/eventos', 'GET');
       events = Array.isArray(data.eventos) ? data.eventos : [];
       render();
     } catch (erro) {
@@ -329,12 +351,18 @@
   }
 
   async function enviarRequisicao(url, method, body) {
+    const token = sessionStorage.getItem('notadez_token');
     const response = await fetch(url, {
       method,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token || ''}` },
       ...(body ? { body: JSON.stringify(body) } : {})
     });
     const data = await response.json();
+    if (response.status === 401) {
+      sessionStorage.removeItem('notadez_user');
+      sessionStorage.removeItem('notadez_token');
+      window.location.href = '../../login.html';
+    }
     if (!response.ok) throw new Error(data.mensagem || 'Não foi possível atualizar o calendário.');
     return data;
   }
@@ -364,4 +392,10 @@
   }
 
   loadEvents();
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) loadEvents();
+  });
+  window.setInterval(() => {
+    if (!document.hidden) loadEvents();
+  }, 60000);
 })();

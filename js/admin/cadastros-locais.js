@@ -77,17 +77,22 @@ document.addEventListener('DOMContentLoaded', () => {
       semestreSelect.disabled = duracao === 0;
     };
 
-    const atualizarPrefixoCodigo = () => {
+    const atualizarPrefixoCodigo = (limparComplemento = true) => {
       const curso = cursos.find(item => item.id === cursosSelect.value);
-      const codigoValido = /^\d{2}$/.test(curso?.codigo || '');
-      codigoPrefixo.textContent = codigoValido ? curso.codigo : '--';
+      const semestre = Number(semestreSelect.value);
+      const cursoValido = /^\d{2}$/.test(curso?.codigo || '');
+      const semestreValido = Number.isInteger(semestre) && semestre >= 1 && semestre <= 20;
+      const codigoValido = cursoValido && semestreValido;
+      codigoPrefixo.textContent = codigoValido
+        ? `${curso.codigo}${String(semestre).padStart(2, '0')}`
+        : '----';
       codigoComplemento.disabled = !codigoValido;
-      codigoComplemento.value = '';
-      codigoComplemento.placeholder = codigoValido ? 'Ex.: MAT01' : 'Selecione um curso';
+      if (limparComplemento) codigoComplemento.value = '';
+      codigoComplemento.placeholder = codigoValido ? 'Ex.: 01' : 'Selecione curso e semestre';
     };
 
     codigoComplemento.addEventListener('input', () => {
-      codigoComplemento.value = codigoComplemento.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+      codigoComplemento.value = codigoComplemento.value.replace(/\D/g, '').slice(0, 2);
     });
 
     fetch('/api/admin/cursos')
@@ -109,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
           atualizarSemestres(cursos);
           atualizarPrefixoCodigo();
         });
+        semestreSelect.addEventListener('change', () => atualizarPrefixoCodigo(false));
       })
       .catch(() => {
         cursosSelect.replaceChildren(new Option('Não foi possível carregar cursos', ''));
@@ -129,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const codigo = `${cursoSelecionado.codigo}${complemento.value.trim().toUpperCase()}`;
+      const codigo = `${cursoSelecionado.codigo}${String(Number(semestre.value)).padStart(2, '0')}${complemento.value.trim()}`;
       botao.disabled = true;
       botao.textContent = 'Cadastrando...';
       status.textContent = '';

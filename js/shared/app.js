@@ -70,7 +70,9 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
     user = null;
   }
 
-  if (!user || user.tipo !== role) {
+  if (!user || user.tipo !== role || !sessionStorage.getItem('notadez_token')) {
+    sessionStorage.removeItem('notadez_user');
+    sessionStorage.removeItem('notadez_token');
     window.location.href = '../../login.html';
     return;
   }

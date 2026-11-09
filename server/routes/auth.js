@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const Usuario = require('../models/Usuario');
 const Estudante = require('../models/Estudante');
 const enviarEmail = require('../services/email');
+const { criarToken } = require('../services/autenticacao');
 
 const router = express.Router();
 
@@ -179,6 +180,7 @@ router.post('/login', async (req, res) => {
 
     return res.json({
       mensagem: 'Login realizado com sucesso!',
+      token: criarToken(usuario),
       usuario: {
         nome: usuario.nome,
         email: usuario.email,

@@ -34,6 +34,7 @@ document.querySelector('#login').addEventListener('submit', async event => {
       nivelPermissao: user.nivelPermissao || null,
       statusAcademico: user.statusAcademico || 'ativo'
     }));
+    sessionStorage.setItem('notadez_token', data.token);
 
     const dashboards = {
       aluno: 'pages/aluno/dashboard.html',
