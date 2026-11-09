@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const disciplinaSchema = new mongoose.Schema({
   nome: { type: String, required: true, trim: true },
-  codigo: { type: String, required: true, trim: true, uppercase: true },
+  codigo: { type: String, required: true, trim: true, uppercase: true, match: /^(?:\d{4}|\d{6})$/ },
   cursoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Curso', required: true },
   semestre: { type: Number, required: true, min: 1, max: 20 },
   descricao: { type: String, required: true, trim: true }

@@ -45,19 +45,19 @@
                         <option value="" selected disabled>Carregando cursos...</option>
                       </select>
                     </label>
-                    <label class="admin-field">
-                      <span>Código</span>
-                      <div class="admin-discipline-code">
-                        <span class="admin-discipline-prefix" data-course-code-prefix aria-hidden="true">--</span>
-                        <input name="codigoComplemento" type="text" maxlength="8" pattern="[A-Za-z0-9]{1,8}" placeholder="Ex.: MAT01" title="Use de 1 a 8 letras ou números para completar o código." autocomplete="off" required disabled>
-                      </div>
-                      <small class="admin-local-note">O prefixo de dois dígitos vem do curso selecionado.</small>
-                    </label>
                     <label class="admin-field admin-field-select">
                       <span>Semestre</span>
                       <select class="admin-select-balanced" name="semestre" required>
                         <option value="" selected disabled>Selecione o semestre</option>
                       </select>
+                    </label>
+                    <label class="admin-field">
+                      <span>Código (curso + semestre + sequência)</span>
+                      <div class="admin-discipline-code">
+                        <span class="admin-discipline-prefix" data-course-code-prefix aria-hidden="true">----</span>
+                        <input name="codigoComplemento" type="text" inputmode="numeric" maxlength="2" pattern="[0-9]{2}" placeholder="Ex.: 07" title="Informe uma sequência numérica de dois dígitos." autocomplete="off" required disabled>
+                      </div>
+                      <small class="admin-local-note">O curso e o semestre formam o prefixo; escolha uma sequência de dois dígitos.</small>
                     </label>
                     <label class="admin-field admin-field-wide">
                       <span>Descrição</span>

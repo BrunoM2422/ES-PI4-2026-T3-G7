@@ -681,9 +681,18 @@ router.put('/disciplinas/:id', async (req, res) => {
     const curso = await Curso.findById(cursoId).select('codigo duracao');
     if (!curso) return res.status(404).json({ mensagem: 'Curso não encontrado.' });
     if (semestreNumero > curso.duracao) return res.status(400).json({ mensagem: 'O semestre deve estar dentro da duração do curso.' });
-    const codigoCompleto = codigo.trim().toUpperCase();
-    if (!/^\d{2}$/.test(curso.codigo) || !new RegExp(`^${curso.codigo}[A-Z0-9]{1,8}$`).test(codigoCompleto)) {
-      return res.status(400).json({ mensagem: `O código da disciplina deve começar com ${curso.codigo} e conter de 1 a 8 caracteres adicionais.` });
+    const codigoCompleto = codigo.trim();
+    const disciplinaAtual = await Disciplina.findById(id).select('codigo semestre');
+    if (!disciplinaAtual) return res.status(404).json({ mensagem: 'Disciplina não encontrada.' });
+    const sufixoSemestre = String(semestreNumero).padStart(2, '0');
+    const prefixoEsperado = `${curso.codigo}${sufixoSemestre}`;
+    const codigoNovoValido = /^\d{2}$/.test(curso.codigo) && new RegExp(`^${prefixoEsperado}\\d{2}$`).test(codigoCompleto);
+    const codigoLegadoPreservado = codigoCompleto === disciplinaAtual.codigo && semestreNumero === disciplinaAtual.semestre;
+    if (!codigoNovoValido && !codigoLegadoPreservado) {
+      return res.status(400).json({ mensagem: `O código deve seguir o padrão ${prefixoEsperado}XX, com sequência de dois dígitos.` });
+    }
+    if (await Disciplina.exists({ codigo: codigoCompleto, _id: { $ne: id } })) {
+      return res.status(409).json({ mensagem: 'Este código de disciplina já está cadastrado.' });
     }
     const disciplina = await Disciplina.findByIdAndUpdate(id, { nome: nome.trim(), codigo: codigoCompleto, cursoId: curso._id, semestre: semestreNumero, descricao: descricao.trim() }, { new: true, runValidators: true });
     if (!disciplina) return res.status(404).json({ mensagem: 'Disciplina não encontrada.' });
@@ -737,9 +746,15 @@ router.post('/disciplinas', async (req, res) => {
       return res.status(400).json({ mensagem: 'O semestre informado não pertence à duração deste curso.' });
     }
 
-    const codigoCompleto = codigo.trim().toUpperCase();
-    if (!new RegExp(`^${curso.codigo}[A-Z0-9]{1,8}$`).test(codigoCompleto)) {
-      return res.status(400).json({ mensagem: `O código da disciplina deve começar com ${curso.codigo} e conter de 1 a 8 caracteres adicionais.` });
+    const codigoComplemento = codigo.trim();
+    const sufixoSemestre = String(semestreNumerico).padStart(2, '0');
+    const prefixoEsperado = `${curso.codigo}${sufixoSemestre}`;
+    if (!new RegExp(`^${prefixoEsperado}\\d{2}$`).test(codigoComplemento)) {
+      return res.status(400).json({ mensagem: `O código deve seguir o padrão ${prefixoEsperado}XX, com sequência de dois dígitos.` });
+    }
+    const codigoCompleto = codigoComplemento;
+    if (await Disciplina.exists({ codigo: codigoCompleto })) {
+      return res.status(409).json({ mensagem: 'Este código de disciplina já está cadastrado.' });
     }
 
     const disciplina = await Disciplina.create({

@@ -10,6 +10,7 @@
     turmas: ['turmas', 'codigo curso periodoLetivo vagas', '']
   };
   const [rota, obrigatorios, opcionais, tipo] = configuracoes[painel.dataset.importacaoCsv];
+  const entidade = painel.dataset.importacaoCsv;
   const camposObrigatorios = obrigatorios.split(' ');
   const campos = [...camposObrigatorios, ...opcionais.split(' ').filter(Boolean)];
   const arquivo = painel.querySelector('input');
@@ -31,6 +32,7 @@
     'Colunas obrigatórias: ' + camposObrigatorios.join(', ') +
     (opcionais ? '. Opcional: ' + opcionais : '') +
     (campos.includes('curso') ? '. Informe o código ou nome exato do curso.' : '') +
+    (entidade === 'disciplinas' ? ' Para disciplinas, codigo deve conter exatamente os dois dígitos finais.' : '') +
     (campos.includes('turma') ? ' Informe o código exato da turma.' : '') +
     ' Use UTF-8 e vírgula ou ponto e vírgula como separador.';
   adicionarCelulas(tabela.tHead.rows[0], ['Registro', ...campos, 'Resultado'], 'th');
@@ -84,6 +86,7 @@
     }
 
     const envio = { ...dados };
+    let cursoSelecionado = null;
     for (const campo of campos) {
       if (campo === 'curso' || campo === 'semestre') continue;
       const controle = document.querySelector('[name="' + campo + '"]');
@@ -103,12 +106,27 @@
         throw new Error(encontrados.length ? 'Nome de curso ambíguo. Use o código.' : 'Curso não encontrado.');
       }
       const [curso] = encontrados;
+      cursoSelecionado = curso;
       envio.cursoId = curso.id;
       delete envio.curso;
       if (dados.semestre && (!Number.isInteger(Number(dados.semestre)) ||
           Number(dados.semestre) < 1 || Number(dados.semestre) > curso.duracao)) {
         throw new Error('Semestre fora da duração do curso.');
       }
+    }
+    if (entidade === 'disciplinas') {
+      const semestre = Number(dados.semestre);
+      const sequencia = String(dados.codigo || '').trim();
+      if (!cursoSelecionado || !/^\d{2}$/.test(cursoSelecionado.codigo || '')) {
+        throw new Error('Disciplina precisa de um curso com código de dois dígitos.');
+      }
+      if (!Number.isInteger(semestre) || semestre < 1 || semestre > cursoSelecionado.duracao) {
+        throw new Error('Semestre fora da duração do curso.');
+      }
+      if (!/^\d{2}$/.test(sequencia)) {
+        throw new Error('Informe exatamente dois dígitos finais em codigo.');
+      }
+      envio.codigo = `${cursoSelecionado.codigo}${String(semestre).padStart(2, '0')}${sequencia}`;
     }
     if (dados.turma) {
       const turmaReferencia = normalizar(dados.turma);
