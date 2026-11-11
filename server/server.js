@@ -10,6 +10,7 @@ const perfisRoutes = require('./routes/perfis');
 const opcoesRoutes = require('./routes/opcoes');
 const calendarioRoutes = require('./routes/calendario');
 const chamadosRoutes = require('./routes/chamados');
+const gradeAlunoRoutes = require('./routes/grade-aluno');
 const Disciplina = require('./models/Disciplina');
 const Turma = require('./models/Turma');
 const GradeHorario = require('./models/GradeHorario');
@@ -31,6 +32,7 @@ app.use('/api/perfis',perfisRoutes);
 app.use('/api/opcoes', opcoesRoutes);
 app.use('/api/calendario', calendarioRoutes);
 app.use('/api/chamados', chamadosRoutes);
+app.use('/api/aluno/grade', gradeAlunoRoutes);
 
 async function iniciarServidor() {
   try {

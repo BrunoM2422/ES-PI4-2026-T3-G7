@@ -372,6 +372,30 @@ body.theme-dark .schedule-class-drop { border-color: #45416d; color: #aaa6e8; }
   background: #fff;
 }
 
+.grade-admin-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
+.grade-admin-toolbar[hidden], .admin-options-card[hidden], .admin-page-intro[hidden], .admin-course-grades[hidden] { display:none !important; }
+.grade-close-all { min-height:38px; padding:0 16px; border:0; border-radius:7px; background:#c62828; color:#fff; font-weight:700; cursor:pointer; }
+.grade-close-all:hover { background:#a91f1f; }
+.grade-close-all:disabled { opacity:.65; cursor:wait; }
+.admin-course-grades { padding:20px; border-top:1px solid var(--line); }
+.admin-courses-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.admin-courses-heading h3 { margin:0 0 5px; color:var(--ink); font-size:16px; }
+.admin-courses-heading p { margin:0; color:var(--muted); font-size:12px; }
+.admin-course-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px; margin-top:18px; }
+.admin-course-card { display:grid; gap:8px; min-height:110px; padding:16px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); text-align:left; cursor:pointer; }
+.admin-course-card:hover { border-color:var(--primary); box-shadow:0 5px 18px rgb(25 38 74 / 9%); }
+.admin-course-code { color:var(--primary); font-size:11px; font-weight:750; }
+.admin-course-card strong { font-size:14px; }
+.admin-course-card small { color:var(--muted); }
+.admin-courses-status { min-height:18px; margin:12px 0 0; color:var(--muted); font-size:12px; }
+.grade-course-dialog { position:relative; }
+.grade-course-dialog h2 { margin:8px 32px 8px 0; color:var(--ink); font-size:20px; }
+.grade-modal-close { position:absolute; top:12px; right:14px; border:0; background:none; color:var(--muted); font-size:25px; cursor:pointer; }
+.grade-course-dialog .app-confirm-actions { justify-content:flex-end; }
+body.theme-dark .admin-course-card { background:#161d2b; color:var(--ink); }
+body.theme-dark .admin-courses-heading h3 { color:var(--ink); }
+@media (max-width:600px) { .grade-admin-toolbar,.admin-courses-heading { align-items:stretch; flex-direction:column; } .grade-admin-toolbar button,.admin-courses-heading button { width:100%; } }
+
 .admin-options-heading {
   display: flex;
   align-items: center;

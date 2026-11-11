@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const params = new URLSearchParams(location.search);
   let cursoId = params.get('curso');
   let semestreSelecionado = Number(params.get('semestre')) || 0;
+  let turmaId = params.get('turma');
   const chaveGrade = () => `notadez_grade_${cursoId}_${semestreSelecionado}`;
   const dias = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
   let disciplinas = [];
@@ -11,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let cursos = [];
   let docentes = [];
   let grade = [];
+  let turmas = [];
   let cursoAtual;
   let sequenciaDisponibilidade = 0;
 
@@ -20,13 +22,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!response.ok) throw new Error(data.mensagem || 'Não foi possível carregar os dados.');
     return data;
   };
-  const navegar = (curso, semestre) => {
+  const navegar = (curso, semestre, turma = null) => {
     sequenciaDisponibilidade += 1;
     cursoId = curso || null;
     semestreSelecionado = Number(semestre) || 0;
+    turmaId = turma;
     const query = new URLSearchParams();
     if (curso) query.set('curso', curso);
     if (semestre) query.set('semestre', semestre);
+    if (turma) query.set('turma', turma);
     history.pushState({}, '', `${location.pathname}${query.size ? `?${query}` : ''}`);
     renderizar();
   };
@@ -53,10 +57,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     root.querySelectorAll('[data-semester]').forEach(card => card.addEventListener('click', () => navegar(cursoId, card.dataset.semester)));
   }
 
+  function renderTurmas() {
+    root.innerHTML = `<div class="schedule-breadcrumb"><button class="schedule-back" data-back>← Semestres</button><span>${escapar(cursoAtual.nome)} · ${semestreSelecionado}º semestre</span></div><div class="schedule-step-heading"><h3>Turmas do semestre</h3><p>Escolha uma turma para organizar os horários e docentes das disciplinas.</p></div><div class="schedule-semester-grid">${turmas.map(turma => `<button class="schedule-semester-card" data-turma="${escapar(turma.id)}"><span class="schedule-semester-number">${escapar(turma.codigo.slice(-2))}</span><strong>Turma ${escapar(turma.codigo)}</strong><small>${turma.vagas} vagas · ${(turma.horarios || []).length} aulas cadastradas</small></button>`).join('') || '<div class="schedule-empty">Ainda não há turmas cadastradas para este semestre.</div>'}</div>`;
+    root.querySelector('[data-back]').addEventListener('click', () => navegar(cursoId));
+    root.querySelectorAll('[data-turma]').forEach(card => card.addEventListener('click', () => navegar(cursoId, semestreSelecionado, card.dataset.turma)));
+  }
+
   function renderGrade() {
     sequenciaDisponibilidade += 1;
+    const turmaAtual = turmas.find(item => item.id === turmaId);
     root.innerHTML = `<div class="schedule-breadcrumb"><button class="schedule-back" data-back>← Semestres</button><span>${escapar(cursoAtual.nome)} · ${semestreSelecionado}º semestre</span></div><div class="schedule-builder"><aside class="schedule-subject-panel"><div class="schedule-step-heading"><h3>Disciplinas</h3><p>Arraste uma disciplina para um horário.</p></div><label class="schedule-search"><span>Buscar disciplina</span><input id="subject-search" type="search" placeholder="Nome ou código"></label><div id="subject-list" class="schedule-subject-list"></div></aside><section class="schedule-calendar-panel"><div class="schedule-calendar-heading"><div><h3>Grade semanal</h3><p>Arraste disciplinas para os horários de 7h a 23h.</p></div></div><div class="schedule-calendar-scroll"><div class="schedule-calendar"><div class="schedule-time-label">Horário</div>${dias.map((dia, indice) => `<div class="schedule-day-label" data-day="${indice}">${dia}</div>`).join('')}${Array.from({ length: 16 }, (_, row) => { const hora = row + 7; return `<div class="schedule-hour-label">${String(hora).padStart(2, '0')}:00</div>${dias.map((_, dia) => { const aulas = grade.filter(item => item.dia === dia && item.hora === hora); return `<div class="schedule-slot${aulas.length ? ' is-filled' : ''}" data-day="${dia}" data-hour="${hora}" aria-label="${dias[dia]} às ${hora}:00">${aulas.map(aula => `<div class="schedule-lesson" data-lesson="${escapar(aula.id)}"><strong>${escapar(aula.disciplinaNome)}</strong><small>${escapar(aula.disciplinaCodigo)} · ${escapar(aula.docenteNome)}</small><button type="button" class="schedule-remove" aria-label="Remover aula">×</button></div>`).join('')}<span class="schedule-drop-hint">+</span></div>`; }).join('')}`; }).join('')}</div></div></section></div><div class="schedule-savebar"><span id="schedule-status" role="status">${grade.length} aula(s) na grade</span><button class="admin-button" id="save-schedule" type="button">Salvar Alterações</button></div>`;
-    root.querySelector('[data-back]').addEventListener('click', () => navegar(cursoId));
+    root.insertAdjacentHTML('afterbegin', `<p class="schedule-step-heading">Turma ${escapar(turmaAtual?.codigo || '')} · grade independente</p>`);
+    root.querySelector('[data-back]').textContent = '← Turmas';
+    root.querySelector('[data-back]').addEventListener('click', () => navegar(cursoId, semestreSelecionado));
     const subjectList = root.querySelector('#subject-list');
     const subjectInput = root.querySelector('#subject-search');
     const drawSubjects = () => {
@@ -76,7 +89,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       slot.addEventListener('drop', event => {
         event.preventDefault(); slot.classList.remove('is-hover');
         const disciplina = disciplinas.find(d => d.id === event.dataTransfer.getData('text/plain'));
-        if (disciplina) abrirModalDocente(disciplina, Number(slot.dataset.day), Number(slot.dataset.hour));
+        const dia = Number(slot.dataset.day);
+        const hora = Number(slot.dataset.hour);
+        if (grade.some(aula => aula.dia === dia && aula.hora === hora)) {
+          window.showAppMessage('Esta turma já possui uma aula neste dia e horário.');
+          return;
+        }
+        if (disciplina) abrirModalDocente(disciplina, dia, hora);
       });
     });
     root.querySelectorAll('[data-lesson]').forEach(card => card.querySelector('.schedule-remove').addEventListener('click', () => {
@@ -89,10 +108,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       button.disabled = true;
       status.textContent = 'Salvando grade...';
       try {
-        const resposta = await fetch('/api/admin/grades-horarios', {
+        const resposta = await fetch(`/api/admin/turmas/${encodeURIComponent(turmaId)}/grade`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cursoId, semestre: semestreSelecionado, aulas: grade })
+          body: JSON.stringify({ aulas: grade })
         });
         const dados = await resposta.json();
         if (!resposta.ok) throw new Error(dados.mensagem || 'Não foi possível salvar a grade.');
@@ -126,7 +145,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     const docentesOcupados = new Set(aulasNoHorario.map(item => item.docenteId));
     try {
-      const consulta = new URLSearchParams({ cursoId, semestre: String(semestreSelecionado), dia: String(dia), hora: String(hora) });
+      const consulta = new URLSearchParams({ cursoId, semestre: String(semestreSelecionado), turmaId, dia: String(dia), hora: String(hora) });
       const disponibilidade = await carregarJson(`/api/admin/docentes-ocupados?${consulta}`);
       if (sequenciaConsulta !== sequenciaDisponibilidade) return;
       (disponibilidade.docenteIds || []).forEach(id => docentesOcupados.add(id));
@@ -166,11 +185,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     root.innerHTML = '<div class="schedule-loading">Carregando disciplinas...</div>';
     try {
       const consulta = new URLSearchParams({ cursoId, semestre: String(semestreSelecionado) });
-      const [data, gradeData] = await Promise.all([
+      const [data, turmasData] = await Promise.all([
         carregarJson(`/api/admin/disciplinas?${consulta}`),
-        carregarJson(`/api/admin/grades-horarios?${consulta}`)
+        carregarJson(`/api/admin/turmas?${consulta}`)
       ]);
       disciplinas = data.disciplinas || [];
+      turmas = turmasData.turmas || [];
+      if (!turmaId) return renderTurmas();
+      const gradeData = await carregarJson(`/api/admin/turmas/${encodeURIComponent(turmaId)}/grade`);
       grade = gradeData.grade?.aulas || [];
       if (!gradeData.grade) {
         try {

@@ -20,20 +20,6 @@
                 <h2>Cadastro de alunos</h2>
                 <p>Cadastre uma pessoa ou prepare uma importação em lote.</p>
               </div>
-              <section class="admin-form-card admin-form-card-narrow" data-associar-estudante>
-                <div class="admin-card-heading">
-                  <span class="admin-card-icon" aria-hidden="true">&#8644;</span>
-                  <div><h3>Vincular aluno existente a uma turma</h3><p>Escolha uma turma do curso do aluno.</p></div>
-                </div>
-                <div class="admin-form-body">
-                  <div class="admin-field-grid">
-                    <label class="admin-field"><span>Aluno</span><select name="estudanteExistente" required><option value="" selected disabled>Carregando alunos...</option></select></label>
-                    <label class="admin-field"><span>Turma</span><select name="turmaExistente" required disabled><option value="" selected disabled>Selecione um aluno primeiro</option></select></label>
-                  </div>
-                  <button class="admin-button" type="button" data-vincular-turma>Vincular turma</button>
-                  <p class="admin-local-note" data-vinculo-status role="status" aria-live="polite"></p>
-                </div>
-              </section>
               <div class="admin-form-grid admin-student-grid">
                 <section class="admin-form-card">
                   <div class="admin-card-heading">
@@ -57,13 +43,6 @@
                         <input type="hidden" name="cursoId">
                         <small id="curso-status" class="admin-course-status" role="status" aria-live="polite">Carregando cursos...</small>
                       </div>
-                      <label class="admin-field admin-field-wide">
-                        <span>Turma do aluno</span>
-                        <select name="turmaId" required disabled>
-                          <option value="" selected disabled>Selecione um curso primeiro</option>
-                        </select>
-                        <small class="admin-course-status">A turma define as aulas às quais o aluno está vinculado.</small>
-                      </label>
                     </div>
                     <button class="admin-button" type="button" data-cadastrar-aluno>Cadastrar aluno</button>
                   </div>

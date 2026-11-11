@@ -15,6 +15,12 @@ const estudanteSchema = new mongoose.Schema({
     justificativa: { type: String, trim: true }
   },
   turmaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Turma' },
+  gradeMatriculas: [{
+    _id: false,
+    turmaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Turma', required: true },
+    disciplinaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Disciplina', required: true }
+  }],
+  gradeLockAt: { type: Date, default: null },
   cursoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Curso' },
   curso: {
     codigo: { type: String, trim: true },

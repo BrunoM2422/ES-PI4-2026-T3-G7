@@ -9,12 +9,39 @@ const OpcoesSistema = require('../models/OpcoesSistema');
 const Disciplina = require('../models/Disciplina');
 const Turma = require('../models/Turma');
 const GradeHorario = require('../models/GradeHorario');
+const Contador = require('../models/Contador');
 const { autenticar } = require('../services/autenticacao');
 
 const router = express.Router();
 
 function normalizarCpf(cpf) {
   return String(cpf || '').replace(/\D/g, '');
+}
+
+async function proximoRaEstudante() {
+  const contadorId = 'ra-estudante-2026';
+  const atual = await Contador.findById(contadorId).select('valor').lean();
+  let contador;
+
+  if (atual) {
+    contador = await Contador.findByIdAndUpdate(contadorId, { $inc: { valor: 1 } }, { new: true });
+  } else {
+    const estudantes = await Estudante.find({ ra: /^E2026\d+$/ }).select('ra').lean();
+    const maiorRa = estudantes.reduce((maior, estudante) => {
+      const sequencial = Number(String(estudante.ra).slice(5));
+      return Number.isSafeInteger(sequencial) ? Math.max(maior, sequencial) : maior;
+    }, 0);
+
+    try {
+      await Contador.create({ _id: contadorId, valor: maiorRa });
+    } catch (erro) {
+      if (erro.code !== 11000) throw erro;
+    }
+    contador = await Contador.findByIdAndUpdate(contadorId, { $inc: { valor: 1 } }, { new: true });
+  }
+
+  if (!contador || !Number.isSafeInteger(contador.valor)) throw new Error('Não foi possível gerar o próximo RA.');
+  return `E2026${String(contador.valor).padStart(3, '0')}`;
 }
 
 router.post('/matriculas/cancelar', async (req, res) => {
@@ -34,6 +61,8 @@ router.post('/matriculas/cancelar', async (req, res) => {
     if (!estudante || normalizarCpf(estudante.cpf) !== cpf) {
       return res.status(404).json({ mensagem: 'Não foi encontrado um aluno com esses dados.' });
     }
+
+    await Turma.updateMany({ alunosIds: estudante._id }, { $pull: { alunosIds: estudante._id } });
 
     const usuario = await Usuario.findOne({ email: estudante.email, papeis: 'estudante' });
     if (usuario) {
@@ -112,6 +141,38 @@ router.put('/opcoes', async (req, res) => {
   } catch (erro) {
     console.error('Erro ao atualizar opções do sistema:', erro);
     return res.status(500).json({ mensagem: 'Não foi possível atualizar as opções.' });
+  }
+});
+
+router.put('/opcoes/grade-curso', async (req, res) => {
+  try {
+    const { cursoId, liberado } = req.body;
+    if (!mongoose.isValidObjectId(cursoId) || typeof liberado !== 'boolean') return res.status(400).json({ mensagem: 'Curso ou ação inválida.' });
+    if (!await Curso.exists({ _id: cursoId })) return res.status(404).json({ mensagem: 'Curso não encontrado.' });
+    const atual = await OpcoesSistema.findById('opcoes-academicas').select('gradeCursosLiberados').lean();
+    const liberados = new Set((atual?.gradeCursosLiberados || []).map(String));
+    if (liberado) liberados.add(String(cursoId)); else liberados.delete(String(cursoId));
+    const opcoes = await OpcoesSistema.findByIdAndUpdate('opcoes-academicas', {
+      $set: { gradeCursosLiberados: [...liberados], gradeCurricular: false },
+      $setOnInsert: { _id: 'opcoes-academicas' }
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }).lean();
+    return res.json({ mensagem: liberado ? 'Grade liberada para o curso.' : 'Liberação removida do curso.', opcoes });
+  } catch (erro) {
+    console.error('Erro ao atualizar liberação da grade por curso:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível atualizar a liberação da grade.' });
+  }
+});
+
+router.put('/opcoes/fechar-grades', async (_req, res) => {
+  try {
+    const opcoes = await OpcoesSistema.findByIdAndUpdate('opcoes-academicas', {
+      $set: { gradeCursosLiberados: [], gradeCurricular: false },
+      $setOnInsert: { _id: 'opcoes-academicas' }
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }).lean();
+    return res.json({ mensagem: 'Grade Curricular foi fechada para todos os cursos.', opcoes });
+  } catch (erro) {
+    console.error('Erro ao fechar Grade Curricular de todos os cursos:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível fechar as grades.' });
   }
 });
 
@@ -212,12 +273,15 @@ function semestreDaTurma(periodoLetivo) {
   return legado ? Number(legado[1]) : null;
 }
 
-function codigoTurmaValido(codigo, periodoLetivo) {
+function codigoTurmaValido(codigo, periodoLetivo, cursoCodigo = null) {
   const semestre = Number(periodoLetivo);
-  return Number.isInteger(semestre) && /^\d{4}$/.test(String(codigo || '')) &&
-    String(codigo).startsWith(String(semestre).padStart(2, '0')) &&
-    Number(codigo.slice(2)) >= 1 && Number(codigo.slice(2)) <= 99 &&
-    String(codigo).slice(2) === String(Number(codigo.slice(2))).padStart(2, '0');
+  const texto = String(codigo || '');
+  if (!Number.isInteger(semestre)) return false;
+  const antigo = /^\d{4}$/.test(texto) && texto.startsWith(String(semestre).padStart(2, '0'));
+  const novo = /^\d{6}$/.test(texto) && texto.slice(2, 4) === String(semestre).padStart(2, '0');
+  const sufixo = Number(texto.slice(-2));
+  if (cursoCodigo) return novo && texto.startsWith(String(cursoCodigo)) && sufixo >= 1 && sufixo <= 3;
+  return (antigo || novo) && sufixo >= 1 && sufixo <= 99 && texto.slice(-2) === String(sufixo).padStart(2, '0');
 }
 
 router.get('/turmas', async (req, res) => {
@@ -277,10 +341,11 @@ router.post('/turmas', async (req, res) => {
       return res.status(400).json({ mensagem: 'O código deve conter o semestre em dois dígitos seguido do número da turma em dois dígitos. Exemplo: 0201.' });
     }
 
-    const curso = await Curso.findById(cursoId).select('_id duracao');
+    const curso = await Curso.findById(cursoId).select('_id duracao codigo');
     if (!curso) return res.status(404).json({ mensagem: 'O curso selecionado não foi encontrado.' });
     if (Number(periodoLetivo) > curso.duracao) return res.status(400).json({ mensagem: 'O semestre da turma deve estar dentro da duração do curso.' });
 
+    if (!codigoTurmaValido(codigo.trim(), periodoLetivo, curso.codigo)) return res.status(400).json({ mensagem: `O código deve começar por ${curso.codigo}, seguido do semestre e de 01, 02 ou 03.` });
     const turma = await Turma.create({
       codigo: codigo.trim().toUpperCase(),
       cursoId: curso._id,
@@ -313,14 +378,16 @@ router.put('/turmas/:id', async (req, res) => {
       return res.status(400).json({ mensagem: 'O código deve conter o semestre em dois dígitos seguido do número da turma em dois dígitos. Exemplo: 0201.' });
     }
 
-    const turmaAtual = await Turma.findById(id).select('cursoId horarios');
+    const turmaAtual = await Turma.findById(id).select('cursoId horarios alunosIds codigo');
     if (!turmaAtual) return res.status(404).json({ mensagem: 'Turma não encontrada.' });
+    if (vagasNumericas < (turmaAtual.alunosIds || []).length) return res.status(409).json({ mensagem: 'O número de vagas não pode ser menor que a quantidade de alunos matriculados.' });
     if (turmaAtual.horarios.length && String(turmaAtual.cursoId) !== String(cursoId)) {
       return res.status(409).json({ mensagem: 'Remova os horários vinculados antes de transferir esta turma para outro curso.' });
     }
-    const curso = await Curso.findById(cursoId).select('_id duracao');
+    const curso = await Curso.findById(cursoId).select('_id duracao codigo');
     if (!curso) return res.status(404).json({ mensagem: 'O curso selecionado não foi encontrado.' });
     if (Number(periodoLetivo) > curso.duracao) return res.status(400).json({ mensagem: 'O semestre da turma deve estar dentro da duração do curso.' });
+    if (!codigoTurmaValido(codigo.trim(), periodoLetivo, curso.codigo)) return res.status(400).json({ mensagem: `O código deve começar por ${curso.codigo}, seguido do semestre e de 01, 02 ou 03.` });
     if (turmaAtual.horarios.length && Number(periodoLetivo) !== semestreDaTurma(turmaAtual.periodoLetivo)) {
       return res.status(409).json({ mensagem: 'Remova os horários vinculados antes de alterar o semestre desta turma.' });
     }
@@ -341,7 +408,9 @@ router.delete('/turmas/:id', async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ mensagem: 'Turma inválida.' });
     const turma = await Turma.findById(req.params.id);
+    if (turma && /^\d{6}$/.test(turma.codigo) && Number(turma.codigo.slice(-2)) >= 1 && Number(turma.codigo.slice(-2)) <= 3) return res.status(409).json({ mensagem: 'Os três grupos de cada semestre são fixos e não podem ser removidos.' });
     if (!turma) return res.status(404).json({ mensagem: 'Turma não encontrada.' });
+    if (turma.alunosIds?.length) return res.status(409).json({ mensagem: 'Remova as matrículas dos alunos antes de excluir esta turma.' });
     if (turma.horarios.length) return res.status(409).json({ mensagem: 'Remova os horários de aula associados antes de excluir esta turma.' });
     await turma.deleteOne();
     return res.json({ mensagem: 'Turma excluída com sucesso.' });
@@ -390,6 +459,95 @@ router.get('/grades-horarios', async (req, res) => {
   }
 });
 
+// Grades independentes por turma, mantendo a coleção de grade como agenda do semestre.
+router.get('/turmas/:turmaId/grade', async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.turmaId)) return res.status(400).json({ mensagem: 'Turma inválida.' });
+    const turma = await Turma.findById(req.params.turmaId)
+      .populate('cursoId', 'codigo nome')
+      .populate('horarios.disciplinaId', 'nome codigo')
+      .populate('horarios.docenteId', 'nome email rp')
+      .lean();
+    if (!turma) return res.status(404).json({ mensagem: 'Turma não encontrada.' });
+    const semestre = semestreDaTurma(turma.periodoLetivo);
+    const grade = await GradeHorario.findOne({ cursoId: turma.cursoId._id, semestre }).select('_id').lean();
+    const aulas = (turma.horarios || []).filter(item => item.semestre === semestre).map(item => ({
+      id: String(item.aulaId), disciplinaId: String(item.disciplinaId._id),
+      disciplinaNome: item.disciplinaId.nome, disciplinaCodigo: item.disciplinaId.codigo,
+      docenteId: String(item.docenteId._id), docenteNome: item.docenteId.nome,
+      turmaId: String(turma._id), turmaCodigo: turma.codigo, dia: item.dia, hora: item.hora
+    }));
+    return res.json({ grade: { id: grade ? String(grade._id) : null, cursoId: String(turma.cursoId._id), semestre, turmaId: String(turma._id), turmaCodigo: turma.codigo, aulas } });
+  } catch (erro) {
+    console.error('Erro ao carregar grade da turma:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível carregar a grade da turma.' });
+  }
+});
+
+router.put('/turmas/:turmaId/grade', async (req, res) => {
+  try {
+    const { turmaId } = req.params;
+    const { aulas } = req.body;
+    if (!mongoose.isValidObjectId(turmaId) || !Array.isArray(aulas)) return res.status(400).json({ mensagem: 'Turma e lista de aulas são obrigatórias.' });
+    const turma = await Turma.findById(turmaId);
+    if (!turma) return res.status(404).json({ mensagem: 'Turma não encontrada.' });
+    const semestre = semestreDaTurma(turma.periodoLetivo);
+    const curso = await Curso.findById(turma.cursoId).select('_id duracao');
+    if (!curso || !semestre || semestre > curso.duracao) return res.status(409).json({ mensagem: 'A turma não possui um semestre válido.' });
+    if (aulas.some(aula => !aula || !mongoose.isValidObjectId(aula.disciplinaId) || !mongoose.isValidObjectId(aula.docenteId) || !Number.isInteger(aula.dia) || aula.dia < 0 || aula.dia > 6 || !Number.isInteger(aula.hora) || aula.hora < 7 || aula.hora > 22)) {
+      return res.status(400).json({ mensagem: 'Há uma aula com disciplina, docente ou horário inválido.' });
+    }
+    const slots = new Set();
+    for (const aula of aulas) {
+      const slot = `${aula.dia}:${aula.hora}`;
+      if (slots.has(slot)) return res.status(409).json({ mensagem: 'A turma não pode ter duas aulas no mesmo dia e horário.' });
+      slots.add(slot);
+    }
+    const disciplinaIds = [...new Set(aulas.map(aula => String(aula.disciplinaId)))];
+    const docenteIds = [...new Set(aulas.map(aula => String(aula.docenteId)))];
+    const [disciplinas, docentes] = await Promise.all([
+      Disciplina.find({ _id: { $in: disciplinaIds }, cursoId: turma.cursoId, semestre }).select('_id nome codigo').lean(),
+      Docente.find({ _id: { $in: docenteIds } }).select('_id nome').lean()
+    ]);
+    if (disciplinas.length !== disciplinaIds.length || docentes.length !== docenteIds.length) return res.status(400).json({ mensagem: 'Uma disciplina ou docente não pertence aos cadastros válidos desta turma.' });
+    if (disciplinas.length !== (await Disciplina.countDocuments({ cursoId: turma.cursoId, semestre }))) return res.status(409).json({ mensagem: 'A grade da turma deve oferecer todas as disciplinas do semestre.' });
+
+    const grade = await GradeHorario.findOneAndUpdate({ cursoId: turma.cursoId, semestre }, {
+      $setOnInsert: { cursoId: turma.cursoId, semestre }
+    }, { upsert: true, new: true, setDefaultsOnInsert: true });
+    const aulasExistentes = await GradeHorario.find({ 'aulas.dia': { $in: [...new Set(aulas.map(aula => aula.dia))] } }).select('aulas').lean();
+    for (const aula of aulas) {
+      const conflito = aulasExistentes.some(outroGrade => (outroGrade.aulas || []).some(outro =>
+        String(outro.docenteId) === String(aula.docenteId) && outro.dia === aula.dia && outro.hora === aula.hora && String(outro.turmaId || '') !== String(turma._id) && !(String(outroGrade._id) === String(grade._id) && String(outro.turmaId || '') === String(turma._id))
+      ));
+      if (conflito) return res.status(409).json({ mensagem: 'Este docente já está atribuído a outra turma no mesmo horário.' });
+    }
+
+    const idsAula = aulas.map(aula => mongoose.isValidObjectId(aula.id) ? new mongoose.Types.ObjectId(aula.id) : new mongoose.Types.ObjectId());
+    const aulasDaTurma = aulas.map((aula, index) => ({
+      _id: idsAula[index], disciplinaId: aula.disciplinaId, docenteId: aula.docenteId,
+      turmaId: turma._id, dia: aula.dia, hora: aula.hora
+    }));
+    grade.aulas = [...grade.aulas.filter(aula => String(aula.turmaId || '') !== String(turma._id)), ...aulasDaTurma];
+    await grade.save();
+    turma.semestreOrganizacao = semestre;
+    turma.horarios = [...turma.horarios.filter(item => item.semestre !== semestre), ...aulasDaTurma.map(aula => ({
+      gradeHorarioId: grade._id, aulaId: aula._id, disciplinaId: aula.disciplinaId,
+      docenteId: aula.docenteId, dia: aula.dia, hora: aula.hora, semestre
+    }))];
+    await turma.save();
+    const nomesDisciplinas = new Map(disciplinas.map(item => [String(item._id), item]));
+    const nomesDocentes = new Map(docentes.map(item => [String(item._id), item]));
+    return res.json({ mensagem: 'Grade da turma salva no banco de dados.', grade: {
+      id: String(grade._id), cursoId: String(turma.cursoId), semestre, turmaId: String(turma._id), turmaCodigo: turma.codigo,
+      aulas: aulasDaTurma.map(aula => ({ id: String(aula._id), disciplinaId: String(aula.disciplinaId), disciplinaNome: nomesDisciplinas.get(String(aula.disciplinaId)).nome, disciplinaCodigo: nomesDisciplinas.get(String(aula.disciplinaId)).codigo, docenteId: String(aula.docenteId), docenteNome: nomesDocentes.get(String(aula.docenteId)).nome, turmaId: String(turma._id), turmaCodigo: turma.codigo, dia: aula.dia, hora: aula.hora }))
+    } });
+  } catch (erro) {
+    console.error('Erro ao salvar grade da turma:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível salvar a grade da turma.' });
+  }
+});
+
 router.get('/docentes-ocupados', async (req, res) => {
   try {
     const { cursoId, semestre, dia, hora } = req.query;
@@ -405,15 +563,15 @@ router.get('/docentes-ocupados', async (req, res) => {
       return res.status(400).json({ mensagem: 'Informe curso, semestre, dia e horário válidos.' });
     }
 
-    const grades = await GradeHorario.find({
-      $nor: [{ cursoId, semestre: semestreNumero }],
-      aulas: { $elemMatch: { dia: diaNumero, hora: horaNumero } }
-    }).select('aulas.docenteId aulas.dia aulas.hora').lean();
-    const docenteIds = [...new Set(grades.flatMap(grade =>
-      grade.aulas
-        .filter(aula => aula.dia === diaNumero && aula.hora === horaNumero)
-        .map(aula => String(aula.docenteId))
-    ))];
+    const turmaIdAtual = mongoose.isValidObjectId(req.query.turmaId) ? String(req.query.turmaId) : null;
+    const grades = await GradeHorario.find({ aulas: { $elemMatch: { dia: diaNumero, hora: horaNumero } } })
+      .select('cursoId semestre aulas.docenteId aulas.dia aulas.hora aulas.turmaId').lean();
+    const docenteIds = [...new Set(grades.flatMap(grade => grade.aulas
+      .filter(aula => aula.dia === diaNumero && aula.hora === horaNumero)
+      .filter(aula => turmaIdAtual
+        ? String(aula.turmaId || '') !== turmaIdAtual
+        : !(String(grade.cursoId) === String(cursoId) && grade.semestre === semestreNumero))
+      .map(aula => String(aula.docenteId))))];
 
     return res.json({ docenteIds });
   } catch (erro) {
@@ -614,6 +772,10 @@ router.delete('/turmas/:turmaId/horarios/:gradeHorarioId/:aulaId', async (req, r
     if (![turmaId, gradeHorarioId, aulaId].every(mongoose.isValidObjectId)) return res.status(400).json({ mensagem: 'Turma, grade ou aula inválida.' });
     const [turma, grade] = await Promise.all([Turma.findById(turmaId), GradeHorario.findById(gradeHorarioId).select('semestre')]);
     if (!turma) return res.status(404).json({ mensagem: 'Turma não encontrada.' });
+    const associacao = turma.horarios.find(item => String(item.gradeHorarioId) === String(gradeHorarioId) && String(item.aulaId) === String(aulaId));
+    if (associacao && !turma.horarios.some(item => String(item.gradeHorarioId) === String(gradeHorarioId) && String(item.aulaId) !== String(aulaId) && String(item.disciplinaId) === String(associacao.disciplinaId))) {
+      return res.status(409).json({ mensagem: 'Cada turma precisa manter ao menos um horário de cada disciplina do semestre.' });
+    }
     turma.horarios.pull({ gradeHorarioId, aulaId });
     if (grade && !turma.horarios.some(item => item.semestre === grade.semestre)) turma.semestreOrganizacao = null;
     await turma.save();
@@ -965,47 +1127,9 @@ async function obterOuCriarCodigoInstituicao(nomeInstituicao) {
   };
 }
 
-router.get('/estudantes/turmas', autenticar, async (req, res) => {
-  if (req.usuario.papel !== 'admin') return res.status(403).json({ mensagem: 'Apenas administradores podem gerenciar turmas de alunos.' });
-  try {
-    const estudantes = await Estudante.find().select('nome email cursoId turmaId').sort({ nome: 1 }).lean();
-    return res.json({ estudantes: estudantes.map(estudante => ({
-      id: String(estudante._id),
-      nome: estudante.nome,
-      email: estudante.email,
-      cursoId: estudante.cursoId ? String(estudante.cursoId) : null,
-      turmaId: estudante.turmaId ? String(estudante.turmaId) : null
-    })) });
-  } catch (erro) {
-    console.error('Erro ao carregar estudantes para vínculo de turma:', erro);
-    return res.status(500).json({ mensagem: 'Não foi possível carregar os estudantes.' });
-  }
-});
-
-router.put('/estudantes/:estudanteId/turma', autenticar, async (req, res) => {
-  if (req.usuario.papel !== 'admin') return res.status(403).json({ mensagem: 'Apenas administradores podem gerenciar turmas de alunos.' });
-  try {
-    const { estudanteId } = req.params;
-    const { turmaId } = req.body;
-    if (!mongoose.isValidObjectId(estudanteId) || !mongoose.isValidObjectId(turmaId)) {
-      return res.status(400).json({ mensagem: 'Selecione um estudante e uma turma válidos.' });
-    }
-    const estudante = await Estudante.findById(estudanteId);
-    if (!estudante) return res.status(404).json({ mensagem: 'Estudante não encontrado.' });
-    const turma = await Turma.findOne({ _id: turmaId, cursoId: estudante.cursoId }).select('_id codigo');
-    if (!turma) return res.status(400).json({ mensagem: 'A turma selecionada não pertence ao curso do estudante.' });
-    estudante.turmaId = turma._id;
-    await estudante.save();
-    return res.json({ mensagem: `Aluno vinculado à turma ${turma.codigo}.` });
-  } catch (erro) {
-    console.error('Erro ao vincular estudante à turma:', erro);
-    return res.status(500).json({ mensagem: 'Não foi possível vincular o estudante à turma.' });
-  }
-});
-
 router.post('/cadastrar', async (req, res) => {
   try {
-    const { nome, email, cpf, telefone, endereco, especialidade, tipo, instituicao, cursoId, turmaId } = req.body;
+    const { nome, email, cpf, telefone, endereco, especialidade, tipo, instituicao, cursoId } = req.body;
 
     if (!nome || !email || !cpf || !tipo) {
       return res.status(400).json({ mensagem: 'Preencha todos os campos obrigatórios.' });
@@ -1031,17 +1155,7 @@ router.post('/cadastrar', async (req, res) => {
         return res.status(404).json({ mensagem: 'O curso selecionado não foi encontrado.' });
       }
 
-      if (!mongoose.isValidObjectId(turmaId)) {
-        return res.status(400).json({ mensagem: 'Selecione uma turma válida para o estudante.' });
-      }
-      const turmaSelecionada = await Turma.findOne({ _id: turmaId, cursoId: cursoSelecionado._id }).select('_id');
-      if (!turmaSelecionada) {
-        return res.status(400).json({ mensagem: 'A turma selecionada não pertence ao curso do estudante.' });
-      }
-
-      const totalEstudantes = await Estudante.countDocuments();
-      const sequencial = String(totalEstudantes).padStart(3, '0');
-      codigoMatricula = `E2026${sequencial}`;
+      codigoMatricula = await proximoRaEstudante();
 
       const novoEstudante = new Estudante({
         ra: codigoMatricula,
@@ -1050,7 +1164,6 @@ router.post('/cadastrar', async (req, res) => {
         cpf,
         telefone,
         endereco,
-        turmaId: turmaSelecionada._id,
         cursoId: cursoSelecionado._id,
         curso: {
           codigo: cursoSelecionado.codigo,

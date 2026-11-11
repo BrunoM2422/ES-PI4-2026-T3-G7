@@ -106,7 +106,7 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
   let opcoesAluno = { avaliacao: false, gradeCurricular: false };
   if (role === 'aluno') {
     try {
-      const response = await fetch('/api/opcoes');
+      const response = await fetch('/api/opcoes?email=' + encodeURIComponent(user.email || ''));
       if (!response.ok) throw new Error('Não foi possível carregar as opções do sistema.');
       const data = await response.json();
       opcoesAluno = { ...opcoesAluno, ...(data.opcoes || {}) };
