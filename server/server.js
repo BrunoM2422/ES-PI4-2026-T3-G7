@@ -26,6 +26,18 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 app.use(express.static(path.join(__dirname, '..')));
 
+const { autenticar } = require('./services/autenticacao');
+const { auditar } = require('./services/logs');
+app.use('/api/logs', require('./routes/logs'));
+app.use(['/api/admin', '/api/perfis', '/api/chamados', '/api/calendario'], (req, res, next) => {
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) return next();
+  return autenticar(req, res, () => {
+    if (req.baseUrl === '/api/admin' && req.usuario.papel !== 'admin') return res.status(403).json({ mensagem: 'Acesso exclusivo de administradores.' });
+    if (req.baseUrl === '/api/perfis') req.body.email = req.usuario.email;
+    return auditar(req, res, next);
+  });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/perfis',perfisRoutes);
@@ -37,6 +49,7 @@ app.use('/api/aluno/grade', gradeAlunoRoutes);
 async function iniciarServidor() {
   try {
     await conectarBanco();
+    await require('./models/Log').init();
     await Disciplina.init();
     await Turma.init();
     await GradeHorario.init();

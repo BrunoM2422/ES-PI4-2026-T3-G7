@@ -3,40 +3,88 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>
-      Auditoria/Log | NotaDez
-    </title>
+    <title>Logs | NotaDez</title>
     <link rel="stylesheet" href="../../css/shared/style.css">
-    <link rel="stylesheet" href="../../css/professor/paginas.css">
+    <link rel="stylesheet" href="../../css/admin/logs.css">
   </head>
   <body>
-    <div id="app" data-page="auditoria" data-role="professor" data-title="Auditoria/Log">
+    <div id="app" data-page="auditoria" data-role="professor" data-title="Logs">
       <div class="shell">
-        <aside class="side" data-component="sidebar">
-        </aside>
+        <aside class="side" data-component="sidebar"></aside>
         <main class="main">
-          <div data-component="header">
-          </div>
+          <div data-component="header"></div>
           <section class="content">
-            <article class="teacher-host">
-              <div class="teacher-page">
-                <section class="teacher-panel teacher-empty-panel">
-                  <h2>
-                    Log de Auditoria
-                  </h2>
-                  <p>
-                    Nenhuma mudança recente.
-                  </p>
-                </section>
+            <article class="logs-page">
+              <div class="logs-intro">
+                <div>
+                  <span class="logs-eyebrow">Minha conta</span>
+                  <h2>Logs</h2>
+                  <p>Acompanhe suas alterações de perfil, financeiro e senha.</p>
+                </div>
+                <span class="logs-total" id="logs-total" aria-live="polite">0 registros</span>
               </div>
+
+              <section class="logs-card" aria-labelledby="logs-list-title">
+                <div class="logs-card-heading">
+                  <div>
+                    <h3 id="logs-list-title">Registro de atividades</h3>
+                    <p>Consulte ações, responsáveis e horários.</p>
+                  </div>
+                </div>
+                <div class="logs-toolbar">
+                  <label class="logs-field logs-search">
+                    <span>Buscar</span>
+                    <input id="logs-search" type="search" placeholder="Ação, usuário ou descrição">
+                  </label>
+                  <label class="logs-field">
+                    <span>Tipo</span>
+                    <select id="logs-type">
+                      <option value="">Todos os tipos</option>
+                    </select>
+                  </label>
+                  <label class="logs-field">
+                    <span>Data</span>
+                    <input id="logs-date" type="date">
+                  </label>
+                </div>
+
+                <div class="logs-table-wrap">
+                  <table class="logs-table">
+                    <thead>
+                      <tr><th scope="col">Data e hora</th><th scope="col">Ação</th><th scope="col">Usuário</th><th scope="col">Tipo</th><th scope="col"><span class="visually-hidden">Detalhes</span></th></tr>
+                    </thead>
+                    <tbody id="logs-rows"></tbody>
+                  </table>
+                </div>
+                <div class="logs-empty" id="logs-empty" role="status">
+                  <span class="logs-empty-icon" aria-hidden="true">&#9776;</span>
+                  <h4 id="logs-empty-title">Nenhum registro disponível</h4>
+                  <p id="logs-empty-description">Os registros aparecerão aqui quando forem fornecidos pelo sistema.</p>
+                </div>
+                <div class="logs-footer" id="logs-footer" hidden>
+                  <span id="logs-range"></span>
+                  <div class="logs-pagination">
+                    <button id="logs-prev" type="button">Anterior</button>
+                    <span id="logs-page-number"></span>
+                    <button id="logs-next" type="button">Próxima</button>
+                  </div>
+                </div>
+              </section>
             </article>
           </section>
-          <div data-component="footer">
-          </div>
+          <div data-component="footer"></div>
         </main>
       </div>
     </div>
-    <script src="../../js/shared/app.js">
-    </script>
+
+    <dialog class="logs-dialog" id="logs-dialog" aria-labelledby="logs-dialog-title">
+      <div class="logs-dialog-heading">
+        <div><span class="logs-eyebrow">Registro de atividade</span><h2 id="logs-dialog-title">Detalhes do log</h2></div>
+        <button type="button" id="logs-close" aria-label="Fechar detalhes">&times;</button>
+      </div>
+      <dl id="logs-details"></dl>
+    </dialog>
+    <script src="../../js/shared/app.js"></script>
+    <script src="../../js/admin/logs.js"></script>
   </body>
 </html>

@@ -15,6 +15,7 @@ const usuarioSchema = new mongoose.Schema({
   passwordResetExpiresAt: { type: Date, select: false },
   passwordResetAttempts: { type: Number, default: 0, select: false },
   passwordResetRequestedAt: { type: Date, select: false },
+  showFinanceiro: { type: Boolean, default: true },
   ra: { type: String },
   rp: { type: String }
 });

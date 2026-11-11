@@ -113,6 +113,15 @@ router.post('/redefinir-senha', async (req, res) => {
     usuario.passwordResetRequestedAt = undefined;
     await usuario.save();
 
+    try {
+      await require('../services/logs').registrar({
+        id: usuario._id, email: usuario.email,
+        papel: usuario.papeis.includes('admin') ? 'admin' : usuario.papeis.includes('docente') ? 'professor' : 'aluno'
+      }, 'Conta', 'Senha redefinida', 'Senha redefinida através do código de recuperação.');
+    } catch (erroLog) {
+      console.error('Falha ao registrar redefinição de senha:', erroLog.message);
+    }
+
     return res.json({ mensagem: 'Senha redefinida com sucesso. Você já pode entrar com a nova senha.' });
   } catch (erro) {
     console.error('Erro ao redefinir senha:', erro);

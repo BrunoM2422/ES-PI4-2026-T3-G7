@@ -63,6 +63,7 @@ router.get('/', async (req, res) => {
 
     return res.json({
       usuario: {
+        showFinanceiro: usuario.showFinanceiro !== false,
         nome: usuario.nome,
         email: usuario.email,
         papeis: usuario.papeis,
@@ -112,6 +113,17 @@ router.put('/', async (req, res) => {
   }
 });
 
+
+router.put('/financeiro', async (req, res) => {
+  if (req.usuario.papel !== 'professor') return res.status(403).json({ mensagem: 'Opção exclusiva de docentes.' });
+  if (typeof req.body.showFinanceiro !== 'boolean') return res.status(400).json({ mensagem: 'Informe a preferência do financeiro.' });
+  try {
+    await Usuario.updateOne({ _id: req.usuario.id }, { $set: { showFinanceiro: req.body.showFinanceiro } });
+    return res.json({ mensagem: req.body.showFinanceiro ? 'Financeiro ativado.' : 'Financeiro desativado.' });
+  } catch (erro) {
+    return res.status(500).json({ mensagem: 'Não foi possível salvar a preferência.' });
+  }
+});
 
 router.put('/senha', async (req, res) => {
   try {
