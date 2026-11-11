@@ -115,4 +115,16 @@
   document.querySelector('#logs-next').addEventListener('click', () => { page++; render(); });
   document.querySelector('#logs-close').addEventListener('click', () => dialog.close());
   window.renderAdminLogs([]);
+  document.querySelector('#logs-empty-title').textContent = 'Carregando atividades…';
+  fetch('/api/logs').then(async response => {
+    if (!response.headers.get('content-type')?.includes('application/json')) {
+      throw new Error('A API de logs está indisponível. Reinicie o servidor do sistema e atualize esta página.');
+    }
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.mensagem || 'Não foi possível carregar os logs.');
+    window.renderAdminLogs(data.logs);
+  }).catch(error => {
+    document.querySelector('#logs-empty-title').textContent = 'Não foi possível carregar';
+    document.querySelector('#logs-empty-description').textContent = error.message;
+  });
 })();

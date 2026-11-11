@@ -37,7 +37,21 @@
   });
 
   host.querySelectorAll('[data-setting]').forEach(button => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', async () => {
+      if (button.dataset.setting === 'showFinanceiro') {
+        button.disabled = true;
+        try {
+          const response = await fetch('/api/perfis/financeiro', {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ showFinanceiro: !settings.showFinanceiro })
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.mensagem);
+        } catch (error) {
+          window.showAppMessage(error.message || 'Não foi possível salvar a preferência.', 'error');
+          return;
+        } finally { button.disabled = false; }
+      }
       settings[button.dataset.setting] = !settings[button.dataset.setting];
       updateControls();
       saveSettings();
@@ -130,4 +144,16 @@
 
   updateControls();
   syncFinanceNav();
+  const financeButton = host.querySelector('[data-setting="showFinanceiro"]');
+  if (financeButton) {
+    financeButton.disabled = true;
+    fetch(`/api/perfis?email=${encodeURIComponent(user.email)}`).then(async response => {
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.mensagem);
+      settings.showFinanceiro = data.usuario.showFinanceiro;
+      updateControls();
+      saveSettings();
+      financeButton.disabled = false;
+    }).catch(error => window.showAppMessage(error.message || 'Não foi possível carregar a preferência do financeiro.', 'error'));
+  }
 })();
