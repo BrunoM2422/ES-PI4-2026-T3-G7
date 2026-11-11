@@ -1,3 +1,20 @@
+const originalFetch = window.fetch.bind(window);
+window.fetch = (input, options = {}) => {
+  const url = new URL(input instanceof Request ? input.url : input, location.href);
+  if (url.origin !== location.origin || !url.pathname.startsWith('/api/')) return originalFetch(input, options);
+  const headers = new Headers(options.headers || (input instanceof Request ? input.headers : undefined));
+  const token = sessionStorage.getItem('notadez_token');
+  if (token) headers.set('Authorization', `Bearer ${token}`);
+  return originalFetch(input, { ...options, headers }).then(response => {
+    if (response.ok && response.headers.get('content-type')?.includes('application/json')) {
+      response.clone().json().then(data => {
+        if (data.avisoLog) window.showAppMessage(data.avisoLog, 'error');
+      }).catch(() => {});
+    }
+    return response;
+  });
+};
+
 window.showAppMessage = (message, type = 'info') => {
   if (!document.body) return;
   let region = document.querySelector('#app-message-region');
@@ -98,7 +115,7 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
 
   const nivelAdmin = user.nivelPermissao || 'admin_mestre';
   const adminRestrito = role === 'admin' && nivelAdmin !== 'admin_mestre';
-  if (adminRestrito && page !== 'dashboard') {
+  if (adminRestrito && !['dashboard', 'logs'].includes(page)) {
     window.location.replace('../../pages/admin/dashboard.html');
     return;
   }
@@ -131,6 +148,16 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
     settings = JSON.parse(localStorage.getItem(settingsKey) || '{}');
   } catch {
     settings = {};
+  }
+  if (role === 'professor') {
+    try {
+      const response = await fetch(`/api/perfis?email=${encodeURIComponent(user.email)}`);
+      if (response.ok) {
+        const data = await response.json();
+        settings.showFinanceiro = data.usuario.showFinanceiro;
+        localStorage.setItem(settingsKey, JSON.stringify(settings));
+      }
+    } catch (erro) { console.error('Falha ao carregar preferência do financeiro.'); }
   }
   if (role === 'professor' && page === 'financeiro' && settings.showFinanceiro === false) {
     window.location.href = '../../pages/professor/dashboard.html';
@@ -184,7 +211,7 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
 
     if (adminRestrito) {
       app.querySelectorAll('[data-nav-page]').forEach(link => {
-        if (link.dataset.navPage === 'dashboard') return;
+        if (['dashboard', 'logs'].includes(link.dataset.navPage)) return;
         link.href = '#';
         link.classList.add('disabled');
         link.setAttribute('aria-disabled', 'true');
