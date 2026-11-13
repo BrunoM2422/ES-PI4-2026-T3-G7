@@ -75,7 +75,9 @@ function formatarEvento(evento, usuario) {
     start: evento.start || '',
     end: evento.end || '',
     location: evento.location || '',
-    description: evento.description || ''
+    description: evento.description || '',
+    createdAt: evento.createdAt,
+    updatedAt: evento.updatedAt
   };
 }
 
