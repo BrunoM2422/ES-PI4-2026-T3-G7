@@ -1,64 +1,74 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>
-      Painel Administrativo | NotaDez
-    </title>
-    <link rel="stylesheet" href="../../css/shared/style.css">
-    <link rel="stylesheet" href="../../css/admin/dashboard.css">
-  </head>
-  <body>
-    <div id="app" data-page="dashboard" data-role="admin" data-title="Painel Administrativo">
-      <div class="shell">
-        <aside class="side" data-component="sidebar">
-        </aside>
-        <main class="main">
-          <div data-component="header">
-          </div>
-          <section class="content">
-            <article class="admin-dashboard-host">
-              <div class="admin-dashboard">
-                <div class="admin-dashboard-panels">
-                  <section class="admin-panel">
-                    <div class="admin-panel-heading">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>
+    Painel Administrativo | NotaDez
+  </title>
+  <link rel="stylesheet" href="../../css/shared/style.css">
+  <link rel="stylesheet" href="../../css/admin/dashboard.css">
+</head>
+
+<body>
+  <div id="app" data-page="dashboard" data-role="admin" data-title="Painel Administrativo">
+    <div class="shell">
+      <aside class="side" data-component="sidebar">
+      </aside>
+      <main class="main">
+        <div data-component="header">
+        </div>
+        <section class="content">
+          <article class="admin-dashboard-host">
+            <div class="admin-dashboard">
+              <div class="admin-dashboard-panels">
+                <!-- Painel de Chamados Ativos -->
+                <section class="admin-panel" id="card-chamados-ativos" style="cursor: pointer;"
+                  title="Clique para gerenciar os chamados">
+                  <div class="admin-panel-heading">
+                    <div>
+                      <h2>Últimas Solicitações Recebidas</h2>
+                      <p>Solicitações recentes encaminhadas à administração.</p>
+                    </div>
+                  </div>
+                  <div class="admin-stat" style="border: 0; padding: 10px 0;">
+                    <span style="font-size: 13px; color: #65738b;">Chamados Ativos Aguardando Resposta</span>
+                    <strong id="contador-chamados-ativos" style="font-size: 32px; color: var(--primary);">--</strong>
+                    <small style="color: var(--primary); font-weight: 600;">Clique para abrir a central de chamados
+                      &rarr;</small>
+                  </div>
+                </section>
+                <section class="admin-panel">
+                  <div class="admin-panel-heading"
+                    style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                      <h2>Notificações</h2>
+                      <p>Avisos recentes do sistema.</p>
+                    </div>
+                    <button type="button" id="btn-marcar-todas-lidas" class="admin-notif-btn" hidden>Ler todos</button>
+                  </div>
+                  <div class="admin-notification-list" id="admin-notification-list">
+                    <article class="admin-notification-item is-empty">
+                      <span class="admin-notification-dot" aria-hidden="true"></span>
                       <div>
-                        <h2>Últimas Solicitações Recebidas</h2>
-                        <p>Solicitações recentes encaminhadas à administração.</p>
+                        <strong>Nenhuma notificação recente.</strong>
+                        <small>As atualizações aparecerão aqui.</small>
                       </div>
-                    </div>
-                    <div class="admin-request-list">
-                      <p class="admin-empty-state">Nenhuma solicitação disponível.</p>
-                    </div>
-                  </section>
-                  <section class="admin-panel">
-                    <div class="admin-panel-heading">
-                      <div>
-                        <h2>Notificações</h2>
-                        <p>Avisos recentes do sistema.</p>
-                      </div>
-                    </div>
-                    <div class="admin-notification-list">
-                      <article class="admin-notification-item">
-                        <span class="admin-notification-dot" aria-hidden="true"></span>
-                        <div>
-                          <strong>Nenhuma notificação recente.</strong>
-                          <small>As atualizações aparecerão aqui.</small>
-                        </div>
-                      </article>
-                    </div>
-                  </section>
-                </div>
+                    </article>
+                  </div>
+                </section>
               </div>
-            </article>
-          </section>
-          <div data-component="footer">
-          </div>
-        </main>
-      </div>
+            </div>
+          </article>
+        </section>
+        <div data-component="footer">
+        </div>
+      </main>
     </div>
-    <script src="../../js/shared/app.js">
-    </script>
-  </body>
+  </div>
+  <script src="../../js/shared/app.js"></script>
+  <script src="../../js/admin/dashboard.js"></script>
+</body>
+
 </html>
