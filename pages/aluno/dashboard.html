@@ -8,6 +8,7 @@
     </title>
     <link rel="stylesheet" href="../../css/shared/style.css">
     <link rel="stylesheet" href="../../css/aluno/paginas.css">
+    <link rel="stylesheet" href="../../css/shared/notificacoes.css">
   </head>
   <body>
     <div id="app" data-page="dashboard" data-role="aluno" data-title="Dashboard do Aluno">
@@ -25,10 +26,11 @@
                     <h2>
                       Notificações Recentes
                     </h2>
-                    <button type="button" disabled>
+                    <button type="button" id="btn-marcar-todas-lidas" class="notif-btn" hidden>
                       Marcar todas como lidas
                     </button>
                   </div>
+                  <div class="notif-list" id="notif-list"></div>
                   <p class="student-dashboard-empty">
                     Nenhuma notificação recente.
                   </p>
@@ -59,7 +61,8 @@
         </main>
       </div>
     </div>
-    <script src="../../js/shared/app.js">
-    </script>
+    <script src="../../js/shared/app.js"></script>
+    <script src="../../js/shared/notificacoes.js"></script>
+  <script src="../../js/aluno/dashboard.js"></script>
   </body>
 </html>

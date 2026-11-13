@@ -29,17 +29,6 @@
   color: var(--ink, #172033);
   font-size: 15px;
 }
-.student-dashboard-heading button {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--primary, #5146ee);
-  font-size: 11px;
-  font-weight: 600;
-}
-.student-dashboard-heading button:disabled {
-  opacity: .7;
-}
 .student-dashboard-empty {
   display: grid;
   min-height: 250px;
