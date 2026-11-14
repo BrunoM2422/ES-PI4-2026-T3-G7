@@ -186,3 +186,127 @@ body.theme-dark .teacher-stat > i {
     flex-direction: column;
   }
 }
+
+.teacher-agenda-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.teacher-agenda-date {
+  color: var(--muted, #71809b);
+  font-size: 11px;
+  text-transform: capitalize;
+}
+
+.teacher-agenda-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.teacher-agenda-item {
+  --agenda-cor: #5146ee;
+  --chip-bg: #eef0ff;
+  --chip-fg: #5146ee;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 13px;
+  border: 1px solid var(--line, #e3eaf3);
+  border-left: 3px solid var(--agenda-cor);
+  border-radius: 9px;
+}
+
+.teacher-agenda-item.is-feriado {
+  --agenda-cor: #e0a526;
+  --chip-bg: #fff4df;
+  --chip-fg: #a86b09;
+}
+
+.teacher-agenda-item.is-aula {
+  --agenda-cor: #1e9e6a;
+  --chip-bg: #e6f7ef;
+  --chip-fg: #12724b;
+}
+
+.teacher-agenda-item.is-atividade {
+  --agenda-cor: #2b7de9;
+  --chip-bg: #e8f1fe;
+  --chip-fg: #1f5fb8;
+}
+
+.teacher-agenda-item.is-ongoing {
+  background: var(--primary-soft, #eef0ff);
+}
+
+.teacher-agenda-time {
+  flex: 0 0 82px;
+  color: var(--ink, #172033);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.teacher-agenda-body {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+
+.teacher-agenda-body > strong {
+  color: var(--ink, #172033);
+  font-size: 12px;
+}
+
+.teacher-agenda-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.teacher-agenda-chip {
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: var(--chip-bg);
+  color: var(--chip-fg);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.teacher-agenda-place {
+  color: var(--muted, #71809b);
+  font-size: 11px;
+}
+
+.teacher-agenda-live {
+  color: #12724b;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.teacher-agenda-desc {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--muted, #71809b);
+  font-size: 11px;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+body.theme-dark .teacher-agenda-item.is-ongoing {
+  background: #292940;
+}
+
+body.theme-dark .teacher-agenda-chip {
+  background: rgb(255 255 255 / 8%);
+  color: var(--ink);
+}
+
+body.theme-dark .teacher-agenda-live {
+  color: #5fd3a0;
+}
