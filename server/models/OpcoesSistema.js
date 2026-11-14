@@ -6,7 +6,8 @@ const opcoesSistemaSchema = new mongoose.Schema({
   avaliacao: { type: Boolean, default: false },
   grade: { type: Boolean, default: false },
   gradeCurricular: { type: Boolean, default: false },
-  gradeCursosLiberados: { type: [mongoose.Schema.Types.ObjectId], ref: 'Curso' }
+  gradeCursosLiberados: { type: [mongoose.Schema.Types.ObjectId], ref: 'Curso' },
+  gradeEquivalenciasCursosLiberados: { type: [mongoose.Schema.Types.ObjectId], ref: 'Curso', default: [] }
 }, { timestamps: true });
 
 module.exports = mongoose.model('OpcoesSistema', opcoesSistemaSchema, 'opcoes_sistema');

@@ -63,7 +63,10 @@
     });
     cardsRoot.innerHTML = filtradas.length ? filtradas.map(disciplina => {
       const escolhida = selecionadas.has(disciplina.id);
-      return `<button type="button" class="curriculum-subject-card${escolhida ? ' is-selected' : ''}" data-subject="${escapar(disciplina.id)}"><span class="curriculum-subject-semester">${disciplina.semestre}º semestre</span><strong>${escapar(disciplina.nome)}</strong><span class="curriculum-subject-code">${escapar(disciplina.codigo)}</span><small>${escolhida ? `Turma ${escapar(turmaDaSelecao(disciplina.id, selecionadas.get(disciplina.id))?.codigo || '')} selecionada` : `${disciplina.turmas.length} turma(s) disponível(is)`}</small></button>`;
+      const origemEquivalente = disciplina.equivalente
+        ? `<span class="curriculum-subject-origin">Equivalente de ${escapar(disciplina.cursoNome)}</span>`
+        : '';
+      return `<button type="button" class="curriculum-subject-card${escolhida ? ' is-selected' : ''}" data-subject="${escapar(disciplina.id)}"><span class="curriculum-subject-semester">${disciplina.semestre}º semestre</span>${origemEquivalente}<strong>${escapar(disciplina.nome)}</strong><span class="curriculum-subject-code">${escapar(disciplina.codigo)}</span><small>${escolhida ? `Turma ${escapar(turmaDaSelecao(disciplina.id, selecionadas.get(disciplina.id))?.codigo || '')} selecionada` : `${disciplina.turmas.length} turma(s) disponível(is)`}</small></button>`;
     }).join('') : '<p class="curriculum-no-results">Nenhuma matéria encontrada para esse filtro.</p>';
     cardsRoot.querySelectorAll('[data-subject]').forEach(card => card.addEventListener('click', () => abrirModal(disciplinaPorId(card.dataset.subject))));
   }
