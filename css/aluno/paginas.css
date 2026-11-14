@@ -342,6 +342,7 @@ body.theme-dark .contact-attach {
 .curriculum-subject-card strong { font-size: 13px; }
 .curriculum-subject-card small, .curriculum-subject-code { color: var(--muted, #71809b); font-size: 10px; }
 .curriculum-subject-semester { color: var(--primary, #5146ee); font-size: 10px; font-weight: 750; }
+.curriculum-subject-origin { color: #147567; font-size: 9px; font-weight: 700; }
 .curriculum-no-results { grid-column: 1 / -1; color: var(--muted, #71809b); font-size: 12px; }
 .curriculum-week-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 13px; }
 .curriculum-week-heading h3 { margin: 0 0 4px; color: var(--ink, #172033); font-size: 14px; }

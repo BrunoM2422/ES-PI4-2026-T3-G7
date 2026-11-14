@@ -163,6 +163,28 @@ router.put('/opcoes/grade-curso', async (req, res) => {
   }
 });
 
+router.put('/opcoes/abrir-grades', async (_req, res) => {
+  try {
+    const cursos = await Curso.find().select('_id').lean();
+    if (!cursos.length) {
+      return res.status(400).json({ mensagem: 'Cadastre pelo menos um curso antes de liberar as grades.' });
+    }
+
+    const opcoes = await OpcoesSistema.findByIdAndUpdate('opcoes-academicas', {
+      $set: {
+        gradeCursosLiberados: cursos.map(curso => curso._id),
+        gradeCurricular: false
+      },
+      $setOnInsert: { _id: 'opcoes-academicas' }
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }).lean();
+
+    return res.json({ mensagem: 'Grade Curricular liberada para todos os cursos.', opcoes });
+  } catch (erro) {
+    console.error('Erro ao liberar Grade Curricular para todos os cursos:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível liberar as grades.' });
+  }
+});
+
 router.put('/opcoes/fechar-grades', async (_req, res) => {
   try {
     const opcoes = await OpcoesSistema.findByIdAndUpdate('opcoes-academicas', {
@@ -173,6 +195,64 @@ router.put('/opcoes/fechar-grades', async (_req, res) => {
   } catch (erro) {
     console.error('Erro ao fechar Grade Curricular de todos os cursos:', erro);
     return res.status(500).json({ mensagem: 'Não foi possível fechar as grades.' });
+  }
+});
+
+router.put('/opcoes/grade-equivalencias-curso', async (req, res) => {
+  try {
+    const { cursoId, liberado } = req.body;
+    if (!mongoose.isValidObjectId(cursoId) || typeof liberado !== 'boolean') {
+      return res.status(400).json({ mensagem: 'Curso ou ação inválida.' });
+    }
+    if (!await Curso.exists({ _id: cursoId })) return res.status(404).json({ mensagem: 'Curso não encontrado.' });
+
+    const atual = await OpcoesSistema.findById('opcoes-academicas')
+      .select('gradeEquivalenciasCursosLiberados')
+      .lean();
+    const liberados = new Set((atual?.gradeEquivalenciasCursosLiberados || []).map(String));
+    if (liberado) liberados.add(String(cursoId));
+    else liberados.delete(String(cursoId));
+
+    const opcoes = await OpcoesSistema.findByIdAndUpdate('opcoes-academicas', {
+      $set: { gradeEquivalenciasCursosLiberados: [...liberados] },
+      $setOnInsert: { _id: 'opcoes-academicas' }
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }).lean();
+    return res.json({
+      mensagem: liberado ? 'Inserção de matérias equivalentes liberada para o curso.' : 'Inserção de matérias equivalentes bloqueada para o curso.',
+      opcoes
+    });
+  } catch (erro) {
+    console.error('Erro ao atualizar liberação de matérias equivalentes:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível atualizar a liberação.' });
+  }
+});
+
+router.put('/opcoes/abrir-grade-equivalencias', async (_req, res) => {
+  try {
+    const cursos = await Curso.find().select('_id').lean();
+    if (!cursos.length) return res.status(400).json({ mensagem: 'Cadastre pelo menos um curso antes de liberar equivalências.' });
+
+    const opcoes = await OpcoesSistema.findByIdAndUpdate('opcoes-academicas', {
+      $set: { gradeEquivalenciasCursosLiberados: cursos.map(curso => curso._id) },
+      $setOnInsert: { _id: 'opcoes-academicas' }
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }).lean();
+    return res.json({ mensagem: 'Inserção de matérias equivalentes liberada para todos os cursos.', opcoes });
+  } catch (erro) {
+    console.error('Erro ao liberar matérias equivalentes para todos os cursos:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível liberar as equivalências.' });
+  }
+});
+
+router.put('/opcoes/fechar-grade-equivalencias', async (_req, res) => {
+  try {
+    const opcoes = await OpcoesSistema.findByIdAndUpdate('opcoes-academicas', {
+      $set: { gradeEquivalenciasCursosLiberados: [] },
+      $setOnInsert: { _id: 'opcoes-academicas' }
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }).lean();
+    return res.json({ mensagem: 'Inserção de matérias equivalentes bloqueada para todos os cursos.', opcoes });
+  } catch (erro) {
+    console.error('Erro ao bloquear matérias equivalentes para todos os cursos:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível bloquear as equivalências.' });
   }
 });
 

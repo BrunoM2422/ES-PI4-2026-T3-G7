@@ -4,6 +4,7 @@ const { autenticar } = require('../services/autenticacao');
 const Estudante = require('../models/Estudante');
 const Disciplina = require('../models/Disciplina');
 const Turma = require('../models/Turma');
+const Curso = require('../models/Curso');
 const OpcoesSistema = require('../models/OpcoesSistema');
 
 const router = express.Router();
@@ -11,15 +12,25 @@ const dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quint
 
 async function estudanteAtivo(req) {
   if (req.usuario.papel !== 'aluno') return { erro: 'Apenas alunos podem acessar a grade curricular.', status: 403 };
-  const estudante = await Estudante.findOne({ email: req.usuario.email });
+  const identificadores = [{ email: req.usuario.email }];
+  if (req.usuario.ra) identificadores.push({ ra: req.usuario.ra });
+  const estudante = await Estudante.findOne({ $or: identificadores });
   if (!estudante) return { erro: 'Cadastro de aluno não encontrado.', status: 404 };
   if (estudante.statusAcademico === 'trancado') return { erro: 'Alunos com matrícula trancada não podem montar a grade.', status: 403 };
   if (!estudante.cursoId) return { erro: 'Seu cadastro ainda não possui um curso vinculado.', status: 409 };
-  const opcoes = await OpcoesSistema.findById('opcoes-academicas').select('gradeCursosLiberados').lean();
-  if (!(opcoes?.gradeCursosLiberados || []).some(id => String(id) === String(estudante.cursoId))) {
-    return { erro: 'A Grade Curricular não está liberada para o seu curso.', status: 403 };
+  const [curso, opcoes] = await Promise.all([
+    Curso.findById(estudante.cursoId).select('codigo').lean(),
+    OpcoesSistema.findById('opcoes-academicas').select('gradeCursosLiberados gradeEquivalenciasCursosLiberados').lean()
+  ]);
+  if (!curso) return { erro: 'O curso vinculado ao seu cadastro não foi encontrado.', status: 409 };
+  const gradeLiberada = (opcoes?.gradeCursosLiberados || [])
+    .some(id => String(id) === String(estudante.cursoId));
+  const equivalenciasLiberadas = (opcoes?.gradeEquivalenciasCursosLiberados || [])
+    .some(id => String(id) === String(estudante.cursoId));
+  if (!gradeLiberada && !equivalenciasLiberadas) {
+    return { erro: 'A Grade Curricular e a inserção de matérias equivalentes não estão liberadas para o seu curso.', status: 403 };
   }
-  return { estudante };
+  return { estudante, curso, gradeLiberada, equivalenciasLiberadas };
 }
 
 function mapearHorario(item) {
@@ -33,22 +44,39 @@ router.get('/', autenticar, async (req, res) => {
   try {
     const resultado = await estudanteAtivo(req);
     if (resultado.erro) return res.status(resultado.status).json({ mensagem: resultado.erro });
-    const { estudante } = resultado;
-    const [disciplinas, turmas] = await Promise.all([
-      Disciplina.find({ cursoId: estudante.cursoId }).sort({ semestre: 1, codigo: 1 }).lean(),
-      Turma.find({ cursoId: estudante.cursoId, 'horarios.0': { $exists: true } })
+    const { estudante, curso, gradeLiberada, equivalenciasLiberadas } = resultado;
+    const condicoesDisciplinas = [];
+    if (gradeLiberada) condicoesDisciplinas.push({ cursoId: estudante.cursoId });
+    if (equivalenciasLiberadas) condicoesDisciplinas.push({ equivale_para: curso.codigo, cursoId: { $ne: estudante.cursoId } });
+    const filtroDisciplinas = condicoesDisciplinas.length === 1
+      ? condicoesDisciplinas[0]
+      : { $or: condicoesDisciplinas };
+    const disciplinas = await Disciplina.find(filtroDisciplinas)
+      .populate('cursoId', 'codigo nome')
+      .sort({ semestre: 1, codigo: 1 })
+      .lean();
+    const cursoIds = [...new Set(disciplinas.map(disciplina => String(disciplina.cursoId?._id || disciplina.cursoId)))];
+    const turmas = cursoIds.length
+      ? await Turma.find({ cursoId: { $in: cursoIds }, 'horarios.0': { $exists: true } })
         .populate('horarios.disciplinaId', 'nome codigo')
         .populate('horarios.docenteId', 'nome')
+        .populate('cursoId', 'codigo nome')
         .lean()
-    ]);
+      : [];
     const matriculasSalvas = (estudante.gradeMatriculas || []).map(item => ({
       turmaId: String(item.turmaId), disciplinaId: String(item.disciplinaId)
     }));
     const matriculasPorDisciplina = new Map(matriculasSalvas.map(item => [item.disciplinaId, item.turmaId]));
-    const disciplinasPorId = new Map(disciplinas.map(disciplina => [String(disciplina._id), {
-      id: String(disciplina._id), nome: disciplina.nome, codigo: disciplina.codigo,
-      semestre: disciplina.semestre, descricao: disciplina.descricao, turmas: []
-    }]));
+    const disciplinasPorId = new Map(disciplinas.map(disciplina => {
+      const cursoDisciplina = disciplina.cursoId;
+      const cursoDisciplinaId = String(cursoDisciplina?._id || cursoDisciplina);
+      return [String(disciplina._id), {
+        id: String(disciplina._id), nome: disciplina.nome, codigo: disciplina.codigo,
+        semestre: disciplina.semestre, descricao: disciplina.descricao, turmas: [],
+        equivalente: cursoDisciplinaId !== String(estudante.cursoId),
+        cursoNome: cursoDisciplina?.nome || ''
+      }];
+    }));
 
     for (const turma of turmas) {
       const idsDisciplinas = new Set((turma.horarios || []).map(item => String(item.disciplinaId?._id || item.disciplinaId)));
@@ -74,7 +102,9 @@ router.get('/', autenticar, async (req, res) => {
       ...disciplina,
       turmas: disciplina.turmas.sort((a, b) => a.codigo.localeCompare(b.codigo, 'pt-BR'))
     }));
-    return res.json({ disciplinas: listaDisciplinas, matriculas: matriculasSalvas });
+    const disciplinasDisponiveis = new Set(listaDisciplinas.map(disciplina => disciplina.id));
+    const matriculasDisponiveis = matriculasSalvas.filter(item => disciplinasDisponiveis.has(item.disciplinaId));
+    return res.json({ disciplinas: listaDisciplinas, matriculas: matriculasDisponiveis });
   } catch (erro) {
     console.error('Erro ao carregar grade do aluno:', erro);
     return res.status(500).json({ mensagem: 'Não foi possível carregar as disciplinas e turmas.' });
@@ -85,7 +115,7 @@ router.put('/', autenticar, async (req, res) => {
   try {
     const resultado = await estudanteAtivo(req);
     if (resultado.erro) return res.status(resultado.status).json({ mensagem: resultado.erro });
-    const { estudante } = resultado;
+    const { estudante, curso, gradeLiberada, equivalenciasLiberadas } = resultado;
     const enviadas = req.body?.matriculas;
     if (!Array.isArray(enviadas) || enviadas.some(item =>
       !item || !mongoose.isValidObjectId(item.turmaId) || !mongoose.isValidObjectId(item.disciplinaId)
@@ -108,17 +138,32 @@ router.put('/', autenticar, async (req, res) => {
     let gradeAtualizada = false;
     try {
       const idsTurma = [...new Set(matriculas.map(item => item.turmaId))];
-      const turmas = idsTurma.length
-        ? await Turma.find({ _id: { $in: idsTurma }, cursoId: estudante.cursoId }).populate('horarios.disciplinaId', 'nome codigo').lean()
-        : [];
+      const idsDisciplina = [...new Set(matriculas.map(item => item.disciplinaId))];
+      const [turmas, disciplinasValidas] = await Promise.all([
+        idsTurma.length
+          ? Turma.find({ _id: { $in: idsTurma } }).populate('horarios.disciplinaId', 'nome codigo').lean()
+          : [],
+        idsDisciplina.length
+          ? Disciplina.find({ _id: { $in: idsDisciplina } }).select('_id cursoId equivale_para').lean()
+          : []
+      ]);
       if (turmas.length !== idsTurma.length) return res.status(400).json({ mensagem: 'Uma ou mais turmas não pertencem ao seu curso ou não estão disponíveis.' });
       const turmasPorId = new Map(turmas.map(turma => [String(turma._id), turma]));
-      const disciplinasDoCurso = new Set((await Disciplina.find({ cursoId: estudante.cursoId }).select('_id').lean()).map(item => String(item._id)));
+      if (disciplinasValidas.length !== idsDisciplina.length) return res.status(400).json({ mensagem: 'Uma ou mais matérias não foram encontradas.' });
+      const disciplinasPorId = new Map(disciplinasValidas.map(disciplina => [String(disciplina._id), disciplina]));
       const horariosOcupados = new Set();
 
       for (const matricula of matriculas) {
         const turma = turmasPorId.get(matricula.turmaId);
-        if (!disciplinasDoCurso.has(matricula.disciplinaId)) return res.status(400).json({ mensagem: 'Uma das matérias não pertence ao seu curso.' });
+        const disciplina = disciplinasPorId.get(matricula.disciplinaId);
+        const disciplinaDoCurso = gradeLiberada && String(disciplina.cursoId) === String(estudante.cursoId);
+        const equivalenciaPermitida = equivalenciasLiberadas && (disciplina.equivale_para || []).includes(curso.codigo);
+        if (!disciplinaDoCurso && !equivalenciaPermitida) {
+          return res.status(400).json({ mensagem: 'Uma das matérias não pertence ao seu curso nem está liberada como equivalente.' });
+        }
+        if (String(turma.cursoId) !== String(disciplina.cursoId)) {
+          return res.status(400).json({ mensagem: 'A turma selecionada não pertence ao curso da matéria.' });
+        }
         const horariosDisciplina = (turma.horarios || []).filter(item => String(item.disciplinaId?._id || item.disciplinaId) === matricula.disciplinaId);
         if (!horariosDisciplina.length) return res.status(409).json({ mensagem: `A turma ${turma.codigo} não está vinculada a essa matéria.` });
         for (const horario of horariosDisciplina) {
@@ -136,9 +181,10 @@ router.put('/', autenticar, async (req, res) => {
       const classesRemovidas = [...classesAnteriores].filter(id => !matriculas.some(item => item.turmaId === id));
 
       for (const turmaId of classesNovas) {
+        const turma = turmasPorId.get(turmaId);
         const turmaAtualizada = await Turma.findOneAndUpdate({
           _id: turmaId,
-          cursoId: estudante.cursoId,
+          cursoId: turma.cursoId,
           $expr: { $lt: [{ $size: { $ifNull: ['$alunosIds', []] } }, '$vagas'] }
         }, { $addToSet: { alunosIds: estudante._id } }, { new: true });
         if (!turmaAtualizada) {

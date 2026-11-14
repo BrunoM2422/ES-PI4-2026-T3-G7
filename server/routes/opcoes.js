@@ -14,9 +14,11 @@ router.get('/', async (req, res) => {
     const email = String(req.query.email || '').trim().toLowerCase();
     if (email) {
       const estudante = await Estudante.findOne({ email }).select('cursoId statusAcademico').lean();
-      if (Array.isArray(opcoes.gradeCursosLiberados)) {
-        opcoes.gradeCurricular = Boolean(estudante && estudante.statusAcademico !== 'trancado' && estudante.cursoId && opcoes.gradeCursosLiberados.some(id => String(id) === String(estudante.cursoId)));
-      }
+      const gradeLiberada = Boolean(estudante?.cursoId && (opcoes.gradeCursosLiberados || [])
+        .some(id => String(id) === String(estudante.cursoId)));
+      const equivalenciasLiberadas = Boolean(estudante?.cursoId && (opcoes.gradeEquivalenciasCursosLiberados || [])
+        .some(id => String(id) === String(estudante.cursoId)));
+      opcoes.gradeCurricular = Boolean(estudante && estudante.statusAcademico !== 'trancado' && (gradeLiberada || equivalenciasLiberadas));
     }
     return res.json({ opcoes });
   } catch (erro) {

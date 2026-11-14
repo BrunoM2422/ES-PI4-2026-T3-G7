@@ -15,7 +15,13 @@
           <div data-component="header"></div>
           <section class="content">
             <article class="admin-page">
-              <div class="grade-admin-toolbar" data-course-toolbar hidden><button class="schedule-back" type="button" data-back-options>&#8592; Voltar</button><button class="grade-close-all" type="button" data-close-all>Fechar todas as matrículas</button></div>
+              <div class="grade-admin-toolbar" data-course-toolbar hidden>
+                <button class="schedule-back" type="button" data-back-options>&#8592; Voltar</button>
+                <div class="grade-admin-actions">
+                  <button class="grade-open-all" type="button" data-open-all><span data-open-all-label>Liberar todas as grades</span></button>
+                  <button class="grade-close-all" type="button" data-close-all><span data-close-all-label>Fechar todas as matrículas</span></button>
+                </div>
+              </div>
               <div class="admin-page-intro">
                 <span class="admin-eyebrow">Configurações acadêmicas</span>
                 <h2>Gerenciamento de Opções</h2>
@@ -33,8 +39,13 @@
                   <div class="admin-option-copy"><strong>Liberação da grade curricular</strong><span>Escolha os cursos cujos alunos poderão acessar Grade Curricular no menu.</span></div>
                   <button class="admin-button" type="button" data-continue>Continuar</button>
                 </div>
+                <div class="admin-option-row admin-course-continue-row" data-equivalencia-entry>
+                  <div class="admin-option-icon" aria-hidden="true">&#8644;</div>
+                  <div class="admin-option-copy"><strong>Inserção de matérias equivalentes de outros cursos</strong><span>Escolha os cursos cujos alunos poderão incluir matérias equivalentes ofertadas por outros cursos.</span></div>
+                  <button class="admin-button" type="button" data-continue-equivalencias>Continuar</button>
+                </div>
               </section>
-              <section class="admin-course-grades" data-course-screen aria-label="Liberação da grade por curso" hidden><div class="admin-courses-heading"><div><h3>Grade Curricular por curso</h3><p>Selecione um curso para liberar ou fechar o acesso dos alunos.</p></div></div><div class="admin-course-grid" data-course-grid></div><p class="admin-courses-status" data-course-status role="status"></p></section>
+              <section class="admin-course-grades" data-course-screen aria-label="Liberação por curso" hidden><div class="admin-courses-heading"><div><h3 data-course-screen-title>Grade Curricular por curso</h3><p data-course-screen-description>Selecione um curso para liberar ou fechar o acesso dos alunos.</p></div></div><div class="admin-course-grid" data-course-grid></div><p class="admin-courses-status" data-course-status role="status"></p></section>
             </article>
           </section>
           <div data-component="footer"></div>
