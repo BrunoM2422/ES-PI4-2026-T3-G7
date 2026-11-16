@@ -175,17 +175,30 @@ router.put('/', autenticar, async (req, res) => {
 
       const anteriores = (estudante.gradeMatriculas || []).map(item => ({ turmaId: String(item.turmaId), disciplinaId: String(item.disciplinaId) }));
       const classesAnteriores = new Set(anteriores.map(item => item.turmaId));
-      const classesNovas = [...new Set(matriculas.map(item => item.turmaId))].filter(id =>
-        !classesAnteriores.has(id) && !(turmasPorId.get(id).alunosIds || []).some(alunoId => String(alunoId) === String(estudante._id))
+      const classesDesejadas = new Set(matriculas.map(item => item.turmaId));
+      const turmaBaseId = estudante.turmaId ? String(estudante.turmaId) : null;
+      const classesAConservar = new Set([...classesDesejadas, ...(turmaBaseId ? [turmaBaseId] : [])]);
+      const turmasComAluno = await Turma.find({ alunosIds: estudante._id }).select('_id').lean();
+
+      // Sincroniza pelo estado real do array da turma, inclusive registros antigos
+      // que tenham gradeMatriculas sem o aluno correspondente em alunosIds.
+      const classesNovas = [...classesDesejadas].filter(id =>
+        !(turmasPorId.get(id).alunosIds || []).some(alunoId => String(alunoId) === String(estudante._id))
       );
-      const classesRemovidas = [...classesAnteriores].filter(id => !matriculas.some(item => item.turmaId === id));
+      const classesRemovidas = [...new Set([
+        ...classesAnteriores,
+        ...turmasComAluno.map(turma => String(turma._id))
+      ])].filter(id => !classesAConservar.has(id));
 
       for (const turmaId of classesNovas) {
         const turma = turmasPorId.get(turmaId);
         const turmaAtualizada = await Turma.findOneAndUpdate({
           _id: turmaId,
           cursoId: turma.cursoId,
-          $expr: { $lt: [{ $size: { $ifNull: ['$alunosIds', []] } }, '$vagas'] }
+          $or: [
+            { alunosIds: estudante._id },
+            { $expr: { $lt: [{ $size: { $ifNull: ['$alunosIds', []] } }, '$vagas'] } }
+          ]
         }, { $addToSet: { alunosIds: estudante._id } }, { new: true });
         if (!turmaAtualizada) {
           if (adicionadas.length) await Turma.updateMany({ _id: { $in: adicionadas } }, { $pull: { alunosIds: estudante._id } });

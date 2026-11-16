@@ -11,6 +11,9 @@ const opcoesRoutes = require('./routes/opcoes');
 const calendarioRoutes = require('./routes/calendario');
 const chamadosRoutes = require('./routes/chamados');
 const gradeAlunoRoutes = require('./routes/grade-aluno');
+const historicoAlunoRoutes = require('./routes/historico-aluno');
+const professorTurmasRoutes = require('./routes/professor-turmas');
+const notificacoesRoutes = require('./routes/notificacoes');
 const Disciplina = require('./models/Disciplina');
 const Turma = require('./models/Turma');
 const GradeHorario = require('./models/GradeHorario');
@@ -45,6 +48,9 @@ app.use('/api/opcoes', opcoesRoutes);
 app.use('/api/calendario', calendarioRoutes);
 app.use('/api/chamados', chamadosRoutes);
 app.use('/api/aluno/grade', gradeAlunoRoutes);
+app.use('/api/aluno/historico', historicoAlunoRoutes);
+app.use('/api/professor/turmas', professorTurmasRoutes);
+app.use('/api/aluno/notificacoes', notificacoesRoutes);
 
 async function iniciarServidor() {
   try {

@@ -75,6 +75,39 @@
         };
     }
 
+    function comunicados() {
+        return async () => {
+            const token = sessionStorage.getItem('notadez_token');
+            const resposta = await fetch('/api/aluno/notificacoes', {
+                headers: { Authorization: `Bearer ${token || ''}` }
+            });
+            const dados = await resposta.json();
+            if (!resposta.ok || !Array.isArray(dados.notificacoes)) {
+                throw new Error(dados.mensagem || 'Não foi possível carregar os comunicados.');
+            }
+
+            return dados.notificacoes.map(item => {
+                const criadoEm = item.createdAt ? new Date(item.createdAt) : new Date();
+                const dataFormatada = new Intl.DateTimeFormat('pt-BR', {
+                    dateStyle: 'short', timeStyle: 'short', timeZone: FUSO
+                }).format(criadoEm);
+                return {
+                    id: `comunicado:${item.id}`,
+                    titulo: item.titulo,
+                    tipo: 'Comunicado da turma',
+                    quando: dataFormatada,
+                    ordem: `0000-${String(9999999999999 - criadoEm.getTime()).padStart(13, '0')}`,
+                    detalhes: [
+                        { rotulo: 'Turma', valor: item.turma || 'Não informada' },
+                        { rotulo: 'Professor', valor: item.professor || 'Não informado' }
+                    ],
+                    descricao: item.mensagem || '',
+                    atualizadoEm: item.updatedAt || item.createdAt
+                };
+            });
+        };
+    }
+
     function iniciar({ perfil, fontes, lista, btnLerTodas } = {}) {
         lista = lista || document.getElementById('notif-list');
         btnLerTodas = btnLerTodas || document.getElementById('btn-marcar-todas-lidas');
@@ -241,5 +274,5 @@
         return { recarregar: carregar };
     }
 
-    window.NotaDezNotificacoes = { iniciar, fontes: { calendario } };
+    window.NotaDezNotificacoes = { iniciar, fontes: { calendario, comunicados } };
 })();

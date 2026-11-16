@@ -99,6 +99,40 @@ router.get('/minhas-turmas', autenticar, async (req, res) => {
   }
 });
 
+router.get('/minhas-aulas', autenticar, async (req, res) => {
+  if (req.usuario.papel !== 'professor') {
+    return res.status(403).json({ mensagem: 'Apenas docentes podem consultar suas aulas.' });
+  }
+  try {
+    const docente = await Docente.findOne(filtroPerfil(req.usuario, 'professor')).select('_id');
+    if (!docente) return res.status(404).json({ mensagem: 'Perfil docente não encontrado.' });
+
+    const turmas = await Turma.find({ 'horarios.docenteId': docente._id })
+      .select('codigo cursoId horarios')
+      .populate('cursoId', 'nome')
+      .populate('horarios.disciplinaId', 'nome codigo')
+      .sort({ codigo: 1 })
+      .lean();
+
+    const aulas = turmas.flatMap(turma => (turma.horarios || [])
+      .filter(horario => String(horario.docenteId) === String(docente._id))
+      .map(horario => ({
+        materia: horario.disciplinaId?.nome || 'Matéria não identificada',
+        turma: turma.cursoId?.nome || `Turma ${turma.codigo}`,
+        codigoTurma: turma.codigo,
+        dia: horario.dia,
+        hora: horario.hora,
+        local: ''
+      })))
+      .sort((a, b) => a.dia - b.dia || a.hora - b.hora || a.turma.localeCompare(b.turma));
+
+    return res.json({ aulas });
+  } catch (erro) {
+    console.error('Erro ao carregar agenda semanal do docente:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível carregar seus horários.' });
+  }
+});
+
 router.get('/eventos', autenticar, async (req, res) => {
   try {
     let filtro = { scope: 'global' };

@@ -73,6 +73,189 @@
   color: var(--muted, #71809b);
   font-size: 12px;
 }
+.history-panel {
+  overflow: hidden;
+}
+.history-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--line, #e3eaf3);
+  background: linear-gradient(120deg, #fff 0%, #f8f9ff 100%);
+}
+.history-heading h2 {
+  margin: 5px 0 0;
+  color: var(--ink, #172033);
+  font-size: 18px;
+  letter-spacing: -.02em;
+}
+.history-heading p {
+  margin: 7px 0 0;
+  color: var(--muted, #71809b);
+  font-size: 12px;
+}
+.history-eyebrow {
+  color: var(--primary, #5146ee);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.history-summary {
+  display: grid;
+  flex: 0 0 auto;
+  justify-items: end;
+  gap: 5px;
+  max-width: 280px;
+  color: var(--muted, #71809b);
+  font-size: 11px;
+  text-align: right;
+}
+.history-summary strong {
+  color: var(--primary, #5146ee);
+  font-size: 12px;
+}
+.history-note {
+  margin: 0;
+  padding: 13px 24px;
+  border-bottom: 1px solid var(--line, #e3eaf3);
+  background: #fbfcff;
+  color: var(--muted, #71809b);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.history-table-scroll {
+  overflow-x: auto;
+}
+.history-table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: var(--ink, #172033);
+  font-size: 12px;
+  text-align: left;
+}
+.history-table th,
+.history-table td {
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--line, #e3eaf3);
+}
+.history-table tbody tr:not(.history-semester-row):hover {
+  background: #fafaff;
+}
+.history-table thead th {
+  background: #f7f8fc;
+  color: #61708a;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.history-table th:nth-child(1) { width: 58%; }
+.history-table th:nth-child(2),
+.history-table td:nth-child(2) { width: 20%; text-align: center; }
+.history-table th:nth-child(3),
+.history-table td:nth-child(3) { width: 22%; text-align: center; }
+.history-semester-row th {
+  padding: 0;
+  background: #f0f2ff;
+  color: #5146ee;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.history-current-row th {
+  background: #e9ecff;
+  color: #4036cf;
+}
+.history-group-toggle {
+  display: flex;
+  width: 100%;
+  min-height: 42px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 20px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 800;
+  letter-spacing: inherit;
+  text-align: left;
+  text-transform: inherit;
+  cursor: pointer;
+}
+.history-group-toggle::after {
+  content: "▸";
+  flex: 0 0 auto;
+  margin-left: 12px;
+  font-size: 14px;
+  transition: transform .15s ease;
+}
+.history-group-toggle[aria-expanded="true"]::after {
+  transform: rotate(90deg);
+}
+.history-group-toggle:hover,
+.history-group-toggle:focus-visible {
+  background: rgb(81 70 238 / 7%);
+  outline: none;
+}
+.history-group-empty td {
+  padding: 18px 20px;
+  color: var(--muted, #71809b);
+  font-size: 11px;
+  text-align: center;
+}
+.history-discipline-name {
+  font-weight: 600;
+  line-height: 1.45;
+}
+.history-average {
+  color: #8a96a9;
+  font-variant-numeric: tabular-nums;
+}
+.history-status {
+  display: inline-flex;
+  min-width: 94px;
+  justify-content: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #f0f2f6;
+  color: #67758a;
+  font-size: 10px;
+  font-weight: 700;
+}
+.history-status[data-status="matriculado"] {
+  background: #eef0ff;
+  color: #5146ee;
+}
+.history-status[data-status="aprovado"] {
+  background: #e8f7ef;
+  color: #16834f;
+}
+.history-status[data-status="reprovado"] {
+  background: #fff0ef;
+  color: #b42318;
+}
+.history-message {
+  padding: 32px 20px !important;
+  color: var(--muted, #71809b);
+  text-align: center;
+}
+body.theme-dark .history-heading { background: linear-gradient(120deg, #202735, #1c2638); }
+body.theme-dark .history-note,
+body.theme-dark .history-table thead th { background: #1b2433; }
+body.theme-dark .history-semester-row th { background: #302d55; color: #c0bcff; }
+body.theme-dark .history-current-row th { background: #39366a; color: #d1ceff; }
+body.theme-dark .history-table { color: var(--ink); }
+body.theme-dark .history-table tbody tr:not(.history-semester-row):hover { background: #252e3e; }
+body.theme-dark .history-status[data-status="matriculado"] { background: #302d55; color: #c0bcff; }
+body.theme-dark .history-status[data-status="aprovado"] { background: #17382c; color: #75d4a4; }
+body.theme-dark .history-status[data-status="reprovado"] { background: #40252c; color: #ffaaa2; }
 .curriculum-toolbar {
   display: flex;
   align-items: center;
@@ -305,6 +488,19 @@ body.theme-dark .contact-attach {
   color: var(--ink);
 }
 @media (max-width: 520px) {
+  .history-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 18px;
+  }
+  .history-summary {
+    justify-items: start;
+    max-width: none;
+    text-align: left;
+  }
+  .history-note { padding: 12px 18px; }
+  .history-table th,
+  .history-table td { padding: 12px 14px; }
   .curriculum-toolbar {
     align-items: flex-start;
     flex-direction: column;

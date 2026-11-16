@@ -20,14 +20,20 @@
           <section class="content">
             <article class="teacher-host">
               <div class="teacher-page">
-                <section class="teacher-panel teacher-empty-panel">
-                  <h2>
-                    Minhas Turmas
-                  </h2>
-                  <p>
-                    Nenhuma turma cadastrada.
-                  </p>
+                <section class="teacher-panel teacher-classes-panel">
+                  <div class="teacher-classes-heading">
+                    <div>
+                      <span class="teacher-classes-eyebrow">Ensino</span>
+                      <h2>Minhas Turmas</h2>
+                      <p>Turmas vinculadas às disciplinas que você leciona.</p>
+                    </div>
+                    <span class="teacher-class-count" data-class-count>Carregando...</span>
+                  </div>
+                  <div class="teacher-class-grid" data-class-grid aria-live="polite">
+                    <p class="teacher-empty-message">Carregando suas turmas...</p>
+                  </div>
                 </section>
+                <section class="teacher-panel teacher-class-details" data-class-details hidden></section>
               </div>
             </article>
           </section>
@@ -37,6 +43,8 @@
       </div>
     </div>
     <script src="../../js/shared/app.js">
+    </script>
+    <script src="../../js/professor/turmas.js">
     </script>
   </body>
 </html>

@@ -4,9 +4,13 @@ const crypto = require('crypto');
 const Usuario = require('../models/Usuario');
 const Estudante = require('../models/Estudante');
 const enviarEmail = require('../services/email');
-const { criarToken } = require('../services/autenticacao');
+const { autenticar, criarToken } = require('../services/autenticacao');
 
 const router = express.Router();
+
+router.get('/sessao', autenticar, (req, res) => {
+  return res.json({ usuario: { email: req.usuario.email, tipo: req.usuario.papel } });
+});
 
 const mensagemRecuperacao = 'Se o e-mail estiver vinculado a uma conta válida, você receberá um código de recuperação.';
 const papeisValidos = ['estudante', 'docente', 'admin'];
@@ -194,14 +198,20 @@ router.post('/login', async (req, res) => {
     }
 
     
-    const senhaValida = await bcrypt.compare(
-      senha,
-      usuario.senha
-    );
-    
-    const senhaValida2 = senha === usuario.senha;
+    let senhaValida = false;
+    try {
+      senhaValida = await bcrypt.compare(senha, usuario.senha);
+    } catch {
+      // Permite migrar credenciais antigas em texto puro no primeiro login.
+    }
 
-    if (!senhaValida && !senhaValida2) {
+    if (!senhaValida && senha === usuario.senha) {
+      usuario.senha = await bcrypt.hash(senha, 10);
+      await usuario.save();
+      senhaValida = true;
+    }
+
+    if (!senhaValida) {
       return res.status(401).json({
         mensagem: 'E-mail ou senha incorretos.'
       });

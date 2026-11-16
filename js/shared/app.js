@@ -87,10 +87,24 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
     user = null;
   }
 
-  if (!user || user.tipo !== role || !sessionStorage.getItem('notadez_token')) {
+  const token = sessionStorage.getItem('notadez_token');
+  if (!user || user.tipo !== role || !token) {
     sessionStorage.removeItem('notadez_user');
     sessionStorage.removeItem('notadez_token');
     window.location.href = '../../login.html';
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/auth/sessao', { headers: { Authorization: `Bearer ${token}` } });
+    const sessao = response.ok ? await response.json() : null;
+    if (!sessao || sessao.usuario?.tipo !== role || sessao.usuario?.email !== user.email) {
+      throw new Error('Sessão inválida ou expirada.');
+    }
+  } catch {
+    sessionStorage.removeItem('notadez_user');
+    sessionStorage.removeItem('notadez_token');
+    window.location.replace('../../login.html');
     return;
   }
 
@@ -233,6 +247,15 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
     app.querySelectorAll('[data-user-name]').forEach(element => {
       element.textContent = user.nome || 'Usuário';
     });
+    const dashboardLink = app.querySelector('[data-dashboard-link]');
+    if (dashboardLink) dashboardLink.href = `../../pages/${role}/dashboard.html`;
+    app.querySelectorAll('[data-logout]').forEach(button => {
+      button.addEventListener('click', () => {
+        sessionStorage.removeItem('notadez_user');
+        sessionStorage.removeItem('notadez_token');
+        window.location.replace('../../login.html');
+      });
+    });
     app.querySelectorAll('[data-profile-link]').forEach(link => {
       link.href = role === 'admin' ? '../../pages/admin/dashboard.html' : `../../pages/${role}/perfil.html`;
     });
@@ -300,6 +323,19 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
     app.querySelectorAll('[data-nav-page]').forEach(link => {
       if (link.dataset.navPage === page) link.classList.add('active');
     });
+
+    if (role === 'admin') {
+      app.querySelectorAll('.nav-admin .nav-group').forEach(group => {
+        const toggle = group.querySelector('button.nav-section-label');
+        const containsCurrentPage = Boolean(group.querySelector(`[data-nav-page="${page}"]`));
+        group.classList.toggle('is-open', containsCurrentPage);
+        toggle?.setAttribute('aria-expanded', String(containsCurrentPage));
+        toggle?.addEventListener('click', () => {
+          const isOpen = group.classList.toggle('is-open');
+          toggle.setAttribute('aria-expanded', String(isOpen));
+        });
+      });
+    }
 
     if (role === 'professor') {
       const financeLink = app.querySelector('[data-finance-nav]');
