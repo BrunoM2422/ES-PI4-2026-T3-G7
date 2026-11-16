@@ -11,7 +11,8 @@ async function auditar(req, res, next) {
   const usuario = req.usuario;
   const caminho = req.originalUrl.split('?')[0];
   if (!usuario || !['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) return next();
-  if (usuario.papel !== 'admin' && !(usuario.papel === 'professor' && caminho.startsWith('/api/perfis'))) return next();
+  const calendarioDoProfessor = usuario.papel === 'professor' && /^\/api\/calendario\/eventos(?:\/[a-f\d]{24})?$/i.test(caminho);
+  if (usuario.papel !== 'admin' && !(usuario.papel === 'professor' && caminho.startsWith('/api/perfis')) && !calendarioDoProfessor) return next();
   try {
     const detalhes = [];
     const body = req.body || {};
