@@ -236,36 +236,65 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
     app.querySelectorAll('[data-profile-link]').forEach(link => {
       link.href = role === 'admin' ? '../../pages/admin/dashboard.html' : `../../pages/${role}/perfil.html`;
     });
+ 
     const atualizarAvatar = origem => {
-      const link = app.querySelector('.header-avatar-link');
-      if (!link) return;
-      const imagem = link.querySelector('[data-profile-avatar]');
-      const padrao = link.querySelector('svg');
-      if (!imagem || !padrao) return;
+      const imagem = document.querySelector('[data-profile-avatar]');
+      const link = imagem ? imagem.closest('a') : null;
+      const padrao = link ? link.querySelector('svg') : document.querySelector('.header-avatar-link svg');
+
+      if (!imagem) return;
+
       if (origem) {
         imagem.onerror = () => {
           console.error('A imagem de perfil recebida não pôde ser exibida.');
-          atualizarAvatar('');
+          atualizarAvatar(''); // Volta para o padrão se der erro no link
         };
+        
         imagem.alt = `Foto de ${user.nome || 'perfil'}`;
         imagem.src = origem;
+        
+        imagem.style.display = 'block';
         imagem.hidden = false;
-        padrao.hidden = true;
+        
+        if (padrao) {
+          padrao.style.display = 'none';
+          padrao.hidden = true;
+        }
       } else {
         imagem.removeAttribute('src');
+        imagem.style.display = 'none';
         imagem.hidden = true;
-        padrao.hidden = false;
+        
+        if (padrao) {
+          padrao.style.display = 'block';
+          padrao.hidden = false;
+        }
       }
     };
-    const carregarFotoPerfil = () => {
+    
+    window.atualizarAvatarCabecalho = atualizarAvatar;
+
+    const carregarFotoPerfil = (forcarNovo = false) => {
       if (role !== 'aluno' && role !== 'professor') return;
-      const consulta = new URLSearchParams({ email: user.email || '', versao: String(Date.now()) });
+      const versao = forcarNovo ? Date.now() : (sessionStorage.getItem('notadez_foto_versao') || Date.now());
+      if (forcarNovo) sessionStorage.setItem('notadez_foto_versao', versao);
+      
+      const consulta = new URLSearchParams({ email: user.email || '', v: versao });
       atualizarAvatar(`/api/perfis/foto?${consulta}`);
     };
-    document.addEventListener('notadez:foto-perfil-atualizada', carregarFotoPerfil);
+
+    document.addEventListener('notadez:foto-perfil-atualizada', (event) => {
+      if (event.detail && typeof event.detail.foto === 'string' && event.detail.foto.startsWith('data:image')) {
+        atualizarAvatar(event.detail.foto);
+      } else {
+        carregarFotoPerfil(true); // Força recarregar quebrando o cache
+      }
+    });
+
     if (role === 'aluno' || role === 'professor') {
       carregarFotoPerfil();
     }
+    
     const pageTitle = app.querySelector('[data-page-title]');
     if (pageTitle) pageTitle.textContent = app.dataset.title || '';
     app.querySelectorAll('[data-nav-page]').forEach(link => {

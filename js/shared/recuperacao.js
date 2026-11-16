@@ -11,9 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const resendButton = document.querySelector('#resend-code-button');
   const emailMessage = document.querySelector('#recovery-email-message');
   const status = document.querySelector('#recovery-status');
+  const passwordFields = document.querySelector('#password-fields'); // Nova div
+
   let emailRecuperacao = '';
   let segundosAteReenvio = 0;
   let temporizadorReenvio;
+  let codigoValidado = false; // Controle de estado
 
   const mostrarStatus = (mensagem, tipo = '') => {
     status.textContent = mensagem;
@@ -62,10 +65,18 @@ document.addEventListener('DOMContentLoaded', () => {
       emailMessage.textContent = `Se ${email} estiver vinculado a uma conta válida, enviaremos um código de recuperação.`;
       emailField.hidden = true;
       requestButton.hidden = true;
+      
+      // Prepara a tela para a validação do código
+      codigoValidado = false;
       codeStep.hidden = false;
+      passwordFields.hidden = true;
+      resetButton.textContent = 'Validar Código';
+      
       [codeInput, newPasswordInput, confirmPasswordInput].forEach(input => {
         input.disabled = false;
+        input.value = ''; // Limpa os campos se houver reenvio
       });
+      
       codeInput.focus();
       mostrarStatus(data.mensagem || 'Confira sua caixa de entrada e a pasta de spam.');
       return true;
@@ -93,7 +104,40 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   resetButton.addEventListener('click', async () => {
-    if (!window.validateAppFields([codeInput, newPasswordInput, confirmPasswordInput])) return;
+    // ETAPA 1: Validar apenas o código
+    if (!codigoValidado) {
+      if (!window.validateAppFields([codeInput])) return;
+      
+      resetButton.disabled = true;
+      mostrarStatus('Validando código...');
+
+      try {
+        const response = await fetch('/api/auth/validar-codigo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: emailRecuperacao, codigo: codeInput.value.trim() })
+        });
+        
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.mensagem || 'Código inválido ou expirado.');
+
+        // Sucesso na validação
+        codigoValidado = true;
+        codeInput.disabled = true; // Trava o input do código
+        passwordFields.hidden = false; // Mostra as senhas
+        resetButton.textContent = 'Redefinir senha';
+        newPasswordInput.focus();
+        mostrarStatus('Código validado. Digite sua nova senha.', 'success');
+      } catch (erro) {
+        mostrarStatus(erro.message, 'error');
+      } finally {
+        resetButton.disabled = false;
+      }
+      return;
+    }
+
+    // ETAPA 2: Redefinir a senha após o código estar validado
+    if (!window.validateAppFields([newPasswordInput, confirmPasswordInput])) return;
     if (newPasswordInput.value !== confirmPasswordInput.value) {
       confirmPasswordInput.setCustomValidity('As senhas não coincidem.');
       window.showAppMessage(confirmPasswordInput.validationMessage, 'error');

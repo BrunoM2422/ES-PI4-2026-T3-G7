@@ -21,7 +21,7 @@ router.post('/recuperacao', async (req, res) => {
     const usuario = await Usuario.findOne({ email, papeis: { $in: papeisValidos } }).select(
       '+passwordResetRequestedAt'
     );
-
+    if (!usuario) console.log('E-MAIL NÃO ENCONTRADO NO BANCO DE DADOS:', email);
     if (!usuario) return res.json({ mensagem: mensagemRecuperacao });
 
     const agora = Date.now();
@@ -33,6 +33,10 @@ router.post('/recuperacao', async (req, res) => {
     }
 
     const codigo = String(crypto.randomInt(100000, 1000000));
+    console.log('====================================');
+    console.log('CÓDIGO DE RECUPERAÇÃO GERADO:', codigo);
+    console.log('====================================');
+    
     usuario.passwordResetCodeHash = await bcrypt.hash(codigo, 10);
     usuario.passwordResetExpiresAt = new Date(agora + 10 * 60_000);
     usuario.passwordResetAttempts = 0;
@@ -57,6 +61,44 @@ router.post('/recuperacao', async (req, res) => {
   } catch (erro) {
     console.error('Erro ao solicitar recuperação de senha:', erro);
     return res.status(500).json({ mensagem: 'Não foi possível processar a solicitação agora.' });
+  }
+});
+router.post('/validar-codigo', async (req, res) => {
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const codigo = String(req.body.codigo || '').trim();
+
+  if (!email || !/^\d{6}$/.test(codigo)) {
+    return res.status(400).json({ mensagem: 'Informe o código de 6 dígitos.' });
+  }
+
+  try {
+    const usuario = await Usuario.findOne({ email, papeis: { $in: papeisValidos } }).select(
+      '+passwordResetCodeHash +passwordResetExpiresAt +passwordResetAttempts'
+    );
+
+    if (!usuario || !usuario.passwordResetCodeHash || !usuario.passwordResetExpiresAt) {
+      return res.status(400).json({ mensagem: 'Código inválido ou expirado. Solicite um novo.' });
+    }
+
+    if (usuario.passwordResetExpiresAt.getTime() <= Date.now()) {
+      return res.status(400).json({ mensagem: 'Código expirado. Solicite um novo código.' });
+    }
+
+    if (usuario.passwordResetAttempts >= 5) {
+      return res.status(400).json({ mensagem: 'Limite de tentativas atingido. Solicite um novo código.' });
+    }
+
+    const codigoValido = await bcrypt.compare(codigo, usuario.passwordResetCodeHash);
+    if (!codigoValido) {
+      usuario.passwordResetAttempts += 1;
+      await usuario.save();
+      return res.status(400).json({ mensagem: 'Código inválido. Verifique e tente novamente.' });
+    }
+
+    return res.json({ mensagem: 'Código validado com sucesso!' });
+  } catch (erro) {
+    console.error('Erro ao validar código:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível validar o código agora.' });
   }
 });
 
