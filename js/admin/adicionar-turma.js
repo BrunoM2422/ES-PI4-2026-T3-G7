@@ -47,19 +47,22 @@ document.addEventListener('DOMContentLoaded', () => {
       codigoPreview.textContent = 'Selecione o semestre para montar o código.';
       return;
     }
+    codigoPrefix.textContent = curso.codigo;
     for (let semestre = 1; semestre <= Number(curso.duracao); semestre += 1) {
       periodoInput.add(new Option(`${semestre}º semestre`, String(semestre)));
     }
+    atualizarCodigoPreview();
   }
 
   cursoSelect.addEventListener('change', atualizarSemestres);
   function atualizarCodigoPreview() {
     const semestre = Number(periodoInput.value);
     const numero = Number(numeroTurmaInput.value);
-    codigoPrefix.textContent = semestre ? String(semestre).padStart(2, '0') : '--';
-    codigoPreview.textContent = semestre && Number.isInteger(numero) && numero >= 1 && numero <= 99
-      ? `Código gerado: ${String(semestre).padStart(2, '0')}${String(numero).padStart(2, '0')}`
-      : 'Informe o número da turma entre 1 e 99.';
+    const curso = cursos.find(item => item.id === cursoSelect.value);
+    codigoPrefix.textContent = curso ? `${curso.codigo}${semestre ? String(semestre).padStart(2, '0') : ''}` : '--';
+    codigoPreview.textContent = curso && semestre && Number.isInteger(numero) && numero >= 1 && numero <= 3
+      ? `Código gerado: ${curso.codigo}${String(semestre).padStart(2, '0')}${String(numero).padStart(2, '0')}`
+      : 'Informe o número da turma entre 1 e 3.';
   }
   periodoInput.addEventListener('change', atualizarCodigoPreview);
   numeroTurmaInput.addEventListener('input', atualizarCodigoPreview);
@@ -76,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          codigo: `${String(Number(periodoInput.value)).padStart(2, '0')}${String(Number(numeroTurmaInput.value)).padStart(2, '0')}`,
+          codigo: `${cursos.find(item => item.id === cursoSelect.value).codigo}${String(Number(periodoInput.value)).padStart(2, '0')}${String(Number(numeroTurmaInput.value)).padStart(2, '0')}`,
           cursoId: cursoSelect.value,
           periodoLetivo: periodoInput.value.trim(),
           vagas: Number(vagasInput.value)
