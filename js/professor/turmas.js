@@ -73,10 +73,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     notas.addEventListener('click', () => {
       window.location.href = `notas.html?turmaId=${encodeURIComponent(turma.id)}`;
     });
-    const chamada = criar('button', 'teacher-class-action is-disabled', 'Fazer chamada');
+    const chamada = criar('button', 'teacher-class-action', 'Fazer chamada');
     chamada.type = 'button';
-    chamada.disabled = true;
-    chamada.title = 'Chamada ficará disponível em breve.';
+    chamada.addEventListener('click', () => {
+      window.location.href = `frequencia.html?turmaId=${encodeURIComponent(turma.id)}`;
+    });
     const verAlunos = criar('button', 'teacher-class-action', 'Ver alunos');
     verAlunos.type = 'button';
     const comunicar = criar('button', 'teacher-class-action is-primary', 'Fazer comunicado');

@@ -623,3 +623,61 @@ body.theme-dark .teacher-agenda-chip {
 body.theme-dark .teacher-agenda-live {
   color: #5fd3a0;
 }
+
+.frequency-back-button { justify-self: start; }
+
+.frequency-call-screen,
+.frequency-semester-view { display: grid; gap: 15px; }
+.teacher-class-grid[hidden],
+.frequency-call-screen[hidden] { display: none; }
+.frequency-semester-list { display: grid; gap: 10px; }
+.frequency-semester-item {
+  display: grid;
+  gap: 8px;
+  padding: 13px;
+  border: 1px solid var(--line, #e3eaf3);
+  border-radius: 9px;
+  background: #fff;
+}
+.frequency-semester-item-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.frequency-semester-toggle {
+  display: grid;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid var(--line, #e3eaf3);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--ink, #172033);
+  font: inherit;
+  font-size: 18px;
+  cursor: pointer;
+}
+.frequency-semester-item-content[hidden] { display: none; }
+.frequency-semester-item-content { display: grid; gap: 9px; }
+.frequency-attendance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 7px;
+  color: var(--ink, #172033);
+  font-size: 11px;
+}
+.frequency-attendance-row.is-present { background: #f1f8f3; }
+.frequency-attendance-row.is-absent { background: #fff5f3; }
+.frequency-attendance-row .teacher-class-action { flex: 0 0 auto; }
+.frequency-semester-item > strong { color: var(--ink, #172033); font-size: 12px; }
+.frequency-semester-item > span { color: var(--muted, #71809b); font-size: 10px; }
+body.theme-dark .frequency-semester-item { border-color: var(--line); background: #202735; }
+body.theme-dark .frequency-semester-toggle { border-color: var(--line); background: #202735; color: var(--ink); }
+body.theme-dark .frequency-attendance-row.is-present { background: #173b28; }
+body.theme-dark .frequency-attendance-row.is-absent { background: #482525; }

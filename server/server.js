@@ -13,6 +13,8 @@ const chamadosRoutes = require('./routes/chamados');
 const gradeAlunoRoutes = require('./routes/grade-aluno');
 const historicoAlunoRoutes = require('./routes/historico-aluno');
 const professorTurmasRoutes = require('./routes/professor-turmas');
+const frequenciaRoutes = require('./routes/frequencia');
+const frequenciaAlunoRoutes = require('./routes/frequencia-aluno');
 const notificacoesRoutes = require('./routes/notificacoes');
 const notasRoutes = require('./routes/notas');
 const Disciplina = require('./models/Disciplina');
@@ -54,6 +56,8 @@ app.use('/api/chamados', chamadosRoutes);
 app.use('/api/aluno/grade', gradeAlunoRoutes);
 app.use('/api/aluno/historico', historicoAlunoRoutes);
 app.use('/api/professor/turmas', professorTurmasRoutes);
+app.use('/api/professor/frequencia', frequenciaRoutes);
+app.use('/api/aluno/frequencia', frequenciaAlunoRoutes);
 app.use('/api/aluno/notificacoes', notificacoesRoutes);
 app.use('/api/notas', notasRoutes);
 
@@ -68,6 +72,7 @@ async function iniciarServidor() {
     await ComponenteNota.init();
     await Nota.init();
     await ConfiguracaoNota.init();
+    await require('./models/Frequencia').init();
     await Evento.updateMany({ scope: { $exists: false } }, { $set: { scope: 'global' } });
 
     app.get('/', (req, res) => {

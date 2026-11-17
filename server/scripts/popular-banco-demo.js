@@ -117,9 +117,20 @@ function criarCodigoDisciplina(cursoCodigo, semestre, sequencia) {
   return `${cursoCodigo}${String(semestre).padStart(2, '0')}${String(sequencia).padStart(2, '0')}`;
 }
 
-function alocarHorario(docente, horariosDaTurma) {
-  for (let dia = 1; dia <= 5; dia++) {
-    for (let hora = 8; hora <= 20; hora++) {
+function diaAtualEmSaoPaulo() {
+  const abreviacao = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Sao_Paulo', weekday: 'short' }).format(new Date());
+  const dia = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(abreviacao);
+  return dia >= 1 && dia <= 5 ? dia : 2;
+}
+
+function alocarHorario(docente, horariosDaTurma, horaPreferencial = null) {
+  const diaPreferencial = diaAtualEmSaoPaulo();
+  const dias = [diaPreferencial, ...[1, 2, 3, 4, 5].filter(dia => dia !== diaPreferencial)];
+  const horas = horaPreferencial
+    ? [horaPreferencial, ...Array.from({ length: 13 }, (_, indice) => indice + 8).filter(hora => hora !== horaPreferencial)]
+    : Array.from({ length: 13 }, (_, indice) => indice + 8);
+  for (const dia of dias) {
+    for (const hora of horas) {
       const chave = `${dia}-${hora}`;
       if (horariosDaTurma.has(chave) || docente.horarios.has(chave)) continue;
       horariosDaTurma.add(chave);
@@ -233,9 +244,12 @@ async function executar() {
       const horariosDaTurma = new Set();
 
       for (const disciplina of disciplinas.filter(item => item.semestre === semestre)) {
-        const docente = [...docentes].sort((a, b) => a.aulas - b.aulas)[indiceDocente % docentes.length];
+        const docentesOrdenados = [...docentes].sort((a, b) => a.aulas - b.aulas);
+        const docente = disciplina.nome === 'Contabilidade Geral'
+          ? docentesOrdenados.find(item => !item.horarios.has(`${diaAtualEmSaoPaulo()}-14`)) || docentesOrdenados[indiceDocente % docentes.length]
+          : docentesOrdenados[indiceDocente % docentes.length];
         indiceDocente++;
-        const horario = alocarHorario(docente, horariosDaTurma);
+        const horario = alocarHorario(docente, horariosDaTurma, disciplina.nome === 'Contabilidade Geral' ? 14 : null);
         const aulaId = new mongoose.Types.ObjectId();
         aulas.push({
           _id: aulaId,
