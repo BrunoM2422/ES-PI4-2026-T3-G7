@@ -6,9 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server/server.js",
-    "dev": "nodemon server/server.js",
-    "seed:morning-grades": "node server/scripts/preencher-grades-matutinas.js",
-    "seed:parallel-classes": "node server/scripts/reconstruir-turmas-paralelas.js"
+    "dev": "nodemon server/server.js"
   },
   "repository": {
     "type": "git",
