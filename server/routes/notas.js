@@ -7,23 +7,28 @@ const Turma = require('../models/Turma');
 const ComponenteNota = require('../models/ComponenteNota');
 const Nota = require('../models/Nota');
 const ConfiguracaoNota = require('../models/ConfiguracaoNota');
+const { calcularMediasNoJava } = require('../services/calculadoraJava');
 
 const router = express.Router();
 const id = value => mongoose.isValidObjectId(value);
+
 async function alunoDaSessao(usuario) {
   const filtros = [{ email: usuario.email }];
   if (usuario.ra) filtros.push({ ra: usuario.ra });
   return Estudante.findOne({ $or: filtros }).select('_id nome gradeMatriculas turmaId').lean();
 }
+
 async function docenteDaSessao(usuario) {
   const filtros = [{ email: usuario.email }];
   if (usuario.rp) filtros.push({ rp: usuario.rp });
   return Docente.findOne({ $or: filtros }).select('_id').lean();
 }
+
 async function turmaAutorizada(turmaId, disciplinaId, docenteId) {
   return Turma.findOne({ _id: turmaId, 'horarios.docenteId': docenteId, 'horarios.disciplinaId': disciplinaId })
     .select('codigo periodoLetivo horarios alunosIds').populate('horarios.disciplinaId', 'nome codigo').lean();
 }
+
 function mapearComponentes(componentes, notas = []) {
   const notaPorComponente = new Map(notas.map(nota => [String(nota.componenteId), nota.valor]));
   return componentes.map(componente => ({
@@ -48,13 +53,37 @@ router.get('/aluno', autenticar, async (req, res) => {
       return turma && horario ? { turmaId: turma._id, turma: turma.codigo, periodoLetivo: turma.periodoLetivo,
         disciplinaId: horario.disciplinaId._id, disciplina: horario.disciplinaId.nome, codigo: horario.disciplinaId.codigo } : null;
     }).filter(Boolean);
+
     const resultado = await Promise.all(disciplinas.map(async disciplina => {
       const componentes = await ComponenteNota.find({ turmaId: disciplina.turmaId, disciplinaId: disciplina.disciplinaId }).sort({ createdAt: 1 }).lean();
       const notas = componentes.length ? await Nota.find({ alunoId: aluno._id, componenteId: { $in: componentes.map(item => item._id) } }).lean() : [];
-      return { id: String(disciplina.disciplinaId), ...disciplina, turmaId: String(disciplina.turmaId), disciplinaId: String(disciplina.disciplinaId), componentes: mapearComponentes(componentes, notas) };
+      const componentesMapeados = mapearComponentes(componentes, notas);
+
+      let mediaAluno = null;
+      if (componentesMapeados.length) {
+        try {
+          const configuracao = await ConfiguracaoNota.findOne({ turmaId: disciplina.turmaId, disciplinaId: disciplina.disciplinaId }).lean();
+          const tipo = configuracao?.tipoMedia || componentesMapeados[0].tipoMedia;
+          const mediasJava = await calcularMediasNoJava(tipo, componentesMapeados, [{ id: String(aluno._id), componentes: componentesMapeados }]);
+          mediaAluno = mediasJava.get(String(aluno._id)) ?? null;
+        } catch (errJava) {
+          console.warn('Servidor Java offline ou erro no cálculo do aluno:', errJava.message);
+        }
+      }
+
+      return { 
+        id: String(disciplina.disciplinaId), ...disciplina, 
+        turmaId: String(disciplina.turmaId), disciplinaId: String(disciplina.disciplinaId), 
+        componentes: componentesMapeados,
+        media: mediaAluno
+      };
     }));
+
     return res.json({ disciplinas: resultado });
-  } catch (erro) { console.error('Erro ao carregar notas do aluno:', erro); return res.status(500).json({ mensagem: 'Não foi possível carregar suas notas.' }); }
+  } catch (erro) { 
+    console.error('Erro ao carregar notas do aluno:', erro); 
+    return res.status(500).json({ mensagem: 'Não foi possível carregar suas notas.' }); 
+  }
 });
 
 router.get('/professor', autenticar, async (req, res) => {
@@ -70,7 +99,10 @@ router.get('/professor', autenticar, async (req, res) => {
       .map(disciplina => ({ id: String(disciplina._id), disciplinaId: String(disciplina._id), disciplina: disciplina.nome,
         codigo: disciplina.codigo, turmaId: String(turma._id), turma: turma.codigo, periodoLetivo: turma.periodoLetivo })));
     return res.json({ disciplinas });
-  } catch (erro) { console.error('Erro ao carregar disciplinas do docente:', erro); return res.status(500).json({ mensagem: 'Não foi possível carregar suas disciplinas.' }); }
+  } catch (erro) { 
+    console.error('Erro ao carregar disciplinas do docente:', erro); 
+    return res.status(500).json({ mensagem: 'Não foi possível carregar suas disciplinas.' }); 
+  }
 });
 
 router.get('/professor/:turmaId/:disciplinaId', autenticar, async (req, res) => {
@@ -94,11 +126,44 @@ router.get('/professor/:turmaId/:disciplinaId', autenticar, async (req, res) => 
       ).lean();
     }
     const notas = componentes.length ? await Nota.find({ turmaId: turma._id, disciplinaId: req.params.disciplinaId, alunoId: { $in: alunos.map(a => a._id) } }).lean() : [];
-    return res.json({ turma: turma.codigo, disciplina: turma.horarios.find(item => String(item.disciplinaId?._id) === req.params.disciplinaId)?.disciplinaId?.nome || '',
+
+    const componentesMapeados = componentes.map(c => ({ 
+      id: String(c._id), titulo: c.titulo, valorMaximo: c.valorMaximo, 
+      tipoMedia: c.tipoMedia || 'aritmetica', peso: c.peso, dataAplicacao: c.dataAplicacao 
+    }));
+
+    const alunosMapeados = alunos.map(aluno => ({ 
+      id: String(aluno._id), nome: aluno.nome, ra: aluno.ra || '', 
+      statusAcademico: aluno.statusAcademico || 'ativo', 
+      componentes: mapearComponentes(componentes, notas.filter(n => String(n.alunoId) === String(aluno._id))) 
+    }));
+
+    let mediasJava = new Map();
+    if (componentesMapeados.length && alunosMapeados.length) {
+      try {
+        const tipo = configuracao?.tipoMedia || componentesMapeados[0].tipoMedia;
+        mediasJava = await calcularMediasNoJava(tipo, componentesMapeados, alunosMapeados);
+      } catch (errJava) {
+        console.warn('Servidor Java offline ou erro no cálculo:', errJava.message);
+      }
+    }
+
+    const alunosComMedia = alunosMapeados.map(aluno => ({
+      ...aluno,
+      media: mediasJava.has(aluno.id) ? mediasJava.get(aluno.id) : null
+    }));
+
+    return res.json({ 
+      turma: turma.codigo, 
+      disciplina: turma.horarios.find(item => String(item.disciplinaId?._id) === req.params.disciplinaId)?.disciplinaId?.nome || '',
       configuracao: configuracao ? { tipoMedia: configuracao.tipoMedia } : null,
-      componentes: componentes.map(c => ({ id: String(c._id), titulo: c.titulo, valorMaximo: c.valorMaximo, tipoMedia: c.tipoMedia || 'aritmetica', peso: c.peso, dataAplicacao: c.dataAplicacao })),
-      alunos: alunos.map(aluno => ({ id: String(aluno._id), nome: aluno.nome, ra: aluno.ra || '', statusAcademico: aluno.statusAcademico || 'ativo', componentes: mapearComponentes(componentes, notas.filter(n => String(n.alunoId) === String(aluno._id))) })) });
-  } catch (erro) { console.error('Erro ao carregar diário de notas:', erro); return res.status(500).json({ mensagem: 'Não foi possível carregar o diário de notas.' }); }
+      componentes: componentesMapeados,
+      alunos: alunosComMedia 
+    });
+  } catch (erro) { 
+    console.error('Erro ao carregar diário de notas:', erro); 
+    return res.status(500).json({ mensagem: 'Não foi possível carregar o diário de notas.' }); 
+  }
 });
 
 router.post('/professor/:turmaId/:disciplinaId/configuracao', autenticar, async (req, res) => {
@@ -121,7 +186,10 @@ router.post('/professor/:turmaId/:disciplinaId/configuracao', autenticar, async 
       const configuracao = await ConfiguracaoNota.findOne({ turmaId: turma._id, disciplinaId: req.params.disciplinaId }).lean();
       return res.status(409).json({ mensagem: `O tipo de média desta disciplina já está definido como ${configuracao?.tipoMedia === 'ponderada' ? 'ponderada' : 'aritmética'}.`, configuracao: configuracao ? { tipoMedia: configuracao.tipoMedia } : null });
     }
-  } catch (erro) { console.error('Erro ao definir tipo de média:', erro); return res.status(500).json({ mensagem: 'Não foi possível definir o tipo de média.' }); }
+  } catch (erro) { 
+    console.error('Erro ao definir tipo de média:', erro); 
+    return res.status(500).json({ mensagem: 'Não foi possível definir o tipo de média.' }); 
+  }
 });
 
 router.post('/professor/:turmaId/:disciplinaId/componentes', autenticar, async (req, res) => {
@@ -142,7 +210,8 @@ router.post('/professor/:turmaId/:disciplinaId/componentes', autenticar, async (
     return res.status(201).json({ mensagem: 'Componente criado.', componente: { id: String(componente._id), titulo, valorMaximo, tipoMedia, peso } });
   } catch (erro) {
     if (erro.code === 11000) return res.status(409).json({ mensagem: 'Já existe um componente com esse nome nesta disciplina.' });
-    console.error('Erro ao criar componente de nota:', erro); return res.status(500).json({ mensagem: 'Não foi possível criar o componente.' });
+    console.error('Erro ao criar componente de nota:', erro); 
+    return res.status(500).json({ mensagem: 'Não foi possível criar o componente.' });
   }
 });
 
@@ -171,7 +240,10 @@ router.put('/professor/:turmaId/:disciplinaId/notas', autenticar, async (req, re
     }
     if (operacoes.length) await Nota.bulkWrite(operacoes, { ordered: true });
     return res.json({ mensagem: 'Notas salvas no banco de dados.', salvas: req.body.notas.length });
-  } catch (erro) { console.error('Erro ao salvar notas:', erro); return res.status(500).json({ mensagem: 'Não foi possível salvar as notas.' }); }
+  } catch (erro) { 
+    console.error('Erro ao salvar notas:', erro); 
+    return res.status(500).json({ mensagem: 'Não foi possível salvar as notas.' }); 
+  }
 });
 
 module.exports = router;

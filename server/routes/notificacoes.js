@@ -2,7 +2,6 @@ const express = require('express');
 const { autenticar } = require('../services/autenticacao');
 const Estudante = require('../models/Estudante');
 const Notificacao = require('../models/Notificacao');
-
 const router = express.Router();
 
 router.get('/', autenticar, async (req, res) => {
