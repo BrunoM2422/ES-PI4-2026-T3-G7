@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Controle do Servidor | NotaDez</title>
+    <link rel="stylesheet" href="../../css/shared/style.css">
+  </head>
+  <body>
+    <div id="app" data-page="servidor" data-role="admin" data-title="Controle do Servidor">
+      <div class="shell">
+        <aside class="side" data-component="sidebar"></aside>
+        <main class="main">
+          <div data-component="header"></div>
+          
+          <section class="content">
+            <article class="card server-card">
+              <div>
+                <p class="server-eyebrow">Status do Sistema</p>
+                <div class="server-status-icon" id="status-icon">🔄</div>
+                <h2 class="server-status-text" id="status-texto">Verificando status...</h2>
+                <p class="server-status-desc" id="status-desc">
+                  Aguarde enquanto verificamos o estado atual do servidor NotaDez.
+                </p>
+              </div>
+              
+              <button class="server-action-button" id="btn-toggle" type="button" disabled>
+                Aguarde...
+              </button>
+            </article>
+          </section>
+
+          <div data-component="footer"></div>
+        </main>
+      </div>
+    </div>
+
+    <script src="../../js/shared/app.js"></script>
+    <script src="../../js/admin/servidor.js"></script>
+  </body>
+</html>

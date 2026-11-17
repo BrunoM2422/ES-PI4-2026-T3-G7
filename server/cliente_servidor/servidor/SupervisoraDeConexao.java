@@ -5,132 +5,81 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class SupervisoraDeConexao extends Thread
-{
-    private double              valor=0;
-    private Parceiro            usuario;
-    private Socket              conexao;
+public class SupervisoraDeConexao extends Thread {
+    private Parceiro usuario;
+    private Socket conexao;
     private ArrayList<Parceiro> usuarios;
 
-    public SupervisoraDeConexao
-    (Socket conexao, ArrayList<Parceiro> usuarios)
-    throws Exception
-    {
-        if (conexao==null)
-            throw new Exception ("Conexao ausente");
+    public SupervisoraDeConexao(Socket conexao, ArrayList<Parceiro> usuarios) throws Exception {
+        if (conexao == null) throw new Exception("Conexao ausente");
+        if (usuarios == null) throw new Exception("Usuarios ausentes");
 
-        if (usuarios==null)
-            throw new Exception ("Usuarios ausentes");
-
-        this.conexao  = conexao;
+        this.conexao = conexao;
         this.usuarios = usuarios;
     }
 
-    public void run ()
-    {
-
+    public void run() {
         ObjectOutputStream transmissor;
-        try
-        {
-            transmissor =
-            new ObjectOutputStream(
-            this.conexao.getOutputStream());
-        }
-        catch (Exception erro)
-        {
-            return;
-        }
-        
-        ObjectInputStream receptor=null;
-        try
-        {
-            receptor=
-            new ObjectInputStream(
-            this.conexao.getInputStream());
-        }
-        catch (Exception err0)
-        {
-            try
-            {
-                transmissor.close();
-            }
-            catch (Exception falha)
-            {} // so tentando fechar antes de acabar a thread
-            
+        try {
+            transmissor = new ObjectOutputStream(this.conexao.getOutputStream());
+        } catch (Exception erro) {
             return;
         }
 
-        try
-        {
-            this.usuario =
-            new Parceiro (this.conexao,
-                          receptor,
-                          transmissor);
+        ObjectInputStream receptor = null;
+        try {
+            receptor = new ObjectInputStream(this.conexao.getInputStream());
+        } catch (Exception erro) {
+            try { transmissor.close(); } catch (Exception falha) {}
+            return;
         }
-        catch (Exception erro)
-        {} // sei que passei os parametros corretos
 
-        try
-        {
-            synchronized (this.usuarios)
-            {
-                this.usuarios.add (this.usuario);
+        try {
+            this.usuario = new Parceiro(this.conexao, receptor, transmissor);
+        } catch (Exception erro) {}
+
+        try {
+            synchronized (this.usuarios) {
+                this.usuarios.add(this.usuario);
             }
 
+            for (;;) {
+                Comunicado comunicado = this.usuario.envie();
 
-            for(;;)
-            {
-                Comunicado comunicado = this.usuario.envie ();
-
-                if (comunicado==null)
+                if (comunicado == null) {
                     return;
-                else if (comunicado instanceof PedidoDeOperacao)
-                {
-					PedidoDeOperacao pedidoDeOperacao = (PedidoDeOperacao)comunicado;
-					
-					switch (pedidoDeOperacao.getOperacao())
-					{
-						case '+':
-						    this.valor += pedidoDeOperacao.getValor();
-						    break;
-						    
-						case '-':
-						    this.valor -= pedidoDeOperacao.getValor();
-						    break;
-						    
-						case '*':
-						    this.valor *= pedidoDeOperacao.getValor();
-						    break;
-						    
-						case '/':
-						    this.valor /= pedidoDeOperacao.getValor();
+                } else if (comunicado instanceof PedidoDeOperacao) {
+                    PedidoDeOperacao pedido = (PedidoDeOperacao) comunicado;
+                    
+                    try {
+                        // Calcula as médias usando a regra de negócio
+                        List<CalculadoraDeMedias.MediaDoAluno> mediasCalculadas = 
+                            CalculadoraDeMedias.calcular(
+                                pedido.getTipo(), 
+                                pedido.getComponentes(), 
+                                pedido.getAlunos()
+                            );
+                        
+                        // Devolve o sucesso imediatamente
+                        this.usuario.receba(new Resultado(mediasCalculadas));
+                        
+                    } catch (Exception erroCalculo) {
+                        // Devolve o erro estruturado para o cliente
+                        this.usuario.receba(new Resultado(erroCalculo.getMessage()));
                     }
-                }
-                else if (comunicado instanceof PedidoDeResultado)
-                {
-                    this.usuario.receba (new Resultado (this.valor));
-                }
-                else if (comunicado instanceof PedidoParaSair)
-                {
-                    synchronized (this.usuarios)
-                    {
-                        this.usuarios.remove (this.usuario);
+
+                } else if (comunicado instanceof PedidoParaSair) {
+                    synchronized (this.usuarios) {
+                        this.usuarios.remove(this.usuario);
                     }
                     this.usuario.adeus();
                 }
             }
-        }
-        catch (Exception erro)
-        {
-            try
-            {
-                transmissor.close ();
-                receptor   .close ();
-            }
-            catch (Exception falha)
-            {} // so tentando fechar antes de acabar a thread
-
-            return;
+        } catch (Exception erro) {
+            try {
+                transmissor.close();
+                receptor.close();
+            } catch (Exception falha) {}
         }
     }
 }

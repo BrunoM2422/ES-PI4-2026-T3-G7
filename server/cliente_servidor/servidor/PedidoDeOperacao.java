@@ -1,31 +1,33 @@
 package server.cliente_servidor.servidor;
 
 import server.cliente_servidor.Comunicado;
+import java.util.List;
+import java.util.ArrayList;
 
-//cliente manda essa classe
-//indiretamente herda de serializable
-public class PedidoDeOperacao  extends Comunicado{
-    private char operacao;
-    private double valor;
+public class PedidoDeOperacao extends Comunicado {
+    private static final long serialVersionUID = 1L;
+    
+    private final String tipo;
+    private final List<CalculadoraDeMedias.Componente> componentes;
+    private final List<CalculadoraDeMedias.NotasDoAluno> alunos;
 
-    public PedidoDeOperacao (char operacao, double valor){
-        this.operacao = operacao;
-        this.valor = valor;
+    public PedidoDeOperacao(String tipo, 
+                            List<CalculadoraDeMedias.Componente> componentes, 
+                            List<CalculadoraDeMedias.NotasDoAluno> alunos) {
+        this.tipo = tipo;
+        this.componentes = new ArrayList<>(componentes);
+        this.alunos = new ArrayList<>(alunos);
     }
 
-    public char getOperacao(){
-        return this.operacao;
+    public String getTipo() {
+        return this.tipo;
     }
     
-    public double getValor(){
-        return this.valor;
+    public List<CalculadoraDeMedias.Componente> getComponentes() {
+        return this.componentes;
     }
 
-    @Override 
-    public String toString(){
-        return (""+this.getOperacao()+this.getValor());
+    public List<CalculadoraDeMedias.NotasDoAluno> getAlunos() {
+        return this.alunos;
     }
 }
-
-//se o cliente manda o pedidodeoperacao o servidor a recebe
-//no servidor precisa dessa classe para receber e usar objetos dessa
