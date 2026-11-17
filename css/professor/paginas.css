@@ -145,6 +145,7 @@
   padding: 20px;
 }
 .teacher-class-details[hidden],
+.teacher-classes-panel[hidden],
 .teacher-class-roster[hidden],
 .teacher-class-announcement[hidden] { display: none; }
 .teacher-class-close {
@@ -232,6 +233,7 @@
 .teacher-announcement-form { display: grid; gap: 11px; }
 .teacher-announcement-form label { display: grid; gap: 5px; color: #52627d; font-size: 10px; font-weight: 650; }
 .teacher-announcement-form input,
+.teacher-announcement-form select,
 .teacher-announcement-form textarea {
   width: 100%;
   border: 1px solid var(--line, #e3eaf3);
@@ -242,14 +244,30 @@
   font-size: 11px;
 }
 .teacher-announcement-form input { min-height: 38px; padding: 0 10px; }
+.teacher-announcement-form select { min-height: 38px; padding: 0 10px; }
+.teacher-announcement-form input:disabled { background: #f1f3f7; color: #9aa5b7; cursor: not-allowed; }
 .teacher-announcement-form textarea { min-height: 100px; padding: 10px; resize: vertical; }
 .teacher-announcement-form .teacher-class-action { justify-self: start; }
+.grades-component-form { grid-template-columns: repeat(3, minmax(120px, 1fr)); align-items: end; padding: 14px; border: 1px solid var(--line, #e3eaf3); border-radius: 9px; }
+.grades-component-form .teacher-announcement-feedback { grid-column: 1 / -1; }
+.grades-entry-table { min-width: 620px; }
+.grades-entry-table td { min-width: 120px; }
+.grade-value-input { width: 90px; min-height: 32px; padding: 0 8px; border: 1px solid var(--line, #e3eaf3); border-radius: 6px; background: #fff; color: var(--ink, #172033); font: inherit; font-size: 11px; }
+.grades-save-feedback { display: inline-flex; align-items: center; min-height: 34px; padding: 0 10px; border-radius: 7px; color: var(--muted, #71809b); font-size: 11px; font-weight: 650; }
+.grades-save-feedback.is-success { background: #eaf8ef; color: #19733c; }
+.grades-save-feedback.is-error { background: #fff0f0; color: #b42318; }
+.teacher-class-action.is-saved { border-color: #21834b; background: #21834b; color: #fff; }
+body.theme-dark .grade-value-input { border-color: var(--line); background: #202735; color: var(--ink); }
+body.theme-dark .grades-save-feedback.is-success { background: #173b28; color: #93e0ad; }
+body.theme-dark .grades-save-feedback.is-error { background: #482525; color: #ffaaa3; }
 .teacher-announcement-feedback { min-height: 14px; margin: 0; color: var(--muted, #71809b); font-size: 10px; }
 body.theme-dark .teacher-class-card,
 body.theme-dark .teacher-class-close,
 body.theme-dark .teacher-class-action,
 body.theme-dark .teacher-announcement-form input,
+body.theme-dark .teacher-announcement-form select,
 body.theme-dark .teacher-announcement-form textarea { border-color: var(--line); background: #202735; color: var(--ink); }
+body.theme-dark .teacher-announcement-form input:disabled { background: #171d28; color: #748096; }
 body.theme-dark .teacher-class-card:hover,
 body.theme-dark .teacher-class-card.is-selected { background: #252e3e; }
 body.theme-dark .teacher-class-action.is-primary { background: var(--primary); color: #fff; }
@@ -470,6 +488,7 @@ body.theme-dark .teacher-stat > i {
   .teacher-class-detail-heading { flex-direction: column; }
   .teacher-class-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .teacher-class-action { padding: 0 8px; }
+  .grades-component-form { grid-template-columns: 1fr; }
 }
 @media (max-width: 540px) {
   .teacher-stat-grid {

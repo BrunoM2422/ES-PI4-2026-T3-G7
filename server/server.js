@@ -14,10 +14,14 @@ const gradeAlunoRoutes = require('./routes/grade-aluno');
 const historicoAlunoRoutes = require('./routes/historico-aluno');
 const professorTurmasRoutes = require('./routes/professor-turmas');
 const notificacoesRoutes = require('./routes/notificacoes');
+const notasRoutes = require('./routes/notas');
 const Disciplina = require('./models/Disciplina');
 const Turma = require('./models/Turma');
 const GradeHorario = require('./models/GradeHorario');
 const Evento = require('./models/Evento');
+const ComponenteNota = require('./models/ComponenteNota');
+const Nota = require('./models/Nota');
+const ConfiguracaoNota = require('./models/ConfiguracaoNota');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -51,6 +55,7 @@ app.use('/api/aluno/grade', gradeAlunoRoutes);
 app.use('/api/aluno/historico', historicoAlunoRoutes);
 app.use('/api/professor/turmas', professorTurmasRoutes);
 app.use('/api/aluno/notificacoes', notificacoesRoutes);
+app.use('/api/notas', notasRoutes);
 
 async function iniciarServidor() {
   try {
@@ -60,6 +65,9 @@ async function iniciarServidor() {
     await Turma.init();
     await GradeHorario.init();
     await Evento.init();
+    await ComponenteNota.init();
+    await Nota.init();
+    await ConfiguracaoNota.init();
     await Evento.updateMany({ scope: { $exists: false } }, { $set: { scope: 'global' } });
 
     app.get('/', (req, res) => {
