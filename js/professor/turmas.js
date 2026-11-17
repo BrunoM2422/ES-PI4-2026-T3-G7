@@ -35,12 +35,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       topo.append(criar('span', 'teacher-class-card-arrow', '→'));
       card.append(topo);
       card.append(criar('strong', 'teacher-class-card-course', turma.curso));
-      card.append(criar('span', 'teacher-class-card-code', `Turma ${turma.codigo}`));
-      card.append(criar('span', 'teacher-class-card-meta', `${turma.alunos} ${turma.alunos === 1 ? 'aluno' : 'alunos'} · ${turma.vagas} vagas`));
       const disciplinas = criar('span', 'teacher-class-card-subjects', turma.disciplinas.length
         ? turma.disciplinas.join(' · ')
         : 'Disciplinas não identificadas');
       card.append(disciplinas);
+      card.append(criar('span', 'teacher-class-card-code', `Turma ${turma.codigo}`));
+      card.append(criar('span', 'teacher-class-card-meta', `${turma.alunos} ${turma.alunos === 1 ? 'aluno' : 'alunos'} · ${turma.vagas} vagas`));
       card.addEventListener('click', () => abrirTurma(turma));
       grid.append(card);
     });
@@ -68,10 +68,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     details.append(cabecalho);
 
     const acoes = criar('div', 'teacher-class-actions');
-    const notas = criar('button', 'teacher-class-action is-disabled', 'Lançar notas');
+    const notas = criar('button', 'teacher-class-action is-primary', 'Lançar notas');
     notas.type = 'button';
-    notas.disabled = true;
-    notas.title = 'Lançamento de notas ficará disponível em breve.';
+    notas.addEventListener('click', () => {
+      window.location.href = `notas.html?turmaId=${encodeURIComponent(turma.id)}`;
+    });
     const chamada = criar('button', 'teacher-class-action is-disabled', 'Fazer chamada');
     chamada.type = 'button';
     chamada.disabled = true;

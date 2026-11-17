@@ -73,6 +73,31 @@
   color: var(--muted, #71809b);
   font-size: 12px;
 }
+.grades-panel, .grades-detail {
+  display: grid; gap: 18px; padding: 22px;
+}
+.grades-panel[hidden], .grades-detail[hidden] { display: none; }
+.grades-heading, .grades-detail-heading {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+}
+.grades-eyebrow { color: var(--primary, #5146ee); font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.grades-heading h2, .grades-detail-heading h2 { margin: 5px 0 0; color: var(--ink, #172033); font-size: 17px; }
+.grades-heading p, .grades-detail-heading p { margin: 6px 0 0; color: var(--muted, #71809b); font-size: 11px; }
+.grades-count { padding: 7px 10px; border-radius: 999px; background: var(--primary-soft, #eef0ff); color: var(--primary, #5146ee); font-size: 10px; font-weight: 700; white-space: nowrap; }
+.grades-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 225px), 1fr)); gap: 13px; }
+.grades-card { display: grid; gap: 10px; padding: 16px; border: 1px solid var(--line, #e3eaf3); border-radius: 10px; background: #fff; color: var(--ink, #172033); font: inherit; text-align: left; cursor: pointer; }
+.grades-card:hover, .grades-card:focus-visible { border-color: #b9b5ff; box-shadow: 0 7px 20px rgb(45 42 100 / 9%); outline: none; }
+.grades-card-top, .grades-card-bottom { color: var(--muted, #71809b); font-size: 10px; }
+.grades-card strong { font-size: 14px; }
+.grades-back { min-height: 32px; padding: 0 12px; border: 1px solid var(--line, #e3eaf3); border-radius: 7px; background: #fff; color: var(--muted, #71809b); cursor: pointer; }
+.grades-table-wrap { overflow-x: auto; }
+.grades-table { width: 100%; min-width: 480px; border-collapse: collapse; font-size: 11px; text-align: left; }
+.grades-table th, .grades-table td { padding: 11px 12px; border-bottom: 1px solid var(--line, #e3eaf3); }
+.grades-table thead th { background: #f7f8fc; color: #61708a; font-size: 9px; text-transform: uppercase; }
+.grades-table tbody th { color: var(--ink, #172033); font-weight: 650; }
+.grades-empty { margin: 0; color: var(--muted, #71809b); font-size: 12px; }
+body.theme-dark .grades-card, body.theme-dark .grades-back { border-color: var(--line); background: #202735; color: var(--ink); }
+body.theme-dark .grades-table thead th { background: #1b2433; color: var(--muted); }
 .history-panel {
   overflow: hidden;
 }
