@@ -1,49 +1,120 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
-// Variável global para manter o processo do Java na memória
-let javaProcess = null;
+// Raiz do projeto: é onde a pasta "server/" (pacote Java compilado) fica.
+const DIRETORIO_RAIZ = path.join(__dirname, '..', '..');
 
-const javaServerService = {
-    iniciar: () => {
-        if (javaProcess) return { success: false, message: 'O servidor Java já está rodando.' };
+// Porta única, usada pelo Servidor.java e pelo Cliente.java (via calculadoraJava.js)
+const HOST = 'localhost';
+const PORTA = String(process.env.JAVA_SERVER_PORT || '3001');
 
-        try {
-            // Ajuste o cwd para o diretório raiz onde a pasta "server" (pacote java) está compilada
-            const diretorioClasses = path.join(__dirname, '../../caminho/para/classes/java'); 
+const TEMPO_MAX_INICIO_MS = 8000;
+const TEMPO_MAX_PARADA_MS = 4000;
 
-            // Roda: java server.cliente_servidor.servidor.Servidor
-            javaProcess = spawn('java', ['server.cliente_servidor.servidor.Servidor'], {
-                cwd: diretorioClasses
-            });
+let processo = null;   // processo do Servidor.java
+let iniciando = null;  // promessa de uma inicialização em andamento
 
-            // Captura logs do Java para o console do Node
-            javaProcess.stdout.on('data', (data) => console.log(`[Java Server]: ${data}`));
-            javaProcess.stderr.on('data', (data) => console.error(`[Java Error]: ${data}`));
-            
-            // Se o processo morrer ou for fechado
-            javaProcess.on('close', (code) => {
-                console.log(`[Java Server] Encerrado com código ${code}`);
-                javaProcess = null;
-            });
+function estaRodando() {
+  return Boolean(processo && processo.exitCode === null && !processo.killed);
+}
 
-            return { success: true, message: 'Servidor Java iniciado com sucesso.' };
-        } catch (error) {
-            return { success: false, message: `Erro ao iniciar: ${error.message}` };
-        }
-    },
+function iniciar() {
+  if (estaRodando()) {
+    return Promise.resolve({ success: true, message: 'O servidor Java já está em execução.' });
+  }
+  if (iniciando) return iniciando;
 
-    parar: () => {
-        if (!javaProcess) return { success: false, message: 'O servidor Java não está rodando.' };
-        
-        javaProcess.kill(); // Mata o processo do S.O.
-        javaProcess = null;
-        return { success: true, message: 'Servidor Java desligado.' };
-    },
+  iniciando = new Promise(resolve => {
+    let concluido = false;
+    let ultimoErro = '';
 
-    obterStatus: () => {
-        return { rodando: javaProcess !== null };
+    const filho = spawn('java', ['server.cliente_servidor.servidor.Servidor', PORTA], {
+      cwd: DIRETORIO_RAIZ,
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+    processo = filho;
+
+    const concluir = resultado => {
+      if (concluido) return;
+      concluido = true;
+      clearTimeout(timer);
+      iniciando = null;
+      resolve(resultado);
+    };
+
+    const timer = setTimeout(() => {
+      concluir({ success: false, message: 'O servidor Java não confirmou a inicialização a tempo.' });
+      filho.kill('SIGKILL');
+    }, TEMPO_MAX_INICIO_MS);
+
+    // evita que um EPIPE ao escrever no stdin derrube o Node
+    filho.stdin.on('error', () => {});
+
+    filho.stdout.on('data', dados => {
+      const texto = dados.toString('utf8');
+      console.log(`[Servidor Java]: ${texto.trim()}`);
+      // o Servidor.java imprime SERVIDOR_ATIVO quando já está aceitando conexões
+      if (texto.includes('SERVIDOR_ATIVO')) {
+        concluir({ success: true, message: 'Servidor Java iniciado com sucesso.' });
+      }
+    });
+
+    filho.stderr.on('data', dados => {
+      const texto = dados.toString('utf8').trim();
+      ultimoErro = texto || ultimoErro;
+      console.error(`[Servidor Java Erro]: ${texto}`);
+    });
+
+    // "java" não instalado / não está no PATH
+    filho.on('error', erro => {
+      if (processo === filho) processo = null;
+      concluir({ success: false, message: `Não foi possível executar o Java: ${erro.message}` });
+    });
+
+    filho.on('exit', codigo => {
+      console.log(`[Servidor Java] Encerrado com código ${codigo}`);
+      if (processo === filho) processo = null;
+      concluir({ success: false, message: ultimoErro || `O servidor Java encerrou ao iniciar (código ${codigo}).` });
+    });
+  });
+
+  return iniciando;
+}
+
+function parar() {
+  if (!estaRodando()) {
+    processo = null;
+    return Promise.resolve({ success: true, message: 'O servidor Java já estava desligado.' });
+  }
+
+  const filho = processo;
+
+  return new Promise(resolve => {
+    // reserva: se o desligamento gracioso travar, força o fim
+    const timer = setTimeout(() => filho.kill('SIGKILL'), TEMPO_MAX_PARADA_MS);
+
+    filho.once('exit', () => {
+      clearTimeout(timer);
+      resolve({ success: true, message: 'Servidor Java desativado com sucesso.' });
+    });
+
+    try {
+      // "desativar" avisa os clientes conectados e encerra o servidor
+      filho.stdin.write('desativar\n');
+    } catch (erro) {
+      filho.kill('SIGTERM');
     }
-};
+  });
+}
 
-module.exports = javaServerService;
+function obterStatus() {
+  return { rodando: estaRodando(), porta: PORTA };
+}
+
+// Se o Node encerrar, o Java também encerra (o Servidor.java também sai sozinho
+// quando o stdin fecha, então isto é só uma garantia extra).
+process.on('exit', () => {
+  if (processo) processo.kill();
+});
+
+module.exports = { iniciar, parar, obterStatus, estaRodando, HOST, PORTA, DIRETORIO_RAIZ };

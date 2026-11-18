@@ -1,6 +1,9 @@
 package server.cliente_servidor.cliente;
 import java.net.*;
 
+import server.cliente_servidor.ComunicadoDeDesligamento;
+import server.cliente_servidor.Parceiro;
+
 public class TratadoraDeComunicadoDeDesligamento extends Thread
 {
     private Parceiro servidor;
