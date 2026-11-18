@@ -1,25 +1,86 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const painel = document.querySelector('[data-student-frequency]');
   if (!painel) return;
+
+  const elemento = (tag, classe, texto) => {
+    const node = document.createElement(tag);
+    if (classe) node.className = classe;
+    if (texto !== undefined) node.textContent = texto;
+    return node;
+  };
+
+  function abrirDetalhes(item) {
+    const modal = elemento('dialog', 'frequency-modal');
+    modal.setAttribute('aria-labelledby', 'frequency-modal-title');
+    const cabecalho = elemento('div', 'frequency-modal-heading');
+    const texto = elemento('div');
+    texto.append(elemento('span', 'frequency-modal-kicker', `Turma ${item.turma}`));
+    const titulo = elemento('h3', '', item.nome);
+    titulo.id = 'frequency-modal-title';
+    texto.append(titulo);
+    const fechar = elemento('button', 'frequency-modal-close', '×');
+    fechar.type = 'button';
+    fechar.setAttribute('aria-label', 'Fechar detalhes');
+    fechar.addEventListener('click', () => modal.close());
+    cabecalho.append(texto, fechar);
+
+    const percentual = Math.max(0, Math.min(100, Number(item.percentualPresenca) || 0));
+    const resumo = elemento('div', 'frequency-modal-summary');
+    const donut = elemento('div', 'frequency-donut frequency-modal-donut');
+    donut.style.setProperty('--attendance', `${percentual}%`);
+    donut.append(elemento('strong', '', `${percentual}%`), elemento('span', '', 'presença'));
+    const legenda = elemento('div', 'frequency-modal-legend');
+    legenda.append(elemento('strong', '', `${item.presencas} de ${item.aulasNoSemestre} aulas`), elemento('span', '', 'presenças registradas'));
+    resumo.append(donut, legenda);
+
+    const dados = elemento('div', 'frequency-modal-stats');
+    const restantes = Math.max(0, Number(item.totalPermitido) - Number(item.faltas));
+    [[ 'Faltas registradas', item.faltas ], [ 'Limite para aprovação', item.totalPermitido ], [ 'Faltas restantes', restantes ]].forEach(([label, value]) => {
+      const bloco = elemento('div', 'frequency-modal-stat');
+      bloco.append(elemento('span', '', label), elemento('strong', '', String(value)));
+      dados.append(bloco);
+    });
+    modal.append(cabecalho, resumo, dados);
+    modal.addEventListener('click', event => { if (event.target === modal) modal.close(); });
+    modal.addEventListener('close', () => modal.remove());
+    document.body.append(modal);
+    modal.showModal();
+    fechar.focus();
+  }
+
   try {
     const response = await fetch('/api/aluno/frequencia');
     const data = await response.json();
     if (!response.ok) throw new Error(data.mensagem || 'Não foi possível carregar a frequência.');
     painel.replaceChildren();
-    const titulo = document.createElement('h2'); titulo.textContent = 'Frequência'; painel.append(titulo);
-    if (!data.disciplinas.length) { const vazio = document.createElement('p'); vazio.textContent = 'Nenhuma disciplina registrada.'; painel.append(vazio); return; }
-    const lista = document.createElement('div'); lista.className = 'student-courses-grid';
+    const cabecalho = elemento('div', 'student-frequency-heading');
+    cabecalho.append(elemento('div', '', ''));
+    cabecalho.firstChild.append(elemento('span', 'student-frequency-eyebrow', 'Acompanhamento'), elemento('h2', '', 'Frequência'), elemento('p', '', 'Veja sua presença em cada disciplina. Selecione um card para consultar os detalhes.'));
+    painel.append(cabecalho);
+    if (!data.disciplinas.length) {
+      painel.append(elemento('p', 'student-frequency-empty', 'Nenhuma disciplina registrada.'));
+      return;
+    }
+    const lista = elemento('div', 'student-courses-grid');
     data.disciplinas.forEach(item => {
-      const card = document.createElement('article'); card.className = 'student-course-card';
-      const nome = document.createElement('h3'); nome.textContent = item.nome;
-      const turma = document.createElement('p'); turma.textContent = `Turma ${item.turma}`;
-      const limite = document.createElement('p'); limite.textContent = `Limite de faltas para aprovação (75%): ${item.totalPermitido}`;
-      const faltas = document.createElement('p'); faltas.textContent = `Faltas registradas: ${item.faltas} · Restantes: ${Math.max(0, item.totalPermitido - item.faltas)}`;
-      const presenca = document.createElement('p'); presenca.textContent = `Presença: ${item.percentualPresenca}% (${item.presencas}/${item.aulasNoSemestre} aulas contabilizadas)`;
-      card.append(nome, turma, limite, faltas, presenca); lista.append(card);
+      const percentual = Math.max(0, Math.min(100, Number(item.percentualPresenca) || 0));
+      const card = elemento('button', 'student-course-card');
+      card.type = 'button';
+      card.setAttribute('aria-label', `${item.nome}, turma ${item.turma}, ${percentual}% de presença. Abrir detalhes.`);
+      const topo = elemento('span', 'student-course-card-heading');
+      topo.append(elemento('span', 'student-course-card-tag', `Turma ${item.turma}`), elemento('span', 'student-course-card-arrow', '↗'));
+      const nome = elemento('strong', 'student-course-name', item.nome);
+      const donut = elemento('span', 'frequency-donut');
+      donut.style.setProperty('--attendance', `${percentual}%`);
+      donut.append(elemento('strong', '', `${percentual}%`), elemento('span', '', 'presença'));
+      const rodape = elemento('span', 'student-course-card-footer', `${item.presencas} de ${item.aulasNoSemestre} aulas contabilizadas`);
+      card.append(topo, nome, donut, rodape);
+      card.addEventListener('click', () => abrirDetalhes(item));
+      lista.append(card);
     });
     painel.append(lista);
   } catch (erro) {
-    painel.replaceChildren(); const p = document.createElement('p'); p.textContent = erro.message || 'Não foi possível carregar a frequência.'; painel.append(p);
+    painel.replaceChildren();
+    painel.append(elemento('p', 'student-frequency-empty', erro.message || 'Não foi possível carregar a frequência.'));
   }
 });

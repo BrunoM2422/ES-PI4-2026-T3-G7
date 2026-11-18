@@ -23,8 +23,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     turmas.forEach(turma => {
       const card = criar('button', 'teacher-class-card');
       card.type = 'button';
-      card.append(criar('span', 'teacher-class-card-top', `${turma.periodoLetivo}º período`));
+      const topo = criar('span', 'teacher-class-card-top');
+      topo.append(criar('span', 'teacher-class-period', `${turma.periodoLetivo}º período`), criar('span', 'teacher-class-card-arrow', '↗'));
+      card.append(topo);
       card.append(criar('strong', 'teacher-class-card-course', `Turma ${turma.codigo}`));
+      card.append(criar('span', 'teacher-class-card-subject-count', `${turma.materias.length} ${turma.materias.length === 1 ? 'disciplina' : 'disciplinas'}`));
       card.append(criar('span', 'teacher-class-card-subjects', turma.materias.map(m => `${m.nome}: até ${m.maxFaltas} faltas`).join(' · ')));
       card.addEventListener('click', () => abrir(turma));
       grid.append(card);

@@ -681,3 +681,35 @@ body.theme-dark .frequency-semester-item { border-color: var(--line); background
 body.theme-dark .frequency-semester-toggle { border-color: var(--line); background: #202735; color: var(--ink); }
 body.theme-dark .frequency-attendance-row.is-present { background: #173b28; }
 body.theme-dark .frequency-attendance-row.is-absent { background: #482525; }
+
+/* Attendance page refinements */
+.teacher-classes-panel { padding: 24px; border-radius: 12px; box-shadow: 0 4px 16px rgb(25 39 66 / 4%); }
+.teacher-classes-heading { align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.teacher-classes-heading h2 { font-size: 20px; }
+.teacher-classes-heading p { max-width: 520px; font-size: 12px; }
+.teacher-class-count { padding: 8px 12px; }
+.teacher-class-grid { gap: 15px; }
+.teacher-class-card { position: relative; gap: 10px; min-height: 150px; padding: 18px; border-radius: 12px; box-shadow: 0 2px 8px rgb(25 39 66 / 3%); }
+.teacher-class-card-top { align-items: center; }
+.teacher-class-period { padding: 5px 9px; border-radius: 999px; background: var(--primary-soft); color: var(--primary); font-size: 10px; font-weight: 750; }
+.teacher-class-card-course { font-size: 17px; }
+.teacher-class-card-subject-count { color: var(--ink); font-size: 10px; font-weight: 700; }
+.teacher-class-card-subjects { line-height: 1.6; }
+.teacher-class-details { border-radius: 12px; box-shadow: 0 4px 16px rgb(25 39 66 / 4%); }
+.frequency-call-screen { gap: 20px; }
+.frequency-call-screen .teacher-class-detail-heading { padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.frequency-call-screen .teacher-class-detail-heading h2 { font-size: 20px; }
+.frequency-call-screen .teacher-class-roster { padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+.frequency-call-screen .teacher-roster-table-wrap { border: 1px solid var(--line); border-radius: 9px; }
+.frequency-call-screen .teacher-roster-table-wrap > .teacher-class-action { margin-top: 14px; }
+.frequency-call-screen .teacher-roster-table thead th { position: sticky; top: 0; }
+.frequency-call-screen .teacher-roster-table tbody tr:hover { background: #f8f9ff; }
+.frequency-semester-item { padding: 15px; border-radius: 10px; }
+body.theme-dark .frequency-call-screen .teacher-class-roster { border-color: var(--line); background: #202735; }
+body.theme-dark .frequency-call-screen .teacher-roster-table tbody tr:hover { background: #252e3e; }
+body.theme-dark .teacher-class-period { background: #302d55; color: #c0bcff; }
+@media (max-width: 540px) {
+  .teacher-classes-panel { padding: 17px; }
+  .teacher-class-card { min-height: 138px; }
+  .frequency-call-screen .teacher-class-roster { padding: 12px; }
+}

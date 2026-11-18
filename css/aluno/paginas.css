@@ -601,3 +601,43 @@ body.theme-dark .curriculum-week-corner, body.theme-dark .curriculum-week-day, b
 body.theme-dark .curriculum-week-cell { border-color: var(--line); }
 body.theme-dark .curriculum-class-option:hover, body.theme-dark .curriculum-class-option.is-selected { background: #292840; }
 @media (max-width: 620px) { .curriculum-filters { grid-template-columns: 1fr; } .curriculum-week-heading { align-items: flex-start; flex-direction: column; } .curriculum-modal-actions { align-items: stretch; flex-direction: column; } }
+
+/* Student attendance */
+.student-frequency-heading { padding: 22px 22px 0; }
+.student-frequency-eyebrow { color: var(--primary); font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.student-frequency-heading h2 { margin: 5px 0 0; color: var(--ink); font-size: 20px; }
+.student-frequency-heading p { margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.student-courses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 14px; padding: 20px 22px 22px; }
+.student-course-card { display: grid; justify-items: center; gap: 14px; min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); text-align: center; transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
+.student-course-card:hover, .student-course-card:focus-visible { border-color: #b9b5ff; box-shadow: 0 8px 22px rgb(45 42 100 / 10%); outline: none; transform: translateY(-2px); }
+.student-course-card-heading { display: flex; width: 100%; align-items: center; justify-content: space-between; }
+.student-course-card-tag { padding: 5px 9px; border-radius: 999px; background: var(--primary-soft); color: var(--primary); font-size: 10px; font-weight: 700; }
+.student-course-card-arrow { color: var(--muted); font-size: 17px; }
+.student-course-name { min-height: 36px; align-content: center; color: var(--ink); font-size: 14px; line-height: 1.35; overflow-wrap: anywhere; }
+.frequency-donut { --attendance: 0%; display: grid; width: 132px; height: 132px; align-content: center; justify-items: center; gap: 2px; border-radius: 50%; background: conic-gradient(var(--primary) var(--attendance), #e9edf5 0); position: relative; }
+.frequency-donut::before { position: absolute; inset: 9px; border-radius: 50%; background: #fff; content: ''; }
+.frequency-donut strong, .frequency-donut span { position: relative; }
+.frequency-donut strong { color: var(--ink); font-size: 25px; line-height: 1.1; }
+.frequency-donut span { color: var(--muted); font-size: 10px; }
+.student-course-card-footer { color: var(--muted); font-size: 10px; }
+.student-frequency-empty { padding: 28px; color: var(--muted); text-align: center; }
+.frequency-modal { width: min(440px, calc(100% - 28px)); max-width: none; max-height: 90vh; padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: #fff; color: var(--ink); box-shadow: 0 24px 70px rgb(12 22 38 / 25%); }
+.frequency-modal::backdrop { background: rgb(13 22 37 / 58%); backdrop-filter: blur(3px); }
+.frequency-modal-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.frequency-modal-kicker { color: var(--primary); font-size: 10px; font-weight: 750; }
+.frequency-modal-heading h3 { margin: 5px 0 0; font-size: 18px; }
+.frequency-modal-close { width: 32px; height: 32px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: var(--muted); font-size: 22px; line-height: 1; }
+.frequency-modal-summary { display: grid; justify-items: center; gap: 12px; padding: 22px 0; }
+.frequency-modal-donut { width: 150px; height: 150px; }
+.frequency-modal-donut::before { background: #fff; }
+.frequency-modal-legend { display: grid; gap: 4px; text-align: center; }
+.frequency-modal-legend strong { font-size: 13px; }
+.frequency-modal-legend span { color: var(--muted); font-size: 10px; }
+.frequency-modal-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.frequency-modal-stat { display: grid; align-content: start; gap: 8px; min-height: 76px; padding: 11px; border: 1px solid var(--line); border-radius: 9px; background: #f8f9fc; }
+.frequency-modal-stat span { color: var(--muted); font-size: 9px; line-height: 1.35; }
+.frequency-modal-stat strong { font-size: 16px; }
+body.theme-dark .student-course-card, body.theme-dark .frequency-modal { border-color: var(--line); background: #202735; color: var(--ink); }
+body.theme-dark .frequency-donut::before { background: #202735; }
+body.theme-dark .frequency-modal-stat { border-color: var(--line); background: #252e3e; }
+@media (max-width: 520px) { .student-frequency-heading { padding: 18px 16px 0; } .student-courses-grid { grid-template-columns: 1fr; padding: 16px; } .frequency-modal-stats { grid-template-columns: 1fr; } .frequency-modal-stat { min-height: auto; grid-template-columns: 1fr auto; align-items: center; } }
