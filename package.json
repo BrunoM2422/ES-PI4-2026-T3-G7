@@ -5,8 +5,13 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "compilar:java": "javac -encoding UTF-8 server/cliente_servidor/*.java server/cliente_servidor/cliente/*.java server/cliente_servidor/servidor/*.java",
+    "prestart": "npm run compilar:java || echo Aviso: nao foi possivel compilar o Java (JDK instalado?). O servidor de calculo ficara indisponivel.",
     "start": "node server/server.js",
-    "dev": "nodemon server/server.js"
+    "predev": "npm run compilar:java || echo Aviso: nao foi possivel compilar o Java (JDK instalado?). O servidor de calculo ficara indisponivel.",
+    "dev": "nodemon server/server.js",
+    "seed:morning-grades": "node server/scripts/preencher-grades-matutinas.js",
+    "seed:parallel-classes": "node server/scripts/reconstruir-turmas-paralelas.js"
   },
   "repository": {
     "type": "git",
