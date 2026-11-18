@@ -14,7 +14,7 @@
   align-items: start;
   gap: 20px;
 }
-.student-dashboard-notifications {
+.student-dashboard-main {
   min-height: 370px;
   padding: 20px;
 }
@@ -540,7 +540,7 @@ body.theme-dark .contact-attach {
   .student-dashboard {
     grid-template-columns: 1fr;
   }
-  .student-dashboard-notifications {
+  .student-dashboard-main {
     min-height: 270px;
   }
   .student-dashboard-empty {
@@ -641,3 +641,186 @@ body.theme-dark .student-course-card, body.theme-dark .frequency-modal { border-
 body.theme-dark .frequency-donut::before { background: #202735; }
 body.theme-dark .frequency-modal-stat { border-color: var(--line); background: #252e3e; }
 @media (max-width: 520px) { .student-frequency-heading { padding: 18px 16px 0; } .student-courses-grid { grid-template-columns: 1fr; padding: 16px; } .frequency-modal-stats { grid-template-columns: 1fr; } .frequency-modal-stat { min-height: auto; grid-template-columns: 1fr auto; align-items: center; } }
+/* Grade do Dia */
+.student-day-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.student-day-label {
+  display: grid;
+  gap: 2px;
+  text-align: center;
+}
+
+.student-day-label strong {
+  color: var(--ink, #172033);
+  font-size: 13px;
+}
+
+.student-day-label small {
+  color: var(--muted, #71809b);
+  font-size: 11px;
+}
+
+/* seletor duplo para ganhar do .notif-btn, que é carregado depois */
+.notif-btn.student-day-arrow {
+  width: 30px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.student-class-list,
+.student-agenda-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.student-agenda-list {
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.student-class-item {
+  display: flex;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line, #e3eaf3);
+  border-left: 3px solid var(--primary, #5146ee);
+  border-radius: 9px;
+}
+
+.student-class-item.is-ongoing {
+  background: var(--primary-soft, #eef0ff);
+}
+
+.student-class-item.is-past {
+  opacity: .55;
+}
+
+.student-class-time {
+  flex: 0 0 96px;
+  color: var(--ink, #172033);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.student-class-body {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.student-class-body strong {
+  color: var(--ink, #172033);
+  font-size: 12px;
+}
+
+.student-class-body small {
+  color: var(--muted, #71809b);
+  font-size: 11px;
+}
+
+.student-class-live {
+  color: #12724b;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* Agenda Geral */
+.student-agenda-item {
+  --chip-bg: #eef0ff;
+  --chip-fg: #5146ee;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 11px 12px;
+  border: 1px solid var(--line, #e3eaf3);
+  border-radius: 9px;
+}
+
+.student-agenda-item.is-feriado {
+  --chip-bg: #fff4df;
+  --chip-fg: #a86b09;
+}
+
+.student-agenda-date {
+  display: grid;
+  flex: 0 0 42px;
+  place-items: center;
+  padding: 5px 0;
+  border-radius: 8px;
+  background: var(--chip-bg);
+  color: var(--chip-fg);
+  line-height: 1.1;
+}
+
+.student-agenda-date strong {
+  font-size: 15px;
+}
+
+.student-agenda-date small {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.student-agenda-body {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+
+.student-agenda-body > strong {
+  color: var(--ink, #172033);
+  font-size: 12px;
+}
+
+.student-agenda-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted, #71809b);
+  font-size: 11px;
+}
+
+.student-agenda-chip {
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: var(--chip-bg);
+  color: var(--chip-fg);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.student-agenda-desc {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--muted, #71809b);
+  font-size: 11px;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+body.theme-dark .student-class-item.is-ongoing {
+  background: #292940;
+}
+
+body.theme-dark .student-class-live {
+  color: #5fd3a0;
+}
+
+body.theme-dark .student-agenda-date,
+body.theme-dark .student-agenda-chip {
+  background: rgb(255 255 255 / 8%);
+  color: var(--ink);
+}

@@ -39,21 +39,51 @@ function iniciarAgendaHoje() {
 
     async function buscarJson(url) {
         const token = sessionStorage.getItem('notadez_token');
-        const resposta = await fetch(url, { headers: { Authorization: `Bearer ${token || ''}` } });
-        const dados = await resposta.json();
-        if (!resposta.ok) throw new Error(dados.mensagem || 'Erro ao carregar dados.');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const resposta = await fetch(url, { headers, credentials: 'same-origin' });
+        const dados = await resposta.json().catch(() => ({}));
+        if (!resposta.ok) throw new Error(dados.mensagem || `Erro ao carregar dados (${resposta.status}).`);
         return dados;
+    }
+
+    function atualizarTurmasAtivas(resultado) {
+        const valor = document.getElementById('stat-turmas-ativas');
+        const info = document.getElementById('stat-turmas-ativas-info');
+        if (!valor) return;
+
+        if (resultado.status !== 'fulfilled') {
+            console.error('Erro ao carregar turmas:', resultado.reason);
+            valor.textContent = '—';
+            if (info) info.textContent = 'Dados não disponíveis.';
+            return;
+        }
+
+        const ativas = (resultado.value.turmas || []).filter(t => t.ativa !== false);
+        valor.textContent = String(ativas.length);
+        if (info) {
+            info.textContent = ativas.length === 0
+                ? 'Nenhuma turma atribuída.'
+                : ativas.length === 1
+                    ? '1 turma sob sua responsabilidade.'
+                    : `${ativas.length} turmas sob sua responsabilidade.`;
+        }
     }
 
     async function carregar() {
         const hoje = agoraSP().data;
-        const [eventos, turmas] = await Promise.allSettled([
+        const jsDay = new Date(`${hoje}T12:00:00`).getDay();
+        const diaIso = jsDay === 0 ? 7 : jsDay;
+
+        const [eventos, turmas, aulasRes] = await Promise.allSettled([
             buscarJson('/api/calendario/eventos'),
-            buscarJson('/api/calendario/minhas-turmas')
+            buscarJson('/api/calendario/minhas-turmas'),
+            buscarJson('/api/calendario/minhas-aulas')
         ]);
 
-        if (eventos.status === 'rejected') {
-            console.error('Erro ao carregar a agenda:', eventos.reason);
+        atualizarTurmasAtivas(turmas);
+
+        if (eventos.status === 'rejected' && aulasRes.status === 'rejected') {
+            console.error('Erro ao carregar a agenda:', eventos.reason, aulasRes.reason);
             falhou = true;
             renderizar();
             return;
@@ -61,7 +91,31 @@ function iniciarAgendaHoje() {
 
         falhou = false;
         dataCarregada = hoje;
-        eventosDeHoje = (eventos.value.eventos || []).filter(ev => ev.date === hoje);
+
+        const listaEventos = eventos.status === 'fulfilled' ? (eventos.value.eventos || []) : [];
+        eventosDeHoje = listaEventos.filter(ev => ev.date === hoje);
+
+        const minhasAulas = aulasRes.status === 'fulfilled' ? (aulasRes.value.aulas || []) : [];
+        const aulasDeHoje = minhasAulas.filter(aula => Number(aula.dia) === diaIso);
+
+        const aulasConvertidas = aulasDeHoje.map(aula => {
+            const horaInicio = Number(aula.hora);
+            const startStr = Number.isInteger(horaInicio) ? `${String(horaInicio).padStart(2, '0')}:00` : '';
+            const endStr = Number.isInteger(horaInicio) ? `${String(horaInicio + 1).padStart(2, '0')}:00` : '';
+            return {
+                id: `aula-reg-${aula.codigoTurma}-${aula.hora}`,
+                title: aula.materia || 'Aula Regular',
+                date: hoje,
+                category: 'aula',
+                start: startStr,
+                end: endStr,
+                location: '',
+                description: `Curso: ${aula.turma || 'Não identificado'} | Código da turma: ${aula.codigoTurma || '—'}`,
+                turmaId: null
+            };
+        });
+
+        eventosDeHoje = [...eventosDeHoje, ...aulasConvertidas];
 
         turmasPorId = new Map(
             turmas.status === 'fulfilled'

@@ -319,13 +319,24 @@ body.theme-dark .teacher-roster-table thead th { background: #1b2433; color: var
 .teacher-dashboard-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.8fr) minmax(260px, 1fr);
+  grid-template-rows: auto 1fr;
   align-items: start;
   gap: 16px;
 }
 .teacher-agenda {
-  min-height: 220px;
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  align-self: stretch;
+  min-height: 520px;
 }
-.teacher-activity, .teacher-notifications {
+.teacher-notifications {
+  grid-column: 2;
+  grid-row: 1;
+  min-height: 156px;
+}
+.teacher-activity {
+  grid-column: 2;
+  grid-row: 2;
   min-height: 156px;
 }
 .teacher-empty-message {
@@ -479,6 +490,12 @@ body.theme-dark .teacher-stat > i {
 @media (max-width: 760px) {
   .teacher-dashboard-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+  .teacher-agenda, .teacher-notifications, .teacher-activity {
+    grid-column: 1;
+    grid-row: auto;
+    min-height: 0;
   }
 }
 @media (max-width: 540px) {
