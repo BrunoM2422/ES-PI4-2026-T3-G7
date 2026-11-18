@@ -64,9 +64,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function bindEditor(teacher) {
     const form = root.querySelector('#teacher-form');
+    window.NotaDezValidacaoBrasil.vincularCampos(form);
+    window.NotaDezEmailSugerido.vincular(form.querySelector('[name="nome"]'), form.querySelector('[name="email"]'), 'docente', teacher.id);
     form.addEventListener('submit', async event => {
       event.preventDefault();
       if (!window.validateAppForm(form)) return;
+      const cpf = form.querySelector('[name="cpf"]').value;
+      const telefone = form.querySelector('[name="telefone"]').value;
+      if (cpf && !window.NotaDezValidacaoBrasil.validarCpf(cpf)) {
+        root.querySelector('.catalog-feedback').textContent = 'Informe um CPF válido.';
+        form.querySelector('[name="cpf"]').focus();
+        return;
+      }
+      if (!window.NotaDezValidacaoBrasil.validarTelefone(telefone)) {
+        root.querySelector('.catalog-feedback').textContent = 'Informe um telefone brasileiro válido com DDD.';
+        form.querySelector('[name="telefone"]').focus();
+        return;
+      }
       const button = form.querySelector('[type="submit"]'); button.disabled = true;
       try {
         const payload = Object.fromEntries(new FormData(form).entries());

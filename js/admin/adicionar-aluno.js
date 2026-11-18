@@ -3,6 +3,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const botaoCadastrar = document.querySelector('[data-cadastrar-aluno]');
   if (!botaoCadastrar) return;
 
+  const campoNome = document.querySelector('input[name="nome"]');
+  const campoEmail = document.querySelector('input[name="email"]');
+  window.NotaDezValidacaoBrasil.vincularCampos(document);
+  window.NotaDezEmailSugerido.vincular(campoNome, campoEmail, 'estudante');
+
   const campoCurso = document.querySelector('input[name="cursoBusca"]');
   const cursoIdInput = document.querySelector('input[name="cursoId"]');
   const listaCursos = document.querySelector('#curso-opcoes');
@@ -140,6 +145,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const endereco = document.querySelector('input[name="endereco"]').value.trim();
     const instituicao = document.querySelector('input[name="instituicao"]').value.trim();
     const cursoId = cursoIdInput.value;
+
+    if (!window.NotaDezValidacaoBrasil.validarCpf(cpf)) {
+      window.showAppMessage('Informe um CPF válido.');
+      document.querySelector('input[name="cpf"]').focus();
+      return;
+    }
+    if (!window.NotaDezValidacaoBrasil.validarTelefone(telefone, true)) {
+      window.showAppMessage('Informe um telefone brasileiro válido com DDD.');
+      document.querySelector('input[name="telefone"]').focus();
+      return;
+    }
 
     if (!nome || !email || !cpf) {
       window.showAppMessage('Preencha os campos obrigatórios (Nome, E-mail e CPF).');

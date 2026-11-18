@@ -13,8 +13,27 @@ const GradeHorario = require('../models/GradeHorario');
 const Contador = require('../models/Contador');
 const { autenticar } = require('../services/autenticacao');
 const { notificarLiberacao } = require('../services/notificacoesSistema');
+const { sugerirEmail } = require('../services/emailSugerido');
+const { validarCpf, normalizarTelefone, validarTelefone } = require('../services/validacaoBrasil');
 
 const router = express.Router();
+
+router.get('/email-sugerido', autenticar, async (req, res) => {
+  if (req.usuario.papel !== 'admin') return res.status(403).json({ mensagem: 'Acesso exclusivo de administradores.' });
+  try {
+    const nome = String(req.query.nome || '').trim();
+    const tipo = String(req.query.tipo || '');
+    if (!nome || !['estudante', 'docente'].includes(tipo)) {
+      return res.status(400).json({ mensagem: 'Informe o nome e o tipo de perfil.' });
+    }
+    const email = await sugerirEmail(nome, tipo, req.query.excluirId || null);
+    return res.json({ email });
+  } catch (erro) {
+    if (erro.name === 'CastError') return res.status(400).json({ mensagem: 'Perfil para edição inválido.' });
+    console.error('Erro ao sugerir e-mail:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível sugerir um e-mail.' });
+  }
+});
 
 function normalizarCpf(cpf) {
   return String(cpf || '').replace(/\D/g, '');
@@ -1106,6 +1125,15 @@ router.put('/docentes/:id', async (req, res) => {
     const atualizacao = {};
     for (const campo of campos) if (req.body[campo] !== undefined) atualizacao[campo] = String(req.body[campo]).trim();
     atualizacao.email = atualizacao.email.toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(atualizacao.email)) return res.status(400).json({ mensagem: 'Informe um e-mail válido.' });
+    if (atualizacao.cpf) {
+      if (!validarCpf(atualizacao.cpf)) return res.status(400).json({ mensagem: 'Informe um CPF válido.' });
+      atualizacao.cpf = normalizarCpf(atualizacao.cpf);
+    } else {
+      delete atualizacao.cpf;
+    }
+    if (atualizacao.telefone && !validarTelefone(atualizacao.telefone)) return res.status(400).json({ mensagem: 'Informe um telefone brasileiro válido com DDD.' });
+    if (atualizacao.telefone) atualizacao.telefone = normalizarTelefone(atualizacao.telefone);
     for (const campo of ['instituicaoNome', 'instituicaoCodigo']) if (req.body[campo] !== undefined) atualizacao[campo === 'instituicaoNome' ? 'instituicao.nome' : 'instituicao.codigo'] = String(req.body[campo]).trim();
     const docenteAtual = await Docente.findById(id).select('rp email');
     if (!docenteAtual) return res.status(404).json({ mensagem: 'Docente não encontrado.' });
@@ -1272,11 +1300,17 @@ router.post('/cadastrar', async (req, res) => {
   try {
     const { nome, email, cpf, telefone, endereco, especialidade, tipo, instituicao, cursoId } = req.body;
 
-    if (!nome || !email || !cpf || !tipo) {
-      return res.status(400).json({ mensagem: 'Preencha todos os campos obrigatórios.' });
+    if (typeof nome !== 'string' || !nome.trim() || typeof email !== 'string' || !email.trim() || typeof cpf !== 'string' || !cpf.trim() || !['estudante', 'professor'].includes(tipo)) {
+      return res.status(400).json({ mensagem: 'Preencha todos os campos obrigatorios.' });
     }
+    if (!validarCpf(cpf)) return res.status(400).json({ mensagem: 'Informe um CPF valido.' });
+    const telefoneObrigatorio = tipo === 'estudante';
+    if (!validarTelefone(telefone, telefoneObrigatorio)) return res.status(400).json({ mensagem: 'Informe um telefone brasileiro valido com DDD.' });
 
     const emailTratado = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTratado)) return res.status(400).json({ mensagem: 'Informe um e-mail valido.' });
+    const cpfTratado = normalizarCpf(cpf);
+    const telefoneTratado = normalizarTelefone(telefone);
     
     const senhaTemporaria = '123456';
     const senhaHash = await bcrypt.hash(senhaTemporaria, 10);
@@ -1302,8 +1336,8 @@ router.post('/cadastrar', async (req, res) => {
         ra: codigoMatricula,
         nome,
         email: emailTratado,
-        cpf,
-        telefone,
+        cpf: cpfTratado,
+        telefone: telefoneTratado,
         endereco,
         cursoId: cursoSelecionado._id,
         curso: {
@@ -1337,8 +1371,8 @@ router.post('/cadastrar', async (req, res) => {
         rp: codigoMatricula,
         nome,
         email: emailTratado,
-        cpf,
-        telefone,
+        cpf: cpfTratado,
+        telefone: telefoneTratado,
         especialidade,
         instituicao: dadosInstituicao
       });
