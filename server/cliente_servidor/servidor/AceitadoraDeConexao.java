@@ -1,5 +1,5 @@
 package server.cliente_servidor.servidor;
-
+import server.cliente_servidor.Parceiro;
 import java.net.*;
 import java.util.*;
 

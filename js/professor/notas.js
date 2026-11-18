@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const el = (tag, cls, text) => { const node = document.createElement(tag); if (cls) node.className = cls; if (text !== undefined) node.textContent = text; return node; };
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const base = '/api/notas/professor'; let disciplinas = [];
+  const formatarMedia = media => (media === null || media === undefined) ? '—' : Number(media).toFixed(2);
   function voltar() { detail.hidden = true; cards.closest('.teacher-classes-panel').hidden = false; }
   async function abrir(disciplina) {
     cards.closest('.teacher-classes-panel').hidden = true; detail.hidden = false; detail.replaceChildren(el('p', 'teacher-empty-message', 'Carregando diário de notas...'));
@@ -59,21 +60,36 @@ document.addEventListener('DOMContentLoaded', async () => {
       try { const response = await fetch(`${url}/componentes`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titulo: title.value.trim(), valorMaximo: Number(max.value), tipoMedia: tipoMedia.value, peso: tipoMedia.value === 'ponderada' ? Number(weight.value) : 1 }) }); const result = await response.json(); if (!response.ok) throw new Error(result.mensagem || 'Não foi possível criar componente.'); await abrir(disciplina); }
       catch (error) { feedback.textContent = error.message || 'Não foi possível criar componente.'; submit.disabled = false; }
     });
-    const roster = el('section', 'teacher-class-roster'); roster.append(el('h3', '', `Diário da turma (${data.alunos.length} alunos)`), el('p', 'teacher-class-module-note', 'Notas e componentes ficam salvos no banco de dados para uso posterior no cálculo da média.'));
+    const roster = el('section', 'teacher-class-roster'); roster.append(el('h3', '', `Diário da turma (${data.alunos.length} alunos)`), el('p', 'teacher-class-module-note', 'Notas e componentes ficam salvos no banco de dados. A média é calculada pelo servidor Java.'));
     if (!data.componentes.length) roster.append(el('p', 'teacher-empty-message', 'Crie um componente acima para começar a lançar notas.'));
     else if (!data.alunos.length) roster.append(el('p', 'teacher-empty-message', 'Esta turma ainda não possui alunos matriculados.'));
     else {
       const wrapper = el('div', 'teacher-roster-table-wrap'); const table = el('table', 'teacher-roster-table grades-entry-table'); const thead = document.createElement('thead'); const headRow = document.createElement('tr');
-      ['Aluno', 'RA', ...data.componentes.map(c => `${c.titulo} · máx. ${c.valorMaximo}`)].forEach(label => headRow.append(el('th', '', label))); thead.append(headRow);
+      ['Aluno', 'RA', ...data.componentes.map(c => `${c.titulo} · máx. ${c.valorMaximo}`), 'Média'].forEach(label => headRow.append(el('th', '', label))); thead.append(headRow);
       const tbody = document.createElement('tbody');
       data.alunos.forEach(aluno => { const tr = document.createElement('tr'); tr.append(el('th', 'teacher-roster-name', aluno.nome), el('td', '', aluno.ra || '—'));
         data.componentes.forEach(componente => { const td = document.createElement('td'); const input = document.createElement('input'); input.className = 'grade-value-input'; input.type = 'number'; input.min = '0'; input.max = String(componente.valorMaximo); input.step = '0.01'; input.placeholder = '—';
           // O backend expõe os ids dos componentes também dentro da lista do aluno.
           const valor = aluno.componentes.find(item => item.titulo === componente.titulo)?.valor; input.value = valor ?? '';
           input.dataset.alunoId = aluno.id; input.dataset.componenteId = componente.id; td.append(input); tr.append(td);
-        }); tbody.append(tr);
+        });
+        // Média calculada pelo servidor Java (null quando indisponível)
+        const celulaMedia = el('td', 'grade-average-cell', formatarMedia(aluno.media)); celulaMedia.dataset.mediaAluno = aluno.id; tr.append(celulaMedia);
+        tbody.append(tr);
       });
       table.append(thead, tbody); wrapper.append(table); roster.append(wrapper);
+      // Aviso do motivo quando a média não pôde ser calculada (servidor desligado, pesos != 10 etc.)
+      const mediaNote = el('p', 'teacher-class-module-note grades-average-note'); roster.append(mediaNote);
+      const mostrarAvisoMedia = erro => { mediaNote.textContent = erro ? `Média indisponível: ${erro}` : ''; mediaNote.hidden = !erro; };
+      mostrarAvisoMedia(data.erroMedia);
+      // Recarrega só as médias (sem redesenhar a tabela, para não perder o que está digitado)
+      const atualizarMedias = async () => {
+        try {
+          const response = await fetch(url); const atualizado = await response.json(); if (!response.ok) return;
+          (atualizado.alunos || []).forEach(a => { const celula = roster.querySelector(`[data-media-aluno="${a.id}"]`); if (celula) celula.textContent = formatarMedia(a.media); });
+          mostrarAvisoMedia(atualizado.erroMedia);
+        } catch (error) { /* mantém as médias atuais */ }
+      };
       const save = el('button', 'teacher-class-action is-primary', 'Salvar notas'); save.type = 'button'; const saveFeedback = el('span', 'grades-save-feedback', ''); saveFeedback.setAttribute('role', 'status'); saveFeedback.setAttribute('aria-live', 'polite'); roster.append(save, saveFeedback);
       roster.querySelectorAll('.grade-value-input').forEach(input => input.addEventListener('input', () => {
         save.classList.remove('is-saved'); save.textContent = 'Salvar notas';
@@ -81,7 +97,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       }));
       save.addEventListener('click', async () => { save.disabled = true; saveFeedback.className = 'grades-save-feedback'; saveFeedback.textContent = 'Salvando notas...';
         const notas = [...roster.querySelectorAll('.grade-value-input')].map(input => ({ alunoId: input.dataset.alunoId, componenteId: input.dataset.componenteId, valor: input.value === '' ? null : Number(input.value) }));
-        try { const response = await fetch(`${url}/notas`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ notas }) }); const result = await response.json(); if (!response.ok) throw new Error(result.mensagem || 'Não foi possível salvar notas.'); saveFeedback.className = 'grades-save-feedback is-success'; saveFeedback.textContent = '✓ Notas salvas com sucesso'; save.classList.add('is-saved'); save.textContent = 'Salvo ✓'; }
+        try { const response = await fetch(`${url}/notas`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ notas }) }); const result = await response.json(); if (!response.ok) throw new Error(result.mensagem || 'Não foi possível salvar notas.'); saveFeedback.className = 'grades-save-feedback is-success'; saveFeedback.textContent = '✓ Notas salvas com sucesso'; save.classList.add('is-saved'); save.textContent = 'Salvo ✓';
+          await atualizarMedias(); }
         catch (error) { saveFeedback.className = 'grades-save-feedback is-error'; saveFeedback.textContent = error.message || 'Não foi possível salvar notas.'; } finally { save.disabled = false; }
       });
     }

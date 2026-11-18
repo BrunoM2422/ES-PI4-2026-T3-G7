@@ -8,7 +8,7 @@ import java.util.Map;
  * Calcula médias de alunos (aritmética ou ponderada).
  * Não depende de sockets: recebe dados e devolve médias.
  */
-public class CalculadoraDeMedias
+public class CalculadoraDeMedias 
 {
     public static final String ARITMETICA = "Aritmética";
     public static final String PONDERADA  = "Ponderada";
@@ -19,7 +19,7 @@ public class CalculadoraDeMedias
     // ---------- tipos auxiliares ----------
 
     /** Componente de avaliação (prova, trabalho etc.). */
-    public static class Componente
+    public static class Componente implements java.io.Serializable
     {
         private final String id;     // pode ser null; nesse caso usa-se o índice
         private final double peso;
@@ -35,7 +35,7 @@ public class CalculadoraDeMedias
     }
 
     /** Notas de um aluno. A chave do mapa é "comp_<id ou índice>". */
-    public static class NotasDoAluno
+    public static class NotasDoAluno implements java.io.Serializable
     {
         private final int idEstudante;
         private final Map<String, Double> notas;
@@ -51,7 +51,7 @@ public class CalculadoraDeMedias
     }
 
     /** Média calculada de um aluno. */
-    public static class MediaDoAluno
+    public static class MediaDoAluno implements java.io.Serializable
     {
         private final int idEstudante;
         private final double media;

@@ -1,4 +1,4 @@
-package server.cliente_servidor.cliente;
+package server.cliente_servidor;
 
 import server.cliente_servidor.Comunicado;
 
