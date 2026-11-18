@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', async () => {
   const root = document.querySelector('#turma-management-content');
   const modalRoot = document.querySelector('#turma-management-modal-root');

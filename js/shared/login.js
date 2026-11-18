@@ -1,3 +1,4 @@
+// Autores:
 document.querySelector('#login').addEventListener('submit', async event => {
   event.preventDefault();
 

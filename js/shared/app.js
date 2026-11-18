@@ -1,3 +1,4 @@
+// Autores:
 const originalFetch = window.fetch.bind(window);
 window.fetch = (input, options = {}) => {
   const url = new URL(input instanceof Request ? input.url : input, location.href);
@@ -178,8 +179,6 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
     return;
   }
   document.body.classList.toggle('theme-dark', settings.theme === 'dark');
-  document.body.classList.toggle('reduce-motion', Boolean(settings.reduceMotion));
-  document.documentElement.style.setProperty('--font-scale', String(settings.fontSize ? settings.fontSize / 13 : 1));
 
   const componentBase = new URL('../../components/', scriptUrl);
   Promise.all(['sidebar.html', 'header.html', 'footer.html'].map(async file => {

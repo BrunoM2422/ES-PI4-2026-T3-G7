@@ -1,3 +1,4 @@
+// Autores:
 const express = require('express');
 const mongoose = require('mongoose');
 const { autenticar } = require('../services/autenticacao');

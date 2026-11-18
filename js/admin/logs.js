@@ -1,3 +1,4 @@
+// Autores:
 (() => {
   const rows = document.querySelector('#logs-rows');
   if (!rows) return;

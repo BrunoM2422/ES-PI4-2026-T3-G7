@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', async () => {
   const root = document.querySelector('#catalog-content');
   const modalRoot = document.querySelector('#catalog-modal-root');

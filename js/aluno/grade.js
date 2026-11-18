@@ -1,4 +1,5 @@
-﻿document.addEventListener('DOMContentLoaded', async () => {
+﻿// Autores:
+document.addEventListener('DOMContentLoaded', async () => {
   const cardsRoot = document.querySelector('[data-subject-cards]');
   const status = document.querySelector('[data-grade-status]');
   const search = document.querySelector('[data-search-subject]');

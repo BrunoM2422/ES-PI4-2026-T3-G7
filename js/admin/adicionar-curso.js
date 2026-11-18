@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', () => {
   const botaoCadastrar = document.querySelector('.admin-button');
   if (!botaoCadastrar) return;

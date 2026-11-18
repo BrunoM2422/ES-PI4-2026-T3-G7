@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', async () => {
   const painel = document.querySelector('[data-student-frequency]');
   if (!painel) return;

@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', async () => {
   const root = document.querySelector('#schedule-content');
   const modalRoot = document.querySelector('#teacher-modal-root');

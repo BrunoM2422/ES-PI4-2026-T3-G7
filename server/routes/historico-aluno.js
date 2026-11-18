@@ -1,3 +1,4 @@
+// Autores:
 const express = require('express');
 const { autenticar } = require('../services/autenticacao');
 const Estudante = require('../models/Estudante');

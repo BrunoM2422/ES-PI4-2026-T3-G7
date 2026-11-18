@@ -1,4 +1,5 @@
-﻿const express = require('express');
+﻿// Autores:
+const express = require('express');
 const mongoose = require('mongoose');
 const { autenticar } = require('../services/autenticacao');
 const Estudante = require('../models/Estudante');

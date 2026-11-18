@@ -1,3 +1,4 @@
+// Autores:
 (() => {
   const app = document.querySelector('#app');
   const host = app?.querySelector('.content > .card');
@@ -7,8 +8,6 @@
   const storageKey = `notadez_settings_${user?.email || app.dataset.role}`;
   const defaults = {
     theme: 'light',
-    fontSize: 14,
-    reduceMotion: false,
     showFinanceiro: true,
     notifications: {
       academic: true,
@@ -23,10 +22,6 @@
 
   host.classList.remove('card');
   host.classList.add('settings-host');
-
-  const fontSize = host.querySelector('#font-size');
-  const fontSizeValue = host.querySelector('#font-size-value');
-  fontSize.value = settings.fontSize;
 
   host.querySelectorAll('[data-theme-choice]').forEach(button => {
     button.addEventListener('click', () => {
@@ -65,13 +60,6 @@
       updateControls();
       saveSettings();
     });
-  });
-
-  fontSize.addEventListener('input', () => {
-    settings.fontSize = Number(fontSize.value);
-    applySettings();
-    updateControls();
-    saveSettings();
   });
 
   function loadSettings() {
@@ -117,8 +105,6 @@
 
   function applySettings() {
     document.body.classList.toggle('theme-dark', settings.theme === 'dark');
-    document.body.classList.toggle('reduce-motion', settings.reduceMotion);
-    document.documentElement.style.setProperty('--font-scale', String(settings.fontSize / 13));
   }
 
   function updateControls() {
@@ -137,8 +123,6 @@
       button.classList.toggle('active', active);
       button.setAttribute('aria-checked', String(active));
     });
-    fontSize.value = settings.fontSize;
-    fontSizeValue.textContent = `${settings.fontSize}px`;
     applySettings();
   }
 

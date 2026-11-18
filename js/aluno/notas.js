@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', async () => {
   const cards = document.querySelector('[data-grade-cards]');
   const count = document.querySelector('[data-grade-count]');

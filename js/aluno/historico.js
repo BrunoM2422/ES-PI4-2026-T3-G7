@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', async () => {
   const linhas = document.querySelector('[data-history-rows]');
   const curso = document.querySelector('[data-history-course]');

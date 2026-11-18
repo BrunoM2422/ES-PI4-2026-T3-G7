@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', () => {
   const pagina = document.querySelector('#app')?.dataset.page;
 

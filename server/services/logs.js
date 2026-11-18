@@ -1,3 +1,4 @@
+// Autores:
 const Log = require('../models/Log');
 const mongoose = require('mongoose');
 

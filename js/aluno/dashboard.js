@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', () => {
     const FUSO = 'America/Sao_Paulo';
     const DIAS_RECENTES = 15;

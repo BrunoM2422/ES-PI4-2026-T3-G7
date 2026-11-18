@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', () => {
   const cursoSelect = document.querySelector('[name="cursoId"]');
   const numeroTurmaInput = document.querySelector('[name="numeroTurma"]');

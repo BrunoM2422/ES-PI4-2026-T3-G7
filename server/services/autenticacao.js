@@ -1,3 +1,4 @@
+// Autores:
 const crypto = require('crypto');
 const Usuario = require('../models/Usuario');
 

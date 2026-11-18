@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', async () => {
   const dias = Array.from(document.querySelectorAll('[data-week-day]'));
   if (!dias.length) return;

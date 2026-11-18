@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', async () => {
   const grid = document.querySelector('[data-frequency-grid]');
   const details = document.querySelector('[data-frequency-details]');

@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', async () => {
   const form = document.querySelector('#contact-form');
   if (!form) return;

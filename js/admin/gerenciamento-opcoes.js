@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', async () => {
   const continuar = document.querySelector('[data-continue]');
   const continuarEquivalencias = document.querySelector('[data-continue-equivalencias]');

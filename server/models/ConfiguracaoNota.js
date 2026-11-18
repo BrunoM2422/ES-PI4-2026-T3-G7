@@ -1,3 +1,4 @@
+// Autores:
 const mongoose = require('mongoose');
 
 const configuracaoNotaSchema = new mongoose.Schema({

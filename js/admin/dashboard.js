@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', async () => {
     const contadorElemento = document.getElementById('contador-chamados-ativos');
     const cardChamados = document.getElementById('card-chamados-ativos');

@@ -1,8 +1,10 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', () => {
   const statusIcon = document.getElementById('status-icon');
   const statusTexto = document.getElementById('status-texto');
   const statusDesc = document.getElementById('status-desc');
   const btnToggle = document.getElementById('btn-toggle');
+  const serverCard = btnToggle.closest('.server-card');
 
   const INTERVALO_STATUS_MS = 10000;
 
@@ -20,13 +22,14 @@ document.addEventListener('DOMContentLoaded', () => {
         ? `O motor de cálculo de médias em Java está ativo e aceitando conexões na porta ${porta}.`
         : 'O motor de cálculo de médias em Java está ativo e aceitando conexões.';
       btnToggle.textContent = 'Desativar Servidor';
-      btnToggle.classList.add('is-online');
+      serverCard.classList.add('is-online');
+      serverCard.classList.remove('is-error');
     } else {
       statusIcon.textContent = '🔴';
       statusTexto.textContent = 'Servidor Offline';
       statusDesc.textContent = 'O servidor de cálculo está desligado. Ative-o para processar médias.';
       btnToggle.textContent = 'Ativar Servidor';
-      btnToggle.classList.remove('is-online');
+      serverCard.classList.remove('is-online', 'is-error');
     }
   }
 

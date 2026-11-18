@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', () => {
   const botaoCadastrar = document.querySelector('[data-cadastrar-aluno]');
   if (!botaoCadastrar) return;

@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', async () => {
   const root = document.querySelector('#class-organization-content');
   const params = new URLSearchParams(location.search);

@@ -1,3 +1,4 @@
+/* Autores: */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
@@ -7,7 +8,6 @@
   --muted: #71809b;
   --line: #e3eaf3;
   --background: #f7f9fc;
-  --font-scale: 1;
 }
 
 * {
@@ -18,7 +18,7 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--ink);
-  font: calc(13px * var(--font-scale)) Inter, Arial, sans-serif;
+  font: 13px Inter, Arial, sans-serif;
 }
 
 button,
@@ -365,7 +365,7 @@ button.nav-section-label:focus-visible {
   align-items: center;
   gap: 10px;
   color: #40516e;
-  font-size: calc(11px * var(--font-scale));
+  font-size: 11px;
   font-weight: 600;
 }
 
@@ -818,11 +818,3 @@ body.theme-dark .calendar-button.calendar-add {
   color: #fff;
 }
 
-body.reduce-motion *,
-body.reduce-motion *::before,
-body.reduce-motion *::after {
-  scroll-behavior: auto !important;
-  animation-duration: .01ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: .01ms !important;
-}

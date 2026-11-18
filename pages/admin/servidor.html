@@ -1,3 +1,4 @@
+<!-- Autores: -->
 <!doctype html>
 <html lang="pt-BR">
   <head>
@@ -5,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Controle do Servidor | NotaDez</title>
     <link rel="stylesheet" href="../../css/shared/style.css">
+    <link rel="stylesheet" href="../../css/admin/servidor.css">
   </head>
   <body>
     <div id="app" data-page="servidor" data-role="admin" data-title="Controle do Servidor">
@@ -13,20 +15,25 @@
         <main class="main">
           <div data-component="header"></div>
           
-          <section class="content">
-            <article class="card server-card">
-              <div>
-                <p class="server-eyebrow">Status do Sistema</p>
-                <div class="server-status-icon" id="status-icon">🔄</div>
-                <h2 class="server-status-text" id="status-texto">Verificando status...</h2>
-                <p class="server-status-desc" id="status-desc">
-                  Aguarde enquanto verificamos o estado atual do servidor NotaDez.
-                </p>
+          <section class="content server-content">
+            <header class="server-intro">
+              <p class="server-eyebrow">Infraestrutura</p>
+              <h2>Servidor de Cálculo</h2>
+              <p>Gerencie o serviço responsável pelo processamento das médias acadêmicas.</p>
+            </header>
+            <article class="card server-card" aria-labelledby="status-texto">
+              <div class="server-card-main">
+                <div class="server-status-icon" id="status-icon" aria-hidden="true">?</div>
+                <div class="server-status-copy">
+                  <p class="server-eyebrow">Status do serviço</p>
+                  <h2 class="server-status-text" id="status-texto">Verificando status...</h2>
+                  <p class="server-status-desc" id="status-desc">Aguarde enquanto verificamos o estado atual do servidor NotaDez.</p>
+                </div>
               </div>
-              
-              <button class="server-action-button" id="btn-toggle" type="button" disabled>
-                Aguarde...
-              </button>
+              <div class="server-card-footer">
+                <span class="server-footnote"><span aria-hidden="true"></span> Serviço de médias acadêmicas</span>
+                <button class="server-action-button" id="btn-toggle" type="button" disabled>Aguarde...</button>
+              </div>
             </article>
           </section>
 

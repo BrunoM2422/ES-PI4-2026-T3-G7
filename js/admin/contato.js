@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', async () => {
   const list = document.querySelector('#tickets-list');
   if (!list) return;

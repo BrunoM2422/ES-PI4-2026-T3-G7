@@ -1,3 +1,4 @@
+// Autores:
 (function () {
     const FUSO = 'America/Sao_Paulo';
 

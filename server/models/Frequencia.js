@@ -1,3 +1,4 @@
+// Autores:
 const mongoose = require('mongoose');
 
 const registroSchema = new mongoose.Schema({
