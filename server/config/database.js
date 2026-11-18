@@ -6,7 +6,7 @@ async function conectarBanco() {
   console.log('-------------------------');
 
   await mongoose.connect(process.env.MONGODB_URI, {
-    dbName: 'NotaDez'
+    dbName: 'NotaDez2'
   });
   console.log('MongoDB conectado com sucesso ao NotaDez!');
 }

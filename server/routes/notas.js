@@ -30,12 +30,16 @@ async function turmaAutorizada(turmaId, disciplinaId, docenteId) {
 }
 
 function mapearComponentes(componentes, notas = []) {
-  const notaPorComponente = new Map(notas.map(nota => [String(nota.componenteId), nota.valor]));
-  return componentes.map(componente => ({
-    id: String(componente._id), titulo: componente.titulo, valorMaximo: componente.valorMaximo,
-    peso: componente.peso, tipoMedia: componente.tipoMedia || 'aritmetica', dataAplicacao: componente.dataAplicacao,
-    valor: notaPorComponente.has(String(componente._id)) ? notaPorComponente.get(String(componente._id)) : null
-  }));
+  const notaPorComponente = new Map(notas.map(nota => [String(nota.componenteId), nota]));
+  return componentes.map(componente => {
+    const nota = notaPorComponente.get(String(componente._id));
+    return {
+      id: String(componente._id), titulo: componente.titulo, valorMaximo: componente.valorMaximo,
+      peso: componente.peso, tipoMedia: componente.tipoMedia || 'aritmetica', dataAplicacao: componente.dataAplicacao,
+      valor: nota ? nota.valor : null,
+      notaAtualizadaEm: nota ? (nota.updatedAt || nota.createdAt || null) : null
+    };
+  });
 }
 
 router.get('/aluno', autenticar, async (req, res) => {
@@ -228,6 +232,8 @@ router.put('/professor/:turmaId/:disciplinaId/notas', autenticar, async (req, re
     (turma.alunosIds || []).forEach(aluno => idsPermitidos.add(String(aluno._id || aluno)));
     const componentes = await ComponenteNota.find({ turmaId: turma._id, disciplinaId: req.params.disciplinaId }).select('_id valorMaximo').lean();
     const maximos = new Map(componentes.map(c => [String(c._id), c.valorMaximo]));
+    const existentes = await Nota.find({ turmaId: turma._id, disciplinaId: req.params.disciplinaId }).select('alunoId componenteId valor').lean();
+    const valoresAtuais = new Map(existentes.map(n => [`${n.alunoId}:${n.componenteId}`, n.valor]));
     const operacoes = [];
     for (const item of req.body.notas) {
       const maximo = maximos.get(String(item.componenteId));
@@ -235,6 +241,9 @@ router.put('/professor/:turmaId/:disciplinaId/notas', autenticar, async (req, re
       if (item.valor !== null && item.valor !== '' && (!Number.isFinite(Number(item.valor)) || Number(item.valor) < 0 || Number(item.valor) > maximo)) return res.status(400).json({ mensagem: `As notas devem estar entre 0 e ${maximo}.` });
       const filtro = { alunoId: item.alunoId, componenteId: item.componenteId };
       const valor = item.valor === null || item.valor === '' ? null : Number(item.valor);
+      const chave = `${item.alunoId}:${item.componenteId}`;
+      const atual = valoresAtuais.has(chave) ? valoresAtuais.get(chave) : null;
+      if (valor === atual) continue;
       if (valor === null) operacoes.push({ deleteOne: { filter: filtro } });
       else operacoes.push({ updateOne: { filter: filtro, update: { $set: { ...filtro, turmaId: turma._id, disciplinaId: req.params.disciplinaId, valor } }, upsert: true } });
     }
