@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnToggle.disabled = false;
 
     if (rodando) {
-      statusIcon.textContent = '🟢';
+      statusIcon.textContent = '\u{1F7E2}';
       statusTexto.textContent = 'Servidor Online';
       statusDesc.textContent = porta
         ? `O motor de cálculo de médias em Java está ativo e aceitando conexões na porta ${porta}.`
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
       serverCard.classList.add('is-online');
       serverCard.classList.remove('is-error');
     } else {
-      statusIcon.textContent = '🔴';
+      statusIcon.textContent = '\u{1F534}';
       statusTexto.textContent = 'Servidor Offline';
       statusDesc.textContent = 'O servidor de cálculo está desligado. Ative-o para processar médias.';
       btnToggle.textContent = 'Ativar Servidor';
@@ -47,7 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       atualizarInterface(Boolean(data.rodando), data.porta);
     } catch (erro) {
-      statusIcon.textContent = '⚠️';
+      serverCard.classList.remove('is-online');
+      serverCard.classList.add('is-error');
+      statusIcon.textContent = '\u26A0\uFE0F';
       statusTexto.textContent = 'Erro de Comunicação';
       statusDesc.textContent = erro.message || 'Não foi possível consultar o status do servidor.';
       btnToggle.disabled = true;

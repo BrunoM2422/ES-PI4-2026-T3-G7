@@ -53,6 +53,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/perfis', perfisRoutes);
 app.use('/api/opcoes', opcoesRoutes);
+app.use('/api/aluno/avaliacao-professores', require('./routes/avaliacao-professores'));
 app.use('/api/calendario', calendarioRoutes);
 app.use('/api/chamados', chamadosRoutes);
 app.use('/api/aluno/grade', gradeAlunoRoutes);

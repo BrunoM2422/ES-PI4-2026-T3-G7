@@ -1,177 +1,120 @@
 // Autores:
 document.addEventListener('DOMContentLoaded', async () => {
-  const continuar = document.querySelector('[data-continue]');
-  const continuarEquivalencias = document.querySelector('[data-continue-equivalencias]');
-  const gradeGrid = document.querySelector('[data-course-grid]');
-  const cursoStatus = document.querySelector('[data-course-status]');
-  const tituloTelaCursos = document.querySelector('[data-course-screen-title]');
-  const descricaoTelaCursos = document.querySelector('[data-course-screen-description]');
-  const liberarTodas = document.querySelector('[data-open-all]');
-  const liberarTodasLabel = document.querySelector('[data-open-all-label]');
-  const fecharTodas = document.querySelector('[data-close-all]');
-  const fecharTodasLabel = document.querySelector('[data-close-all-label]');
-  const toolbar = document.querySelector('[data-course-toolbar]');
-  const telaCursos = document.querySelector('[data-course-screen]');
-  const menuOpcoes = document.querySelector('.admin-options-card');
-  const introducao = document.querySelector('.admin-page-intro');
-  let cursos = [];
-  let modoAtual = 'grade';
-  let gradesLiberadas = [];
-  let equivalenciasLiberadas = [];
-  const cabecalhosAutenticados = json => ({
-    Authorization: `Bearer ${sessionStorage.getItem('notadez_token') || ''}`,
-    ...(json ? { 'Content-Type': 'application/json' } : {})
-  });
-
-  const aplicarOpcoes = opcoes => {
-    gradesLiberadas = (opcoes.gradeCursosLiberados || []).map(String);
-    equivalenciasLiberadas = (opcoes.gradeEquivalenciasCursosLiberados || []).map(String);
-    renderCursos();
+  const $ = selector => document.querySelector(selector);
+  const buttons = { grade: $('[data-continue]'), equivalencias: $('[data-continue-equivalencias]'), avaliacao: $('[data-continue-avaliacao]') };
+  const grid = $('[data-course-grid]');
+  const status = $('[data-course-status]');
+  const screen = $('[data-course-screen]');
+  const toolbar = $('[data-course-toolbar]');
+  const menu = $('.admin-options-card');
+  const intro = $('.admin-page-intro');
+  const title = $('[data-course-screen-title]');
+  const description = $('[data-course-screen-description]');
+  const openAll = $('[data-open-all]');
+  const closeAll = $('[data-close-all]');
+  const apiHeaders = json => ({ Authorization: `Bearer ${sessionStorage.getItem('notadez_token') || ''}`, ...(json ? { 'Content-Type': 'application/json' } : {}) });
+  const modes = {
+    grade: { ids: 'gradeCursosLiberados', label: 'Grade Curricular', one: '/api/admin/opcoes/grade-curso', open: '/api/admin/opcoes/abrir-grades', close: '/api/admin/opcoes/fechar-grades' },
+    equivalencias: { ids: 'gradeEquivalenciasCursosLiberados', label: 'Materias equivalentes', one: '/api/admin/opcoes/grade-equivalencias-curso', open: '/api/admin/opcoes/abrir-grade-equivalencias', close: '/api/admin/opcoes/fechar-grade-equivalencias' },
+    avaliacao: { ids: 'avaliacaoProfessoresCursosLiberados', label: 'Avalia\u00e7\u00e3o de Professores', one: '/api/admin/opcoes/avaliacao-professores-curso', open: '/api/admin/opcoes/abrir-avaliacao-professores', close: '/api/admin/opcoes/fechar-avaliacao-professores' }
   };
+  let mode = 'grade';
+  let courses = [];
+  let released = {};
+  const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+  const applyOptions = options => { released = Object.fromEntries(Object.values(modes).map(item => [item.ids, (options[item.ids] || []).map(String)])); renderCourses(); };
 
-  const atualizarTextos = () => {
-    const equivalencias = modoAtual === 'equivalencias';
-    tituloTelaCursos.textContent = equivalencias ? 'Matérias equivalentes por curso' : 'Grade Curricular por curso';
-    descricaoTelaCursos.textContent = equivalencias
-      ? 'Selecione os cursos cujos alunos poderão incluir matérias equivalentes de outros cursos.'
-      : 'Selecione um curso para liberar ou fechar o acesso dos alunos.';
-    liberarTodasLabel.textContent = equivalencias ? 'Liberar equivalências para todos' : 'Liberar todas as grades';
-    fecharTodasLabel.textContent = equivalencias ? 'Fechar equivalências para todos' : 'Fechar todas as matrículas';
-  };
-
-  const renderCursos = () => {
-    if (!gradeGrid) return;
-    const liberadas = modoAtual === 'equivalencias' ? equivalenciasLiberadas : gradesLiberadas;
-    const nomeLiberacao = modoAtual === 'equivalencias' ? 'Inserção de equivalências' : 'Grade Curricular';
-    gradeGrid.innerHTML = cursos.map(curso => {
-      const liberado = liberadas.includes(String(curso.id));
-      const estado = liberado ? 'liberada' : 'fechada';
-      const iconeCadeado = liberado
-        ? '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path><circle cx="12" cy="16" r="1"></circle><path d="M12 17v1"></path></svg>'
-        : '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path><circle cx="12" cy="16" r="1"></circle><path d="M12 17v1"></path></svg>';
-      return `<button class="admin-course-card" type="button" data-course-id="${curso.id}"><span class="admin-course-lock ${liberado ? 'is-open' : 'is-closed'}" role="img" aria-label="${nomeLiberacao} ${estado}" title="${nomeLiberacao} ${estado}">${iconeCadeado}</span><span class="admin-course-code">${curso.codigo || ''}</span><strong>${curso.nome}</strong><small>${nomeLiberacao} ${estado}</small></button>`;
+  function renderCourses() {
+    if (!grid) return;
+    const config = modes[mode];
+    const ids = released[config.ids] || [];
+    grid.innerHTML = courses.map(course => {
+      const isReleased = ids.includes(String(course.id));
+      const state = isReleased ? 'liberada' : 'fechada';
+      const lock = isReleased ? '<path d="M7 11V7a5 5 0 0 1 9.9-1"/>' : '<path d="M7 11V7a5 5 0 0 1 10 0v4"/>';
+      return `<button class="admin-course-card" type="button" data-course-id="${escapeHtml(course.id)}"><span class="admin-course-lock ${isReleased ? 'is-open' : 'is-closed'}" role="img" aria-label="${config.label} ${state}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"></rect>${lock}<circle cx="12" cy="16" r="1"></circle></svg></span><span class="admin-course-code">${escapeHtml(course.codigo || '')}</span><strong>${escapeHtml(course.nome)}</strong><small>${config.label} ${state}</small></button>`;
     }).join('');
-    gradeGrid.querySelectorAll('[data-course-id]').forEach(card => card.addEventListener('click', () => abrirModal(cursos.find(curso => String(curso.id) === card.dataset.courseId))));
-  };
+    grid.querySelectorAll('[data-course-id]').forEach(card => card.addEventListener('click', () => openCourse(courses.find(course => String(course.id) === card.dataset.courseId))));
+  }
 
-  const abrirModal = curso => {
-    const equivalencias = modoAtual === 'equivalencias';
+  function openCourse(course) {
+    const config = modes[mode];
+    const isReleased = (released[config.ids] || []).includes(String(course.id));
     const backdrop = document.createElement('div');
     backdrop.className = 'app-confirm-backdrop';
-    backdrop.innerHTML = '<section class="app-confirm-dialog grade-course-dialog" role="dialog" aria-modal="true"><button class="grade-modal-close" type="button" aria-label="Fechar">×</button><span class="admin-eyebrow">Menu do aluno</span><h2></h2><p>Escolha se os alunos com matrícula ativa deste curso poderão acessar Grade Curricular no menu.</p><div class="app-confirm-actions"><button class="admin-button-secondary" type="button" data-state="false">Fechar Grade Curricular</button><button class="admin-button" type="button" data-state="true">Abrir Grade Curricular</button></div></section>';
-    backdrop.querySelector('h2').textContent = curso.nome;
-    backdrop.querySelector('p').textContent = equivalencias
-      ? 'Escolha se os alunos com matrícula ativa deste curso poderão incluir matérias equivalentes de outros cursos.'
-      : 'Escolha se os alunos com matrícula ativa deste curso poderão acessar Grade Curricular no menu.';
-    backdrop.querySelector('[data-state="false"]').textContent = equivalencias ? 'Fechar equivalências' : 'Fechar Grade Curricular';
-    backdrop.querySelector('[data-state="true"]').textContent = equivalencias ? 'Liberar equivalências' : 'Abrir Grade Curricular';
+    backdrop.innerHTML = `<section class="app-confirm-dialog grade-course-dialog" role="dialog" aria-modal="true"><button class="grade-modal-close" type="button" aria-label="Fechar">&times;</button><span class="admin-eyebrow">Menu do aluno</span><h2>${escapeHtml(course.nome)}</h2><p>${mode === 'avaliacao' ? 'Escolha se os alunos deste curso poderao avaliar os professores.' : `Escolha se os alunos deste curso poderao usar ${config.label}.`}</p><div class="app-confirm-actions"><button class="admin-button-secondary" type="button" data-release="false">Fechar ${config.label}</button><button class="admin-button" type="button" data-release="true">Liberar ${config.label}</button></div></section>`;
+    const close = () => backdrop.remove();
     document.body.append(backdrop);
-    const fechar = () => backdrop.remove();
-    backdrop.querySelector('.grade-modal-close').addEventListener('click', fechar);
-    backdrop.addEventListener('click', event => { if (event.target === backdrop) fechar(); });
-    backdrop.querySelectorAll('[data-state]').forEach(botao => botao.addEventListener('click', async () => {
-      botao.disabled = true;
-      try {
-        const rota = equivalencias ? '/api/admin/opcoes/grade-equivalencias-curso' : '/api/admin/opcoes/grade-curso';
-        const resposta = await fetch(rota, { method: 'PUT', headers: cabecalhosAutenticados(true), body: JSON.stringify({ cursoId: curso.id, liberado: botao.dataset.state === 'true' }) });
-        const dados = await resposta.json();
-        if (!resposta.ok) throw new Error(dados.mensagem || 'Não foi possível atualizar a grade.');
-        aplicarOpcoes(dados.opcoes || {});
-        cursoStatus.textContent = dados.mensagem;
-        fechar();
-      } catch (erro) { cursoStatus.textContent = erro.message; botao.disabled = false; }
-    }));
-  };
+    backdrop.querySelector('.grade-modal-close').addEventListener('click', close);
+    backdrop.addEventListener('click', event => { if (event.target === backdrop) close(); });
+    backdrop.querySelectorAll('[data-release]').forEach(button => {
+      button.disabled = button.dataset.release === String(isReleased);
+      button.addEventListener('click', async () => {
+        button.disabled = true;
+        try {
+          const response = await fetch(config.one, { method: 'PUT', headers: apiHeaders(true), body: JSON.stringify({ cursoId: course.id, liberado: button.dataset.release === 'true' }) });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.mensagem || 'Nao foi possivel atualizar a liberacao.');
+          applyOptions(data.opcoes || {});
+          status.textContent = data.mensagem;
+          close();
+        } catch (error) { status.textContent = error.message; button.disabled = false; }
+      });
+    });
+  }
 
-  const abrirTelaCursos = async (modo, botao) => {
-    continuar.disabled = true;
-    continuarEquivalencias.disabled = true;
-    modoAtual = modo;
-    atualizarTextos();
+  async function openMode(nextMode, trigger) {
+    buttons.grade.disabled = buttons.equivalencias.disabled = buttons.avaliacao.disabled = true;
+    mode = nextMode;
+    const config = modes[mode];
+    title.textContent = `${config.label} por curso`;
+    description.textContent = mode === 'avaliacao' ? 'Selecione os cursos cujos alunos poderao avaliar seus professores.' : `Selecione os cursos para liberar ou fechar ${config.label}.`;
+    $('[data-open-all-label]').textContent = `Liberar ${config.label} para todos`;
+    $('[data-close-all-label]').textContent = `Fechar ${config.label} para todos`;
     try {
-      const resposta = await fetch('/api/admin/cursos');
-      const dados = await resposta.json();
-      if (!resposta.ok) throw new Error(dados.mensagem || 'Não foi possível carregar os cursos.');
-      cursos = dados.cursos || [];
-      menuOpcoes.hidden = true;
-      introducao.hidden = true;
-      toolbar.hidden = false;
-      telaCursos.hidden = false;
-      renderCursos();
-      cursoStatus.textContent = cursos.length ? '' : 'Nenhum curso cadastrado.';
-    } catch (erro) {
-      cursoStatus.textContent = erro.message;
-      continuar.disabled = false;
-      continuarEquivalencias.disabled = false;
-      botao.disabled = false;
-    }
-  };
+      const response = await fetch('/api/admin/cursos');
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.mensagem || 'Nao foi possivel carregar os cursos.');
+      courses = data.cursos || [];
+      menu.hidden = intro.hidden = true;
+      toolbar.hidden = screen.hidden = false;
+      renderCourses();
+      status.textContent = courses.length ? '' : 'Nenhum curso cadastrado.';
+    } catch (error) { status.textContent = error.message; buttons[nextMode].disabled = false; }
+    finally { if (!screen.hidden) buttons[nextMode].disabled = false; }
+    trigger.blur();
+  }
 
-  continuar?.addEventListener('click', () => abrirTelaCursos('grade', continuar));
-  continuarEquivalencias?.addEventListener('click', () => abrirTelaCursos('equivalencias', continuarEquivalencias));
-
-  document.querySelector('[data-back-options]')?.addEventListener('click', () => {
-    telaCursos.hidden = true;
+  Object.entries(buttons).forEach(([key, button]) => button?.addEventListener('click', () => openMode(key, button)));
+  $('[data-back-options]')?.addEventListener('click', () => {
+    screen.hidden = true;
     toolbar.hidden = true;
-    introducao.hidden = false;
-    menuOpcoes.hidden = false;
-    continuar.disabled = false;
-    continuarEquivalencias.disabled = false;
+    intro.hidden = menu.hidden = false;
+    Object.values(buttons).forEach(button => { button.disabled = false; });
   });
 
-  liberarTodas?.addEventListener('click', async () => {
-    const equivalencias = modoAtual === 'equivalencias';
-    const confirmado = await window.confirmAppAction(
-      equivalencias
-        ? 'A inserção de matérias equivalentes será liberada para todos os cursos. Deseja continuar?'
-        : 'A Grade Curricular será liberada para todos os cursos. Deseja continuar?',
-      equivalencias ? 'Liberar equivalências para todos' : 'Liberar todas as grades'
-    );
-    if (!confirmado) return;
-    liberarTodas.disabled = true;
+  async function changeAll(release) {
+    const config = modes[mode];
+    const confirmed = await window.confirmAppAction(`A opcao ${config.label} sera ${release ? 'liberada' : 'fechada'} para todos os cursos. Deseja continuar?`, `${release ? 'Liberar' : 'Fechar'} ${config.label} para todos`);
+    if (!confirmed) return;
+    const button = release ? openAll : closeAll;
+    button.disabled = true;
     try {
-      const rota = equivalencias ? '/api/admin/opcoes/abrir-grade-equivalencias' : '/api/admin/opcoes/abrir-grades';
-      const resposta = await fetch(rota, { method: 'PUT', headers: cabecalhosAutenticados(false) });
-      const dados = await resposta.json();
-      if (!resposta.ok) throw new Error(dados.mensagem || 'Não foi possível liberar as grades.');
-      aplicarOpcoes(dados.opcoes || {});
-      cursoStatus.textContent = dados.mensagem;
-    } catch (erro) {
-      cursoStatus.textContent = erro.message;
-    } finally {
-      liberarTodas.disabled = false;
-    }
-  });
-
-  fecharTodas?.addEventListener('click', async () => {
-    const equivalencias = modoAtual === 'equivalencias';
-    const confirmado = await window.confirmAppAction(
-      equivalencias
-        ? 'A inserção de matérias equivalentes será bloqueada para todos os cursos. Deseja continuar?'
-        : 'O acesso a Grade Curricular será fechado para todos os cursos. Deseja continuar?',
-      equivalencias ? 'Fechar equivalências para todos' : 'Fechar todas as matrículas'
-    );
-    if (!confirmado) return;
-    fecharTodas.disabled = true;
-    try {
-      const rota = equivalencias ? '/api/admin/opcoes/fechar-grade-equivalencias' : '/api/admin/opcoes/fechar-grades';
-      const resposta = await fetch(rota, { method: 'PUT', headers: cabecalhosAutenticados(false) });
-      const dados = await resposta.json();
-      if (!resposta.ok) throw new Error(dados.mensagem || 'Não foi possível fechar as grades.');
-      aplicarOpcoes(dados.opcoes || {});
-      cursoStatus.textContent = dados.mensagem;
-    } catch (erro) { cursoStatus.textContent = erro.message; }
-    finally { fecharTodas.disabled = false; }
-  });
+      const response = await fetch(config[release ? 'open' : 'close'], { method: 'PUT', headers: apiHeaders(false) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.mensagem || 'Nao foi possivel atualizar as liberacoes.');
+      applyOptions(data.opcoes || {});
+      status.textContent = data.mensagem;
+    } catch (error) { status.textContent = error.message; }
+    finally { button.disabled = false; }
+  }
+  openAll?.addEventListener('click', () => changeAll(true));
+  closeAll?.addEventListener('click', () => changeAll(false));
 
   try {
-    const resposta = await fetch('/api/opcoes');
-    const dados = await resposta.json();
-    if (!resposta.ok) throw new Error(dados.mensagem || 'Falha ao carregar opções.');
-    aplicarOpcoes(dados.opcoes || {});
-  } catch (erro) {
-    console.error('Erro ao carregar opções:', erro);
-    cursoStatus.textContent = erro.message;
-    continuar.disabled = true;
-  }
+    const response = await fetch('/api/opcoes');
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.mensagem || 'Falha ao carregar opcoes.');
+    applyOptions(data.opcoes || {});
+  } catch (error) { console.error('Erro ao carregar opcoes:', error); status.textContent = error.message; buttons.grade.disabled = true; }
 });

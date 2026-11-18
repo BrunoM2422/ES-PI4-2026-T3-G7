@@ -20,6 +20,7 @@ router.get('/', async (req, res) => {
       const equivalenciasLiberadas = Boolean(estudante?.cursoId && (opcoes.gradeEquivalenciasCursosLiberados || [])
         .some(id => String(id) === String(estudante.cursoId)));
       opcoes.gradeCurricular = Boolean(estudante && estudante.statusAcademico !== 'trancado' && (gradeLiberada || equivalenciasLiberadas));
+      opcoes.avaliacaoProfessores = Boolean(estudante && estudante.statusAcademico !== 'trancado' && estudante.cursoId && (opcoes.avaliacaoProfessoresCursosLiberados || []).some(id => String(id) === String(estudante.cursoId)));
     }
     return res.json({ opcoes });
   } catch (erro) {

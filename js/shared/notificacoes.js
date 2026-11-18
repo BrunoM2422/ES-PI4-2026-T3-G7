@@ -95,13 +95,15 @@
                 return {
                     id: `comunicado:${item.id}`,
                     titulo: item.titulo,
-                    tipo: 'Comunicado da turma',
+                    tipo: item.tipo === 'sistema' ? 'Aviso do sistema' : 'Comunicado da turma',
                     quando: dataFormatada,
                     ordem: `0000-${String(9999999999999 - criadoEm.getTime()).padStart(13, '0')}`,
-                    detalhes: [
-                        { rotulo: 'Turma', valor: item.turma || 'Não informada' },
-                        { rotulo: 'Professor', valor: item.professor || 'Não informado' }
-                    ],
+                    detalhes: item.tipo === 'sistema'
+                        ? [{ rotulo: 'Curso', valor: item.curso || 'Curso' }]
+                        : [
+                            { rotulo: 'Turma', valor: item.turma || 'Turma nao informada' },
+                            { rotulo: 'Professor', valor: item.professor || 'Professor nao informado' }
+                        ],
                     descricao: item.mensagem || '',
                     atualizadoEm: item.updatedAt || item.createdAt
                 };
@@ -272,6 +274,8 @@
         }
 
         carregar();
+        window.setInterval(() => { if (!document.hidden) carregar(); }, 60000);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) carregar(); });
         return { recarregar: carregar };
     }
 

@@ -135,7 +135,7 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
     return;
   }
 
-  let opcoesAluno = { avaliacao: false, gradeCurricular: false };
+  let opcoesAluno = { avaliacaoProfessores: false, gradeCurricular: false };
   if (role === 'aluno') {
     try {
       const response = await fetch('/api/opcoes?email=' + encodeURIComponent(user.email || ''));
@@ -147,7 +147,7 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
     }
 
     const opcaoDaPagina = page === 'avaliar'
-      ? 'avaliacao'
+      ? 'avaliacaoProfessores'
       : page === 'grade'
         ? 'gradeCurricular'
         : null;
@@ -194,7 +194,7 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
 
     if (role === 'aluno') {
       const acessos = [
-        { page: 'avaliar', opcao: 'avaliacao' },
+        { page: 'avaliar', opcao: 'avaliacaoProfessores' },
         { page: 'grade', opcao: 'gradeCurricular' }
       ];
       acessos.forEach(({ page: pagina, opcao }) => {

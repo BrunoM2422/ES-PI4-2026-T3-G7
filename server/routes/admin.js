@@ -12,6 +12,7 @@ const Turma = require('../models/Turma');
 const GradeHorario = require('../models/GradeHorario');
 const Contador = require('../models/Contador');
 const { autenticar } = require('../services/autenticacao');
+const { notificarLiberacao } = require('../services/notificacoesSistema');
 
 const router = express.Router();
 
@@ -145,6 +146,59 @@ router.put('/opcoes', async (req, res) => {
   }
 });
 
+router.put('/opcoes/avaliacao-professores-curso', async (req, res) => {
+  try {
+    const { cursoId, liberado } = req.body;
+    if (!mongoose.isValidObjectId(cursoId) || typeof liberado !== 'boolean') return res.status(400).json({ mensagem: 'Curso ou acao invalida.' });
+    if (!await Curso.exists({ _id: cursoId })) return res.status(404).json({ mensagem: 'Curso nao encontrado.' });
+    const atual = await OpcoesSistema.findById('opcoes-academicas').select('avaliacaoProfessoresCursosLiberados').lean();
+    const liberados = new Set((atual?.avaliacaoProfessoresCursosLiberados || []).map(String));
+    const estavaLiberado = liberados.has(String(cursoId));
+    if (liberado) liberados.add(String(cursoId)); else liberados.delete(String(cursoId));
+    const opcoes = await OpcoesSistema.findByIdAndUpdate('opcoes-academicas', {
+      $set: { avaliacaoProfessoresCursosLiberados: [...liberados] },
+      $setOnInsert: { _id: 'opcoes-academicas' }
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }).lean();
+    if (liberado && !estavaLiberado) await notificarLiberacao([cursoId], 'avaliacao');
+    return res.json({ mensagem: liberado ? 'Avaliacao liberada para o curso.' : 'Liberacao removida do curso.', opcoes });
+  } catch (erro) {
+    console.error('Erro ao atualizar liberacao de avaliacao de professores:', erro);
+    return res.status(500).json({ mensagem: 'Nao foi possivel atualizar a liberacao.' });
+  }
+});
+
+router.put('/opcoes/abrir-avaliacao-professores', async (_req, res) => {
+  try {
+    const cursos = await Curso.find().select('_id').lean();
+    if (!cursos.length) return res.status(400).json({ mensagem: 'Cadastre pelo menos um curso antes de liberar avaliacoes.' });
+    const atual = await OpcoesSistema.findById('opcoes-academicas').select('avaliacaoProfessoresCursosLiberados').lean();
+    const jaLiberados = new Set((atual?.avaliacaoProfessoresCursosLiberados || []).map(String));
+    const cursosNovos = cursos.filter(curso => !jaLiberados.has(String(curso._id)));
+    const opcoes = await OpcoesSistema.findByIdAndUpdate('opcoes-academicas', {
+      $set: { avaliacaoProfessoresCursosLiberados: cursos.map(curso => curso._id) },
+      $setOnInsert: { _id: 'opcoes-academicas' }
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }).lean();
+    await notificarLiberacao(cursosNovos.map(curso => curso._id), 'avaliacao');
+    return res.json({ mensagem: 'Avaliacao de professores liberada para todos os cursos.', opcoes });
+  } catch (erro) {
+    console.error('Erro ao liberar avaliacao para todos os cursos:', erro);
+    return res.status(500).json({ mensagem: 'Nao foi possivel liberar as avaliacoes.' });
+  }
+});
+
+router.put('/opcoes/fechar-avaliacao-professores', async (_req, res) => {
+  try {
+    const opcoes = await OpcoesSistema.findByIdAndUpdate('opcoes-academicas', {
+      $set: { avaliacaoProfessoresCursosLiberados: [] },
+      $setOnInsert: { _id: 'opcoes-academicas' }
+    }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }).lean();
+    return res.json({ mensagem: 'Avaliacao de professores fechada para todos os cursos.', opcoes });
+  } catch (erro) {
+    console.error('Erro ao fechar avaliacao para todos os cursos:', erro);
+    return res.status(500).json({ mensagem: 'Nao foi possivel fechar as avaliacoes.' });
+  }
+});
+
 router.put('/opcoes/grade-curso', async (req, res) => {
   try {
     const { cursoId, liberado } = req.body;
@@ -152,11 +206,13 @@ router.put('/opcoes/grade-curso', async (req, res) => {
     if (!await Curso.exists({ _id: cursoId })) return res.status(404).json({ mensagem: 'Curso não encontrado.' });
     const atual = await OpcoesSistema.findById('opcoes-academicas').select('gradeCursosLiberados').lean();
     const liberados = new Set((atual?.gradeCursosLiberados || []).map(String));
+    const estavaLiberado = liberados.has(String(cursoId));
     if (liberado) liberados.add(String(cursoId)); else liberados.delete(String(cursoId));
     const opcoes = await OpcoesSistema.findByIdAndUpdate('opcoes-academicas', {
       $set: { gradeCursosLiberados: [...liberados], gradeCurricular: false },
       $setOnInsert: { _id: 'opcoes-academicas' }
     }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }).lean();
+    if (liberado && !estavaLiberado) await notificarLiberacao([cursoId], 'grade');
     return res.json({ mensagem: liberado ? 'Grade liberada para o curso.' : 'Liberação removida do curso.', opcoes });
   } catch (erro) {
     console.error('Erro ao atualizar liberação da grade por curso:', erro);
@@ -170,6 +226,9 @@ router.put('/opcoes/abrir-grades', async (_req, res) => {
     if (!cursos.length) {
       return res.status(400).json({ mensagem: 'Cadastre pelo menos um curso antes de liberar as grades.' });
     }
+    const atual = await OpcoesSistema.findById('opcoes-academicas').select('gradeCursosLiberados').lean();
+    const jaLiberados = new Set((atual?.gradeCursosLiberados || []).map(String));
+    const cursosNovos = cursos.filter(curso => !jaLiberados.has(String(curso._id)));
 
     const opcoes = await OpcoesSistema.findByIdAndUpdate('opcoes-academicas', {
       $set: {
@@ -179,6 +238,7 @@ router.put('/opcoes/abrir-grades', async (_req, res) => {
       $setOnInsert: { _id: 'opcoes-academicas' }
     }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }).lean();
 
+    await notificarLiberacao(cursosNovos.map(curso => curso._id), 'grade');
     return res.json({ mensagem: 'Grade Curricular liberada para todos os cursos.', opcoes });
   } catch (erro) {
     console.error('Erro ao liberar Grade Curricular para todos os cursos:', erro);
