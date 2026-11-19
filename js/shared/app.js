@@ -102,6 +102,11 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
     if (!sessao || sessao.usuario?.tipo !== role || sessao.usuario?.email !== user.email) {
       throw new Error('Sessão inválida ou expirada.');
     }
+    if (role === 'admin') {
+      user.nivelPermissao = sessao.usuario.nivelPermissao || 'admin_mestre';
+      user.cursoId = sessao.usuario.cursoId || null;
+      sessionStorage.setItem('notadez_user', JSON.stringify(user));
+    }
   } catch {
     sessionStorage.removeItem('notadez_user');
     sessionStorage.removeItem('notadez_token');
@@ -129,8 +134,11 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
   }
 
   const nivelAdmin = user.nivelPermissao || 'admin_mestre';
-  const adminRestrito = role === 'admin' && nivelAdmin !== 'admin_mestre';
-  if (adminRestrito && !['dashboard', 'logs'].includes(page)) {
+  const cursoAdmin = user.cursoId || null;
+  const paginasAdmin3 = ['dashboard', 'chamados', 'contato', 'configuracoes', 'trancar-matricula'];
+  const paginasAdmin2 = ['dashboard', 'calendario', 'adicionar-alunos', 'adicionar-docente', 'adicionar-disciplina', 'adicionar-turma', 'gerenciar-turmas', 'gerenciar-docentes', 'gerenciar-cursos-disciplinas', 'organizacao-horarios', 'organizacao-turmas', 'gerenciamento-opcoes', 'logs', 'configuracoes', 'contato', 'chamados'];
+  const adminSemAcessoPagina = role === 'admin' && (nivelAdmin === 'admin_3' ? !paginasAdmin3.includes(page) : nivelAdmin === 'admin_2' && (!cursoAdmin || !paginasAdmin2.includes(page)));
+  if (adminSemAcessoPagina) {
     window.location.replace('../../pages/admin/dashboard.html');
     return;
   }
@@ -222,16 +230,20 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
       }
     }
 
-    if (adminRestrito) {
+    if (role === 'admin' && nivelAdmin === 'admin_2') {
+      const bloqueadas = ['adicionar-curso', 'adicionar-administrador', 'cancelar-matricula', 'servidor'];
       app.querySelectorAll('[data-nav-page]').forEach(link => {
-        if (['dashboard', 'logs'].includes(link.dataset.navPage)) return;
-        link.href = '#';
-        link.classList.add('disabled');
-        link.setAttribute('aria-disabled', 'true');
-        link.tabIndex = -1;
-        link.title = 'Esta opção ainda não foi liberada para este nível de administrador.';
-        link.addEventListener('click', event => event.preventDefault());
+        if (!bloqueadas.includes(link.dataset.navPage)) return;
+        link.closest('.nav-group')?.classList.add('admin-nav-hidden');
+        link.remove();
       });
+      app.querySelector('[data-equivalencia-entry]')?.remove();
+    }
+    if (role === 'admin' && nivelAdmin === 'admin_3') {
+      app.querySelectorAll('[data-nav-page]').forEach(link => {
+        if (!['dashboard', 'chamados', 'contato', 'configuracoes', 'trancar-matricula'].includes(link.dataset.navPage)) link.remove();
+      });
+      app.querySelectorAll('.nav-admin .nav-group').forEach(group => { if (!group.querySelector('[data-nav-page]')) group.remove(); });
     }
 
     const insertFragment = (markup, selector) => {

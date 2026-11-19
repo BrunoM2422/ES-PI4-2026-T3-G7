@@ -13,6 +13,7 @@ const chamadoSchema = new mongoose.Schema({
   nome: { type: String, required: true },
   email: { type: String, required: true, lowercase: true, trim: true },
   curso: { type: String, trim: true },
+  cursoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Curso', default: null, index: true },
   turma: { type: String, trim: true },
   assunto: { type: String, required: true },
   descricao: { type: String, required: true },

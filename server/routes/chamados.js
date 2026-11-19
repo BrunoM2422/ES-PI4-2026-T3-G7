@@ -2,14 +2,34 @@
 const express = require('express');
 const Chamado = require('../models/Chamado');
 const Estudante = require('../models/Estudante');
+const Curso = require('../models/Curso');
+const { autenticar } = require('../services/autenticacao');
 
 const router = express.Router();
+router.use(autenticar);
+
+async function filtroDoAdministrador(req) {
+  if (req.usuario.nivelPermissao !== 'admin_2') return {};
+  if (!req.usuario.cursoId) return { _id: null };
+  const curso = await Curso.findById(req.usuario.cursoId).select('nome').lean();
+  const pertencentes = [{ cursoId: req.usuario.cursoId }];
+  if (curso?.nome) pertencentes.push({ cursoId: null, curso: curso.nome });
+  return { $or: pertencentes };
+}
+
+async function chamadoDoEscopo(req, id) {
+  const filtro = req.usuario.papel === 'admin' ? await filtroDoAdministrador(req) : { email: req.usuario.email };
+  return Chamado.findOne({ _id: id, ...filtro });
+}
 
 
 router.get('/', async (req, res) => {
   try {
     const { email } = req.query;
-    const filtro = email ? { email: email.trim().toLowerCase() } : {};
+    const filtro = req.usuario.papel === 'admin'
+      ? await filtroDoAdministrador(req)
+      : { email: req.usuario.email };
+    if (req.usuario.papel === 'admin' && req.usuario.nivelPermissao !== 'admin_2' && email) filtro.email = email.trim().toLowerCase();
     const chamados = await Chamado.find(filtro).sort({ criado_em: -1 }).lean();
     return res.json({
       chamados: chamados.map(c => ({ ...c, id: String(c._id) }))
@@ -28,6 +48,7 @@ router.post('/', async (req, res) => {
     if (!email || !assunto || !descricao) {
       return res.status(400).json({ mensagem: 'Preencha todos os campos obrigatórios.' });
     }
+    if (req.usuario.papel !== 'admin' && email.trim().toLowerCase() !== req.usuario.email) return res.status(403).json({ mensagem: 'Só é possível abrir chamados para sua própria conta.' });
 
 
     const estudante = await Estudante.findOne({ email: email.trim().toLowerCase() }).lean();
@@ -36,6 +57,7 @@ router.post('/', async (req, res) => {
     }
 
     const novoChamado = new Chamado({
+      cursoId: estudante.cursoId || null,
       ra: estudante.ra || 'E2026000',
       nome: estudante.nome,
       email: estudante.email,
@@ -68,10 +90,11 @@ router.post('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
-    const chamado = await Chamado.findById(req.params.id).lean();
+    const chamado = await chamadoDoEscopo(req, req.params.id).lean();
     if (!chamado) {
       return res.status(404).json({ mensagem: 'Chamado não encontrado.' });
     }
+    if (req.usuario.papel !== 'admin' && chamado.email !== req.usuario.email) return res.status(403).json({ mensagem: 'Acesso não permitido a este chamado.' });
     return res.json({ chamado: { ...chamado, id: String(chamado._id) } });
   } catch (erro) {
     console.error('Erro ao buscar chamado:', erro);
@@ -88,13 +111,14 @@ router.post('/:id/mensagens', async (req, res) => {
       return res.status(400).json({ mensagem: 'A mensagem não pode estar vazia.' });
     }
 
-    const chamado = await Chamado.findById(req.params.id);
+    const chamado = await chamadoDoEscopo(req, req.params.id);
     if (!chamado) {
       return res.status(404).json({ mensagem: 'Chamado não encontrado.' });
     }
+    if (req.usuario.papel !== 'admin' && chamado.email !== req.usuario.email) return res.status(403).json({ mensagem: 'Acesso não permitido a este chamado.' });
 
-    const tipo = remetente_tipo || 'admin';
-    const nome = remetente_nome || (tipo === 'estudante' ? chamado.nome : 'Administrador');
+    const tipo = req.usuario.papel === 'admin' ? 'admin' : 'estudante';
+    const nome = tipo === 'admin' ? (req.usuario.nome || 'Administrador') : chamado.nome;
 
     chamado.mensagens.push({
       remetente_tipo: tipo,
@@ -119,6 +143,7 @@ router.post('/:id/mensagens', async (req, res) => {
 
 router.patch('/:id/status', async (req, res) => {
   try {
+    if (req.usuario.papel !== 'admin') return res.status(403).json({ mensagem: 'Somente administradores podem atualizar chamados.' });
     const { status } = req.body;
 
     if (!['ativo', 'finalizado'].includes(status)) {
@@ -132,11 +157,13 @@ router.patch('/:id/status', async (req, res) => {
       updateData.encerrado_em = null;
     }
 
-    const chamado = await Chamado.findByIdAndUpdate(req.params.id, updateData, { returnDocument: 'after' });
+    const chamado = await chamadoDoEscopo(req, req.params.id);
     if (!chamado) {
       return res.status(404).json({ mensagem: 'Chamado não encontrado.' });
     }
 
+    Object.assign(chamado, updateData);
+    await chamado.save();
     return res.json({ mensagem: 'Status atualizado com sucesso!', chamado: { ...chamado.toObject(), id: String(chamado._id) } });
   } catch (erro) {
     console.error('Erro ao atualizar status:', erro);

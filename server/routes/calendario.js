@@ -14,6 +14,11 @@ const categoriasPorPapel = {
   aluno: ['avaliacao', 'compromisso']
 };
 
+function categoriasDoUsuario(usuario) {
+  if (usuario.papel !== 'admin') return categoriasPorPapel[usuario.papel] || [];
+  return usuario.nivelPermissao === 'admin_mestre' ? ['feriado', 'institucional'] : usuario.nivelPermissao === 'admin_2' ? ['institucional'] : [];
+}
+
 function filtroPerfil(usuario, papel) {
   const filtros = [{ email: usuario.email }];
   const identificador = papel === 'professor' ? usuario.rp : usuario.ra;
@@ -40,9 +45,9 @@ function dataValida(data) {
   return dataUtc.toISOString().slice(0, 10) === data;
 }
 
-function validarEvento(dados, papel) {
+function validarEvento(dados, papel, usuario) {
   const { title, date, category, start, end, location, description } = dados;
-  const categoriasPermitidas = categoriasPorPapel[papel] || [];
+  const categoriasPermitidas = usuario ? categoriasDoUsuario(usuario) : categoriasPorPapel[papel] || [];
   if (
     typeof title !== 'string' || !title.trim() || title.trim().length > 90 ||
     !dataValida(date) || !categoriasPermitidas.includes(category) ||
@@ -70,6 +75,7 @@ function formatarEvento(evento, usuario) {
     category: evento.category,
     scope: evento.scope,
     turmaId: evento.turmaId ? String(evento.turmaId) : null,
+    cursoId: evento.cursoId ? String(evento.cursoId) : null,
     canManage: evento.scope === 'global'
       ? usuario.papel === 'admin'
       : String(evento.createdBy || '') === usuario.id,
@@ -136,13 +142,19 @@ router.get('/minhas-aulas', autenticar, async (req, res) => {
 
 router.get('/eventos', autenticar, async (req, res) => {
   try {
+    if (req.usuario.papel === 'admin' && req.usuario.nivelPermissao === 'admin_3') return res.status(403).json({ mensagem: 'Calendário indisponível para este perfil.' });
     let filtro = { scope: 'global' };
     if (req.usuario.papel === 'professor') {
       filtro = { $or: [{ scope: 'global' }, { createdBy: req.usuario.id }] };
     } else if (req.usuario.papel === 'aluno') {
-      const estudante = await Estudante.findOne(filtroPerfil(req.usuario, 'aluno')).select('turmaId').lean();
+      const estudante = await Estudante.findOne(filtroPerfil(req.usuario, 'aluno')).select('turmaId cursoId').lean();
       const permissoes = [{ scope: 'global' }, { scope: 'privado', createdBy: req.usuario.id }];
       if (estudante?.turmaId) permissoes.push({ scope: 'turma', turmaId: estudante.turmaId });
+      if (estudante?.cursoId) permissoes.push({ scope: 'curso', cursoId: estudante.cursoId });
+      filtro = { $or: permissoes };
+    } else if (req.usuario.papel === 'admin' && req.usuario.nivelPermissao === 'admin_2') {
+      const permissoes = [{ scope: 'global' }];
+      if (req.usuario.cursoId) permissoes.push({ scope: 'curso', cursoId: req.usuario.cursoId });
       filtro = { $or: permissoes };
     }
     const eventos = await Evento.find(filtro).sort({ date: 1, start: 1 }).lean();
@@ -155,6 +167,7 @@ router.get('/eventos', autenticar, async (req, res) => {
 
 router.post('/eventos/migrar-legado', autenticar, async (req, res) => {
   try {
+    if (req.usuario.papel === 'admin' && req.usuario.nivelPermissao === 'admin_3') return res.status(403).json({ mensagem: 'Calendário indisponível para este perfil.' });
     const eventosLegados = req.body.eventos;
     if (!Array.isArray(eventosLegados) || eventosLegados.length > 200) {
       return res.status(400).json({ mensagem: 'A lista de eventos antigos é inválida.' });
@@ -169,14 +182,15 @@ router.post('/eventos/migrar-legado', autenticar, async (req, res) => {
           ? 'atividade'
           : 'compromisso';
       const eventoLegado = { ...legado, category: categoriaLegada };
-      if (validarEvento(eventoLegado, req.usuario.papel)) continue;
+      if (validarEvento(eventoLegado, req.usuario.papel, req.usuario)) continue;
 
       const feriado = categoriaLegada === 'feriado';
       await Evento.findOneAndUpdate(
         { legacyKey: legado.legacyKey },
         { $setOnInsert: {
           legacyKey: legado.legacyKey,
-          scope: req.usuario.papel === 'admin' ? 'global' : 'privado',
+          scope: req.usuario.papel === 'admin' ? (req.usuario.nivelPermissao === 'admin_2' ? 'curso' : 'global') : 'privado',
+          cursoId: req.usuario.papel === 'admin' && req.usuario.nivelPermissao === 'admin_2' ? req.usuario.cursoId : null,
           createdBy: req.usuario.id,
           title: legado.title.trim(),
           date: legado.date,
@@ -200,7 +214,8 @@ router.post('/eventos/migrar-legado', autenticar, async (req, res) => {
 
 router.post('/eventos', autenticar, async (req, res) => {
   try {
-    const erroValidacao = validarEvento(req.body, req.usuario.papel);
+    if (req.usuario.papel === 'admin' && req.usuario.nivelPermissao === 'admin_3') return res.status(403).json({ mensagem: 'Calendário indisponível para este perfil.' });
+    const erroValidacao = validarEvento(req.body, req.usuario.papel, req.usuario);
     if (erroValidacao) return res.status(400).json({ mensagem: erroValidacao });
     if (req.body.date < dataAtualDoCalendario()) {
       return res.status(400).json({ mensagem: 'Não é possível criar eventos em datas passadas.' });
@@ -208,8 +223,15 @@ router.post('/eventos', autenticar, async (req, res) => {
 
     let scope;
     let turmaId = null;
+    let cursoId = null;
     if (req.usuario.papel === 'admin') {
-      scope = 'global';
+      if (req.usuario.nivelPermissao === 'admin_2') {
+        if (!req.usuario.cursoId) return res.status(403).json({ mensagem: 'Este administrador não possui curso associado.' });
+        scope = 'curso';
+        cursoId = req.usuario.cursoId;
+      } else {
+        scope = 'global';
+      }
     } else if (req.usuario.papel === 'professor') {
       if (!mongoose.isValidObjectId(req.body.turmaId)) {
         return res.status(400).json({ mensagem: 'Selecione uma turma válida para compartilhar o evento.' });
@@ -232,6 +254,7 @@ router.post('/eventos', autenticar, async (req, res) => {
       scope,
       createdBy: req.usuario.id,
       turmaId,
+      cursoId,
       start: feriado ? '' : req.body.start,
       end: feriado ? '' : req.body.end,
       location: feriado ? '' : (req.body.location || '').trim(),
@@ -246,6 +269,7 @@ router.post('/eventos', autenticar, async (req, res) => {
 
 router.put('/eventos/:eventoId', autenticar, async (req, res) => {
   try {
+    if (req.usuario.papel === 'admin' && req.usuario.nivelPermissao === 'admin_3') return res.status(403).json({ mensagem: 'Calendário indisponível para este perfil.' });
     if (!mongoose.isValidObjectId(req.params.eventoId)) {
       return res.status(400).json({ mensagem: 'O evento informado é inválido.' });
     }
@@ -256,7 +280,8 @@ router.put('/eventos/:eventoId', autenticar, async (req, res) => {
       : String(existente.createdBy || '') === req.usuario.id;
     if (!podeGerenciar) return res.status(403).json({ mensagem: 'Você não tem permissão para editar este evento.' });
 
-    const erroValidacao = validarEvento(req.body, req.usuario.papel);
+    if (req.usuario.papel === 'admin' && req.usuario.nivelPermissao === 'admin_2' && existente.category === 'feriado') return res.status(403).json({ mensagem: 'Coordenadores não podem alterar feriados ou recessos.' });
+    const erroValidacao = validarEvento(req.body, req.usuario.papel, req.usuario);
     if (erroValidacao) return res.status(400).json({ mensagem: erroValidacao });
     if (req.body.date < dataAtualDoCalendario() && req.body.date !== existente.date) {
       return res.status(400).json({ mensagem: 'Não é possível mover um evento para uma data passada.' });
@@ -294,11 +319,13 @@ router.put('/eventos/:eventoId', autenticar, async (req, res) => {
 
 router.delete('/eventos/:eventoId', autenticar, async (req, res) => {
   try {
+    if (req.usuario.papel === 'admin' && req.usuario.nivelPermissao === 'admin_3') return res.status(403).json({ mensagem: 'Calendário indisponível para este perfil.' });
     if (!mongoose.isValidObjectId(req.params.eventoId)) {
       return res.status(400).json({ mensagem: 'O evento informado é inválido.' });
     }
     const evento = await Evento.findById(req.params.eventoId);
     if (!evento) return res.status(404).json({ mensagem: 'Evento não encontrado.' });
+    if (req.usuario.papel === 'admin' && req.usuario.nivelPermissao === 'admin_2' && evento.category === 'feriado') return res.status(403).json({ mensagem: 'Coordenadores não podem remover feriados ou recessos.' });
     const podeGerenciar = evento.scope === 'global'
       ? req.usuario.papel === 'admin'
       : String(evento.createdBy || '') === req.usuario.id;

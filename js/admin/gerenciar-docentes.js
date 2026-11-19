@@ -1,6 +1,7 @@
 // Autores:
 document.addEventListener('DOMContentLoaded', async () => {
   const root = document.querySelector('#teachers-content');
+  const somenteLeitura = JSON.parse(sessionStorage.getItem('notadez_user') || 'null')?.nivelPermissao === 'admin_2';
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
   const normalize = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
   const request = async (url, options = {}) => {
@@ -25,7 +26,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     search.addEventListener('input', drawList);
     drawList();
-    if (selected) bindEditor(selected);
+    if (selected && somenteLeitura) {
+      root.querySelectorAll('#teacher-form input').forEach(input => { input.disabled = true; });
+      root.querySelector('.teacher-editor-actions')?.remove();
+      const descricao = root.querySelector('.catalog-section-heading p');
+      if (descricao) descricao.textContent = 'Docentes são cadastros compartilhados e podem atuar em vários cursos.';
+    } else if (selected) bindEditor(selected);
   }
 
   function editorMarkup(teacher) {

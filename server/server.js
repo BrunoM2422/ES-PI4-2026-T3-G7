@@ -23,9 +23,11 @@ const Disciplina = require('./models/Disciplina');
 const Turma = require('./models/Turma');
 const GradeHorario = require('./models/GradeHorario');
 const Evento = require('./models/Evento');
+const Docente = require('./models/Docente');
 const ComponenteNota = require('./models/ComponenteNota');
 const Nota = require('./models/Nota');
 const ConfiguracaoNota = require('./models/ConfiguracaoNota');
+const Usuario = require('./models/Usuario');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -78,6 +80,12 @@ async function iniciarServidor() {
     await ConfiguracaoNota.init();
     await require('./models/Frequencia').init();
     await Evento.updateMany({ scope: { $exists: false } }, { $set: { scope: 'global' } });
+    await Docente.collection.updateMany({ cursoId: { $exists: true } }, { $unset: { cursoId: '' } });
+    const coordenadores = await Usuario.find({ papeis: 'admin', nivelPermissao: 'admin_2', cursoId: { $ne: null } }).select('_id cursoId').lean();
+    await Promise.all(coordenadores.map(coordenador => Evento.updateMany(
+      { createdBy: coordenador._id, scope: 'global' },
+      { $set: { scope: 'curso', cursoId: coordenador.cursoId } }
+    )));
 
     app.get('/', (req, res) => {
       res.sendFile(path.join(__dirname, '..', 'login.html'));

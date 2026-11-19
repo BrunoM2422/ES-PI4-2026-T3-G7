@@ -4,6 +4,7 @@
   const cloneTemplate = id => document.getElementById(id).content.cloneNode(true);
   const { role } = document.querySelector('#app').dataset;
   const user = JSON.parse(sessionStorage.getItem('notadez_user') || 'null');
+  if (user?.nivelPermissao === 'admin_2') host.querySelector('#event-category option[value="feriado"]')?.remove();
   const legacyStorageKey = `notadez_calendar_${role}_${user?.email || 'usuario'}`;
   const migrationStorageKey = `${legacyStorageKey}_migrated`;
   const categoryLabels = {

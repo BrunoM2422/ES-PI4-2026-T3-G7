@@ -10,7 +10,8 @@ const { autenticar, criarToken } = require('../services/autenticacao');
 const router = express.Router();
 
 router.get('/sessao', autenticar, (req, res) => {
-  return res.json({ usuario: { email: req.usuario.email, tipo: req.usuario.papel } });
+  return res.json({ usuario: { email: req.usuario.email, tipo: req.usuario.papel,
+    nivelPermissao: req.usuario.nivelPermissao, cursoId: req.usuario.cursoId } });
 });
 
 const mensagemRecuperacao = 'Se o e-mail estiver vinculado a uma conta válida, você receberá um código de recuperação.';
@@ -254,7 +255,8 @@ router.post('/login', async (req, res) => {
           ? usuario.nivelPermissao
           : tipo === 'administrador'
             ? 'admin_mestre'
-            : null
+            : null,
+        cursoId: tipo === 'administrador' && usuario.cursoId ? String(usuario.cursoId) : null
       }
     });
   } catch (erro) {

@@ -33,6 +33,7 @@ document.querySelector('#login').addEventListener('submit', async event => {
       nome: user.nome,
       email: user.email,
       nivelPermissao: user.nivelPermissao || null,
+      cursoId: user.cursoId || null,
       statusAcademico: user.statusAcademico || 'ativo'
     }));
     sessionStorage.setItem('notadez_token', data.token);

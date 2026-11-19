@@ -7,6 +7,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const screen = $('[data-course-screen]');
   const toolbar = $('[data-course-toolbar]');
   const menu = $('.admin-options-card');
+  const currentUser = JSON.parse(sessionStorage.getItem('notadez_user') || 'null');
+  const isCoordinator = currentUser?.nivelPermissao === 'admin_2';
+  if (isCoordinator) {
+    $('[data-continue-equivalencias]')?.closest('[data-equivalencia-entry]')?.remove();
+    $('[data-open-all]')?.closest('.grade-admin-actions')?.remove();
+  }
   const intro = $('.admin-page-intro');
   const title = $('[data-course-screen-title]');
   const description = $('[data-course-screen-description]');
@@ -75,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const response = await fetch('/api/admin/cursos');
       const data = await response.json();
       if (!response.ok) throw new Error(data.mensagem || 'Nao foi possivel carregar os cursos.');
-      courses = data.cursos || [];
+      courses = (data.cursos || []).filter(course => !isCoordinator || String(course.id) === String(currentUser.cursoId));
       menu.hidden = intro.hidden = true;
       toolbar.hidden = screen.hidden = false;
       renderCourses();

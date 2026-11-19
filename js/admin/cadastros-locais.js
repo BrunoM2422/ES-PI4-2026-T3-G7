@@ -4,6 +4,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (pagina === 'adicionar-administrador') {
     const botao = document.querySelector('.admin-button');
+    const permissao = document.querySelector('[name="permissao"]');
+    const cursoId = document.querySelector('[name="cursoId"]');
+    const campoCurso = document.querySelector('[data-admin-course-field]');
+    const atualizarCurso = () => {
+      const exigeCurso = permissao.value === 'admin_2';
+      campoCurso.hidden = !exigeCurso;
+      cursoId.required = exigeCurso;
+    };
+    permissao.addEventListener('change', atualizarCurso);
+    fetch('/api/admin/cursos')
+      .then(async response => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.mensagem || 'Não foi possível carregar os cursos.');
+        (data.cursos || []).forEach(curso => cursoId.add(new Option(curso.nome, curso.id)));
+      })
+      .catch(erro => window.showAppMessage(erro.message, 'error'));
 
     botao?.addEventListener('click', () => {
       const nome = document.querySelector('[name="nome"]');
@@ -11,8 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const telefone = document.querySelector('[name="telefone"]');
       const senha = document.querySelector('[name="senha"]');
       const confirmarSenha = document.querySelector('[name="confirmarSenha"]');
-      const permissao = document.querySelector('[name="permissao"]');
       const campos = [nome, email, telefone, senha, confirmarSenha, permissao];
+      if (permissao.value === 'admin_2') campos.push(cursoId);
 
       if (!window.validateAppFields(campos)) return;
       if (senha.value !== confirmarSenha.value) {
@@ -34,7 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
           email: email.value.trim(),
           telefone: telefone.value.trim(),
           senha: senha.value,
-          nivelPermissao: permissao.value
+          nivelPermissao: permissao.value,
+          cursoId: permissao.value === 'admin_2' ? cursoId.value : null
         })
       })
         .then(async response => {

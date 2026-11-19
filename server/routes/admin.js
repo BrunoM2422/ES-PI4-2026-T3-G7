@@ -18,6 +18,34 @@ const { validarCpf, normalizarTelefone, validarTelefone } = require('../services
 
 const router = express.Router();
 
+router.use(autenticar, async (req, res, next) => {
+  if (req.usuario.papel !== 'admin') return res.status(403).json({ mensagem: 'Acesso exclusivo de administradores.' });
+  const nivel = req.usuario.nivelPermissao;
+  if (nivel === 'admin_mestre') return next();
+  const p = req.path;
+  if (nivel === 'admin_3') {
+    const permitido = p === '/matriculas/trancar' || (p === '/opcoes' && req.method === 'GET');
+    return permitido ? next() : res.status(403).json({ mensagem: 'Esta operação não está disponível para o atendimento ao aluno.' });
+  }
+  if (nivel !== 'admin_2' || !req.usuario.cursoId) return res.status(403).json({ mensagem: 'Administrador sem curso coordenado.' });
+  if (p === '/opcoes' && req.method !== 'GET') return res.status(403).json({ mensagem: 'Somente o administrador mestre pode alterar opções globais.' });
+  if (/^\/matriculas\/(cancelar|trancar)$/.test(p) || /equivalencias|abrir-grades|fechar-grades|abrir-avaliacao|fechar-avaliacao/.test(p) || p === '/administradores' || (p === '/cursos' && req.method !== 'GET') || /^\/cursos\//.test(p) || ((p === '/docentes' || p.startsWith('/docentes/')) && req.method !== 'GET') || /^\/email-sugerido/.test(p)) {
+    return res.status(403).json({ mensagem: 'Esta operação é exclusiva do administrador mestre.' });
+  }
+  const idsCurso = [req.body?.cursoId, req.query?.cursoId, req.params?.cursoId].filter(Boolean).map(String);
+  if (idsCurso.some(id => id !== req.usuario.cursoId)) return res.status(403).json({ mensagem: 'Acesso permitido somente ao curso coordenado.' });
+  if (req.params.id && /^\/(turmas|disciplinas)\//.test(p)) {
+    const Entidade = p.startsWith('/turmas/') ? Turma : Disciplina;
+    const entidade = await Entidade.findById(req.params.id).select('cursoId').lean();
+    if (!entidade || String(entidade.cursoId) !== req.usuario.cursoId) return res.status(403).json({ mensagem: 'Acesso permitido somente a entidades do curso coordenado.' });
+  }
+  if (req.params.turmaId) {
+    const turma = await Turma.findById(req.params.turmaId).select('cursoId').lean();
+    if (!turma || String(turma.cursoId) !== req.usuario.cursoId) return res.status(403).json({ mensagem: 'Acesso permitido somente a turmas do curso coordenado.' });
+  }
+  return next();
+});
+
 router.get('/email-sugerido', autenticar, async (req, res) => {
   if (req.usuario.papel !== 'admin') return res.status(403).json({ mensagem: 'Acesso exclusivo de administradores.' });
   try {
@@ -338,7 +366,7 @@ router.put('/opcoes/fechar-grade-equivalencias', async (_req, res) => {
 
 router.get('/cursos', async (req, res) => {
   try {
-    const cursos = await Curso.find()
+    const cursos = await Curso.find(req.usuario.nivelPermissao === 'admin_2' ? { _id: req.usuario.cursoId } : {})
       .select('codigo nome unidade grau modalidade duracao descricao')
       .sort({ nome: 1 })
       .lean();
@@ -447,6 +475,7 @@ function codigoTurmaValido(codigo, periodoLetivo, cursoCodigo = null) {
 router.get('/turmas', async (req, res) => {
   try {
     const filtro = {};
+    if (req.usuario.nivelPermissao === 'admin_2') filtro.cursoId = req.usuario.cursoId;
     if (req.query.cursoId) {
       if (!mongoose.isValidObjectId(req.query.cursoId)) return res.status(400).json({ mensagem: 'O curso informado é inválido.' });
       filtro.cursoId = req.query.cursoId;
@@ -956,6 +985,7 @@ router.get('/disciplinas', async (req, res) => {
   try {
     const { cursoId, semestre } = req.query;
     const filtro = {};
+    if (req.usuario.nivelPermissao === 'admin_2') filtro.cursoId = req.usuario.cursoId;
 
     if (cursoId) {
       if (!mongoose.isValidObjectId(cursoId)) {
@@ -1180,20 +1210,23 @@ router.delete('/docentes/:id', async (req, res) => {
 
 router.post('/administradores', async (req, res) => {
   try {
-    const { nome, email, telefone, senha, nivelPermissao } = req.body;
+    const { nome, email, telefone, senha, nivelPermissao, cursoId } = req.body;
     const niveisPermitidos = ['admin_mestre', 'admin_2', 'admin_3'];
     if (
       ![nome, email, telefone].every(valor => typeof valor === 'string' && valor.trim()) ||
       typeof senha !== 'string' || senha.length < 8 ||
-      !niveisPermitidos.includes(nivelPermissao)
+      !niveisPermitidos.includes(nivelPermissao) ||
+      (nivelPermissao === 'admin_2' && !mongoose.isValidObjectId(cursoId)) ||
+      (nivelPermissao !== 'admin_2' && cursoId)
     ) {
       return res.status(400).json({ mensagem: 'Preencha os campos obrigatórios e informe uma senha com pelo menos 8 caracteres.' });
     }
     const emailTratado = email.trim().toLowerCase();
     const senhaHash = await bcrypt.hash(senha, 10);
+    if (nivelPermissao === 'admin_2' && !await Curso.exists({ _id: cursoId })) return res.status(400).json({ mensagem: 'Selecione um curso válido para o coordenador.' });
     const administrador = new Usuario({
       nome: nome.trim(), email: emailTratado, telefone: telefone.trim(),
-      nivelPermissao, senha: senhaHash, papeis: ['admin']
+      nivelPermissao, cursoId: nivelPermissao === 'admin_2' ? cursoId : null, senha: senhaHash, papeis: ['admin']
     });
     await administrador.save();
     return res.status(201).json({ mensagem: 'Administrador cadastrado com sucesso.' });
@@ -1308,6 +1341,7 @@ router.post('/cadastrar', async (req, res) => {
     if (!validarTelefone(telefone, telefoneObrigatorio)) return res.status(400).json({ mensagem: 'Informe um telefone brasileiro valido com DDD.' });
 
     const emailTratado = email.trim().toLowerCase();
+    if (req.usuario.nivelPermissao === 'admin_2' && tipo === 'estudante' && (!cursoId || String(cursoId) !== req.usuario.cursoId)) return res.status(403).json({ mensagem: 'Informe o curso coordenado para este cadastro.' });
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTratado)) return res.status(400).json({ mensagem: 'Informe um e-mail valido.' });
     const cpfTratado = normalizarCpf(cpf);
     const telefoneTratado = normalizarTelefone(telefone);

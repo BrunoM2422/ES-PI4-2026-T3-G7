@@ -9,9 +9,10 @@ const eventoSchema = new mongoose.Schema({
     required: true,
     enum: ['feriado', 'institucional', 'aula', 'atividade', 'avaliacao', 'compromisso']
   },
-  scope: { type: String, required: true, enum: ['global', 'turma', 'privado'], default: 'privado' },
+  scope: { type: String, required: true, enum: ['global', 'curso', 'turma', 'privado'], default: 'privado' },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' },
   turmaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Turma', default: null },
+  cursoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Curso', default: null, index: true },
   start: { type: String, default: '' },
   end: { type: String, default: '' },
   location: { type: String, trim: true, maxlength: 100, default: '' },
