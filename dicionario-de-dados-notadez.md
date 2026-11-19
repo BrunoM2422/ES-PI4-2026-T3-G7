@@ -4,6 +4,7 @@
 
 | Data | Autor | Versão | Comentários |
 | :---: | :--- | :---: | :--- |
+| 18/11/2026 | Gabriel Scolfaro | 1.0.0-alfa2 | Versão inicial completa do dicionário. |
 | 18/11/2026 | Gabriel Scolfaro | 1.0.0-alfa1 | Versão inicial do dicionário. |
 
 ## 2. Entidades e atributos conceituais
@@ -231,3 +232,260 @@ Armazena um contador sequencial usado ajudar com a geração dos RAs de estudant
 | C | Composto: estrutura com partes relacionadas. |
 | M | Multivalorado: lista de valores simples. |
 | MC | Multivalorado e composto: lista de estruturas. |
+
+### 3.1. Instituição (C)
+
+Estrutura embutida em perfis de estudante e docente.
+
+| Atributo / dado | Tipo conceitual | Obrigatório | Comentários |
+| :--- | :--- | :---: | :--- |
+| nome | Texto | Não | Nome da instituição de ensino. |
+| codigo | Texto | Não | Código institucional. |
+
+### 3.2. Resumo de curso (C)
+
+Estrutura copiada no perfil do estudante para exibição do curso sem depender de consulta imediata à coleção de cursos.
+
+| Atributo / dado | Tipo conceitual | Obrigatório | Comentários |
+| :--- | :--- | :---: | :--- |
+| codigo, nome, unidade | Texto | Não | Dados de identificação do curso. |
+| grau, modalidade | Texto | Não | Características acadêmicas do curso. |
+| duracao | Número | Não | Duração em semestres. |
+| descricao | Texto | Não | Descrição resumida. |
+
+### 3.3. Matrícula em grade (C/MC)
+
+Cada item de `gradeMatriculas` liga o estudante a uma turma e a uma disciplina.
+
+| Atributo / dado | Tipo conceitual | Obrigatório | Comentários |
+| :--- | :--- | :---: | :--- |
+| turmaId | ObjectId | Sim | Referência à turma em que ocorre a matrícula. |
+| disciplinaId | ObjectId | Sim | Referência à disciplina matriculada. |
+
+### 3.4. Horário de turma e aula de grade (C/MC)
+
+As duas estruturas representam a alocação de uma disciplina em dia e hora. A grade é a fonte de aulas do curso; a turma mantém a programação que será usada em consultas operacionais.
+
+| Atributo / dado | Tipo conceitual | Obrigatório | Comentários |
+| :--- | :--- | :---: | :--- |
+| gradeHorarioId | ObjectId | Em horário de turma | Referência à grade de origem. |
+| aulaId | ObjectId | Sim | Identificador da aula dentro da grade. |
+| disciplinaId, docenteId | ObjectId | Sim | Disciplina ministrada e responsável. |
+| turmaId | ObjectId | Em aula de grade, pode ser nulo | Turma associada à aula. |
+| dia | Número inteiro | Sim | Dia da semana de 0 a 6. |
+| hora | Número inteiro | Sim | Hora entre 7 e 22. |
+| semestre | Número inteiro | Em horário de turma | Semestre de organização, de 1 a 20. |
+
+### 3.5. Registro de frequência (C/MC)
+
+| Atributo / dado | Tipo conceitual | Obrigatório | Comentários |
+| :--- | :--- | :---: | :--- |
+| alunoId | ObjectId | Sim | Estudante avaliado. |
+| presente | Booleano | Sim | Indica presença (`true`) ou ausência (`false`). |
+
+### 3.6. Mensagem de chamado (C/MC)
+
+| Atributo / dado | Tipo conceitual | Obrigatório | Comentários |
+| :--- | :--- | :---: | :--- |
+| remetente_tipo | Texto enumerado | Sim | `estudante`, `admin` ou `docente`. |
+| remetente_nome | Texto | Sim | Nome exibido do remetente. |
+| mensagem | Texto | Sim | Conteúdo enviado. |
+| data_envio | Data/hora | Não | Data do envio; padrão atual. |
+
+### 3.7. Dados de recuperação de senha (C)
+
+Campos temporários do usuário, preenchidos durante a recuperação e limpos/expirados pelo fluxo de autenticação.
+
+| Atributo / dado | Tipo conceitual | Obrigatório | Comentários |
+| :--- | :--- | :---: | :--- |
+| passwordResetCodeHash | Texto protegido | Não | Hash do código de recuperação; nunca armazenar o código em texto puro. |
+| passwordResetExpiresAt | Data/hora | Não | Limite de validade do código. |
+| passwordResetAttempts | Número inteiro | Não | Contador de tentativas; padrão zero. |
+| passwordResetRequestedAt | Data/hora | Não | Momento da solicitação. |
+
+## 4. Desdobramento físico ou tecnológico
+
+### 4.1. Desdobramento para banco orientado a documentos: MongoDB
+
+O projeto usa MongoDB por meio do Mongoose. Os nomes abaixo correspondem às coleções usadas pelos modelos. Os campos `_id` são `ObjectId`, exceto quando indicado; datas Mongoose são BSON Date. Campos com `ref` guardam o ObjectId referenciado. Subdocumentos e arrays indicam dados embutidos.
+
+| Entidade conceitual | Coleção | Estratégia |
+| :--- | :--- | :--- |
+| Usuário | `usuarios` | Documento próprio; perfil e credenciais de acesso. |
+| Estudante | `estudantes` | Documento próprio; embute resumo do curso, instituição, trancamento e matrículas na grade; referencia curso/turma. |
+| Docente | `docentes` | Documento próprio; embute instituição. |
+| Curso | `cursos` | Documento próprio, referenciado por disciplinas, turmas e grades. |
+| Disciplina | `disciplinas` | Documento próprio; referencia curso; equivalências em array de códigos. |
+| Turma | `turmas` | Documento próprio; referencia curso e estudantes; embute horários. |
+| Grade de horário | `grades_horarios` | Documento próprio; embute aulas e referencia curso, turma, disciplina e docente. |
+| Frequência | `frequencias` | Documento próprio por turma/aula/data; embute registros de presença. |
+| Componente de nota | `componentes_notas` | Documento próprio; referencia turma, disciplina e docente. |
+| Configuração de nota | `configuracoes_notas` | Documento próprio por turma/disciplina; referencia docente. |
+| Nota | `notas` | Documento próprio; referencia estudante, turma, disciplina e componente. |
+| Chamado | `chamados` | Documento próprio; embute histórico de mensagens e dados do solicitante. |
+| Notificação | `notificacoes` | Documento próprio por destinatário; referencia estudante, turma e docente. |
+| Evento | `eventos` | Documento próprio; referencia criador e turma. |
+| Log de auditoria | `LOGs` | Documento próprio; referencia usuário e indexa autor/data. O nome está capitalizado assim no model. |
+| Opções do sistema | `opcoes_sistema` | Documento de configuração; listas de cursos liberados guardam ObjectIds. |
+| Contador | `contadores` | Documento próprio com `_id` textual e valor numérico. |
+
+#### Exemplo de documento da coleção `estudantes`
+
+```json
+{
+  "_id": {
+    "$oid": "6afcd0e802db8dbd35db5ae9"
+  },
+  "ra": "E2026001",
+  "nome": "A Luno",
+  "email": "aluno@aluno.com",
+  "cpf": "123456",
+  "telefone": "654321",
+  "endereco": "Rua Aqui",
+  "foto": "",
+  "statusAcademico": "ativo",
+  "cursoId": {
+    "$oid": "6afcd0c502db8dbd35db5ae7"
+  },
+  "curso": {
+    "codigo": "01",
+    "nome": "Engenharia de Software",
+    "unidade": "Campus 1",
+    "grau": "Bacharelado",
+    "modalidade": "Presencial",
+    "duracao": 8,
+    "descricao": "Curso de Eng. De Software"
+  },
+  "instituicao": {
+    "nome": "PUC-Campinas",
+    "codigo": "PUCC-834"
+  },
+  "gradeMatriculas": [
+    {
+      "turmaId": {
+        "$oid": "6afcd11b02db8dbd35db5aee"
+      },
+      "disciplinaId": {
+        "$oid": "6afd014da28ee04ac06d17f4"
+      }
+    },
+    {
+      "turmaId": {
+        "$oid": "6afd00fda28ee04ac06d17f2"
+      },
+      "disciplinaId": {
+        "$oid": "6afcd10e02db8dbd35db5aec"
+      }
+    }
+  ],
+}
+```
+
+#### Exemplo de documento da coleção `frequencias`
+
+```json
+{
+  "_id": { "$oid": "6afd8ee002ece12a799b33ac" },
+  "turmaId": { "$oid": "6afcd11b02db8dbd35db5aee" },
+  "aulaId": { "$oid": "6afcfcf809938203277a562b" },
+  "disciplinaId": { "$oid": "6afcd10e02db8dbd35db5aec" },
+  "docenteId": { "$oid": "6afcd13b02db8dbd35db5af0" },
+  "data": "2026-11-18",
+  "registros": [
+    { "alunoId": { "$oid": "6afcd0e802db8dbd35db5ae9" }, "presente": false }
+  ],
+  "createdAt": { "$date": "2026-11-18T11:41:20.954Z" },
+  "updatedAt": { "$date": "2026-11-18T11:56:52.198Z" }
+}
+```
+
+#### Exemplo de documento da coleção `chamados`
+
+```json
+{
+  "_id": { "$oid": "6afcd22e4c61b5fe51d85dbe" },
+  "ra": "E2026001",
+  "nome": "Ana Souza",
+  "email": "ana@exemplo.edu.br",
+  "assunto": "Emissão de documentos",
+  "descricao": "Preciso de uma declaração.",
+  "status": "ativo",
+  "mensagens": [
+    {
+      "remetente_tipo": "estudante",
+      "remetente_nome": "Ana Souza",
+      "mensagem": "Preciso de uma declaração.",
+      "data_envio": { "$date": "2026-11-17T22:16:14.148Z" }
+    }
+  ],
+  "criado_em": { "$date": "2026-11-17T22:16:14.152Z" },
+  "encerrado_em": null
+}
+```
+
+#### Justificativa da modelagem documental
+
+Entidades consultadas e atualizadas de forma independente, como estudantes, docentes, cursos, disciplinas, turmas, notas e eventos, permanecem em coleções próprias e se relacionam por `ObjectId`. Estruturas pequenas que são lidas junto do documento pai — como mensagens de um chamado, registros de uma frequência, aulas de uma grade e matrículas em uma grade — são subdocumentos embutidos. Resumos de curso/instituição no perfil do estudante atendem à exibição do perfil, mas podem ficar desatualizados em relação ao cadastro de curso; o `cursoId` é a referência canônica. A duplicidade de vínculos turma/horário em `turmas.horarios` e `grades_horarios.aulas` deve ser mantida consistente pela aplicação.
+
+#### Índices declarados nos schemas
+
+| Coleção | Campos do índice | Regra/finalidade |
+| :--- | :--- | :--- |
+| `usuarios` | `email` | Único. |
+| `estudantes` | `ra`, `email` | Únicos quando existentes; email obrigatório. |
+| `docentes` | `rp`, `email` | Únicos quando informados; email obrigatório. |
+| `cursos` | `codigo` | Único. |
+| `disciplinas` | `cursoId + codigo` , `equivale_para` | Índice composto único; Único. |
+| `turmas` | `codigo` | Único. |
+| `grades_horarios` | `cursoId + semestre` | Índice composto único. |
+| `frequencias` | `turmaId + aulaId + data` | Índice composto único, evita duplicar chamada para a mesma aula/data. |
+| `componentes_notas` | `turmaId + disciplinaId + titulo` | Índice composto único. |
+| `configuracoes_notas` | `turmaId + disciplinaId` | Índice composto único. |
+| `notas` | `alunoId + componenteId` | Índice composto único. |
+| `notificacoes` | `alunoId + createdAt` | Ordenação das notificações mais recentes; `alunoId + chave` único parcial quando chave é textual. |
+| `eventos` | `legacyKey` | Único e esparso. |
+| `LOGs` | `usuarioId + dataHora` | Apoia histórico de auditoria por usuário, em ordem decrescente de data. |
+
+### 4.2. Tipos físicos usados
+
+| Tipo no MongoDB/Mongoose | Uso no NotaDez |
+| :--- | :--- |
+| `ObjectId` | `_id` e referências entre documentos. |
+| `String` | Nomes, códigos, estados, documentos e datas textuais `AAAA-MM-DD`. |
+| `Number` | Valores de notas, pesos, duração, vagas, horas e contadores. |
+| `Boolean` | Preferências, estados de presença e opções de sistema. |
+| `Date` | Timestamps, datas de aplicação, expiração e eventos com data/hora. |
+| Array de tipos/subdocumentos | Papéis, estudantes, equivalências, horários, aulas, presenças, mensagens e listas de cursos. |
+| Subdocumento | Dados compostos embutidos em perfil, turma, grade, frequência ou chamado. |
+
+## 5. Consultas, índices e observações de arquitetura
+
+### 5.1. Consultas esperadas
+
+| Consulta esperada | Campos envolvidos | Índices sugeridos | Observações |
+| :--- | :--- | :--- | :--- |
+| Autenticar usuário | `usuarios.email` | Único em `email` | A senha é comparada usando o hash armazenado. |
+| Abrir perfil de estudante/docente | `email`, `ra` ou `rp` | Índices únicos de perfil | Perfil de acesso e perfil acadêmico são documentos separados. |
+| Listar disciplinas de curso | `disciplinas.cursoId` | Composto `cursoId + codigo` | Usar o curso e ordenar/filtrar pelo código. |
+| Encontrar turmas por código/curso | `turmas.codigo`, `turmas.cursoId` | Único em `codigo`; considerar índice em `cursoId` | Consultas administrativas e do docente. |
+| Obter grade de curso e semestre | `grades_horarios.cursoId`, `semestre` | Composto único | Identifica a grade do período curricular. |
+| Consultar matrícula do estudante | `estudantes.gradeMatriculas.turmaId`, `disciplinaId` | Considerar índices multikey conforme volume | `alunosIds` da turma também é consultado; manter os dois lados coerentes. |
+| Registrar/listar frequência | `turmaId`, `aulaId`, `data` | Composto único existente | Registros de presença ficam embutidos no documento da chamada. |
+| Listar notas do aluno/componente | `notas.alunoId`, `componenteId` | Composto único existente | Uma nota por estudante e componente. |
+| Listar componentes/configuração de nota | `turmaId`, `disciplinaId` | Compostos únicos existentes | Configuração única por turma/disciplina; títulos únicos entre componentes desse contexto. |
+| Buscar chamados por solicitante/status | `ra`, `email`, `status` | Avaliar índices conforme volume | Coleção não declara índices específicos no schema atual. |
+| Listar notificações recentes do aluno | `alunoId`, `createdAt` | Composto existente | Limitada às notificações do destinatário. |
+| Consultar eventos por data, escopo ou turma | `date`, `scope`, `turmaId` | Avaliar índice composto conforme filtros reais | O schema declara índice apenas para `legacyKey`. |
+| Consultar auditoria de usuário | `usuarioId`, `dataHora` | Composto existente, data descendente | Índice declarado em `LOGs`. |
+| Carregar configurações acadêmicas | `_id` | Chave primária | Documento de chave fixa `opcoes-academicas`. |
+| Obter próximo RA | `contadores._id`, `valor` | Chave primária textual | Incremento atômico do contador. |
+
+### 5.2. Regras e Observações
+
+- As regras de validação descritas derivam principalmente dos schemas Mongoose e das rotas da aplicação.
+- Campos opcionais com valor ausente não são necessariamente persistidos como `null`; a presença depende do fluxo de gravação e dos valores padrão do schema.
+- O exemplo fornecido para `usuarios` mostra `showFinanceiro`, `nivelPermissao`, `ra`/`rp` e hashes de senha. Nenhum hash ou senha de exemplo deve ser reutilizado como credencial em documentação pública.
+- A coleção de notas foi indicada como sujeita a ajuste. Sua documentação aqui descreve o schema atual (`alunoId`, `turmaId`, `disciplinaId`, `componenteId`, `valor`); alterações futuras no modelo exigirão revisão desta seção.
+- O campo `data` de frequência e `date` de evento é texto `AAAA-MM-DD`; já timestamps e datas como `dataAplicacao` são BSON Date. Não tratar os dois formatos como equivalentes na persistência.
+- As referências `ref` do Mongoose não criam, por si só, integridade referencial automática no MongoDB. A aplicação deve garantir que as entidades relacionadas existam e que exclusões/alterações não deixem referências incoerentes.
+- Os índices adicionais sugeridos na tabela 5.1 devem ser avaliados com dados.
