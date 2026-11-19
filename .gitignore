@@ -1,5 +1,8 @@
-node_modules/
-.env
+# macOS
+.DS_Store
 
-*.class
-.env
+# Maven
+target/
+
+# Node
+node_modules/
