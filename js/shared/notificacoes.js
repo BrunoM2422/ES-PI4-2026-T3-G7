@@ -84,6 +84,7 @@
 
                     return {
                         id: `calendario:${ev.id}`,
+                        categoria: ev.category,
                         titulo: ev.title,
                         tipo: ROTULOS_CATEGORIA[ev.category] || ev.category,
                         quando: `${formatarData(ev.date)}${horario ? ` às ${horario}` : ''}`,
@@ -114,6 +115,7 @@
                 }).format(criadoEm);
                 return {
                     id: `comunicado:${item.id}`,
+                    categoria: item.tipo === 'sistema' ? 'sistema' : 'comunicados',
                     titulo: item.titulo,
                     tipo: item.tipo === 'sistema' ? 'Aviso do sistema' : 'Comunicado da turma',
                     quando: dataFormatada,
@@ -172,7 +174,9 @@
             });
 
             const dispensadas = lerDispensadas();
+            const preferencias = preferenciasDeNotificacao();
             visiveis = todas
+                .filter(n => !n.categoria || preferencias[n.categoria] !== false)
                 .filter(n => {
                     const ultima = dispensadas[n.id];
                     if (!ultima) return true;

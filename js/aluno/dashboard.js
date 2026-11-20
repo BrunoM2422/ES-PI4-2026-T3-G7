@@ -91,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             return [{
                 id: `chamado:${chamado.id}`,
+                categoria: 'chamados',
                 titulo: chamado.assunto,
                 tipo: 'Chamado respondido',
                 quando: formatarDataHora(ultima.data_envio),
@@ -122,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             return [{
                 id: `nota:${disciplina.turmaId}:${disciplina.disciplinaId}`,
+                categoria: 'notas',
                 titulo: disciplina.disciplina,
                 tipo: recentes.length > 1 ? 'Novas notas' : 'Nova nota',
                 quando: formatarDataHora(maisRecente),
