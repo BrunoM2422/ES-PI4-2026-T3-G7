@@ -89,7 +89,7 @@ Oferta de curso em determinado período letivo, com estudantes e horários assoc
 
 | Atributo / dado | Tipo conceitual | Obrigatório | Característica | Ex. aceitos | Ex. não aceitos | Comentários |
 | :--- | :--- | :---: | :---: | :--- | :--- | :--- |
-| Identificador e código | ObjectId e texto | Sim | Simples | Código único de turma | Código duplicado | Código armazenado em maiúsculas. |
+| Identificador e código | ObjectId e texto | Sim | Simples | Código único de turma | Código duplicado | Código armazenado em maiúsculas como curso (2 dígitos) + semestre (2 dígitos) + grupo (A, B ou C). No contexto de uma disciplina, a interface exibe o código completo da disciplina seguido da letra do grupo. |
 | Curso | ObjectId | Sim | Simples | Referência a `cursos` | Curso inexistente | `cursoId`. |
 | Período letivo | Texto | Sim | Simples | `2026/1` | Vazio ou acima de 30 caracteres | Período/ano letivo. |
 | Vagas | Número inteiro | Sim | Simples | 1 a 300 | Fora do intervalo | Capacidade da turma. |

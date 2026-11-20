@@ -128,15 +128,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const initialCourse = courses.find(course => course.id === subject.cursoId);
     const semesterOptions = Array.from({ length: initialCourse?.duracao || 1 }, (_, index) => index + 1);
     const courseOptions = courses.map(course => `<option value="${escapeHtml(course.id)}"${course.id === subject.cursoId ? ' selected' : ''}${/^\d{2}$/.test(course.codigo || '') ? '' : ' disabled'}>${escapeHtml(course.nome)} (${escapeHtml(course.codigo)})</option>`).join('');
-    const prefix = /^\d{2}$/.test(initialCourse?.codigo || '') ? initialCourse.codigo : '';
-    const complement = prefix && subject.codigo.startsWith(prefix) ? subject.codigo.slice(prefix.length) : subject.codigo;
-    const codeField = `<label class="admin-field"><span>Código da disciplina</span><div class="admin-discipline-code"><span class="admin-discipline-prefix" data-subject-code-prefix>${escapeHtml(prefix || '--')}</span><input name="codigoComplemento" type="text" maxlength="8" pattern="[A-Za-z0-9]{1,8}" value="${escapeHtml(complement)}" title="Use de 1 a 8 letras ou números." autocomplete="off" required></div><small class="admin-local-note">O prefixo vem do curso selecionado.</small></label>`;
+    const prefix = /^\d{2}$/.test(initialCourse?.codigo || '') ? `${initialCourse.codigo}${String(subject.semestre).padStart(2, '0')}` : '';
+    const complement = /^\d{6}$/.test(subject.codigo) ? subject.codigo.slice(-2) : '';
+    const codeField = `<label class="admin-field"><span>Sequência da disciplina</span><div class="admin-discipline-code"><span class="admin-discipline-prefix" data-subject-code-prefix>${escapeHtml(prefix || '--')}</span><input name="codigoComplemento" type="text" inputmode="numeric" maxlength="2" pattern="[0-9]{2}" value="${escapeHtml(complement)}" title="Informe dois dígitos." autocomplete="off" required></div><small class="admin-local-note">O código usa curso + semestre + sequência de dois dígitos.</small></label>`;
     const fields = field('Nome', 'nome', subject.nome) + codeField + `<label class="admin-field"><span>Curso</span><select name="cursoId" required>${courseOptions}</select></label>` + selectField('Semestre', 'semestre', semesterOptions, subject.semestre) + field('Descrição', 'descricao', subject.descricao, 'textarea', true);
     showModal('Dados da disciplina', 'Disciplinas com aulas em grades de horário não podem ser excluídas.', fields, async form => {
       const values = Object.fromEntries(form.entries());
       const selectedCourse = courses.find(course => course.id === values.cursoId);
       if (!selectedCourse || !/^\d{2}$/.test(selectedCourse.codigo || '')) throw new Error('Selecione um curso com código válido de dois dígitos.');
-      values.codigo = `${selectedCourse.codigo}${values.codigoComplemento.trim().toUpperCase()}`;
+      values.codigo = `${selectedCourse.codigo}${String(Number(values.semestre)).padStart(2, '0')}${values.codigoComplemento.trim()}`;
       delete values.codigoComplemento;
       await request(`/api/admin/disciplinas/${encodeURIComponent(subject.id)}`, { method: 'PUT', body: JSON.stringify(values) });
       await reloadSubjects();
@@ -149,10 +149,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       const course = courses.find(item => item.id === courseSelect.value);
       const duration = Number(course?.duracao) || 1;
       const semesterSelect = modalRoot.querySelector('[name="semestre"]');
-      modalRoot.querySelector('[data-subject-code-prefix]').textContent = /^\d{2}$/.test(course?.codigo || '') ? course.codigo : '--';
       const current = Number(semesterSelect.value);
       semesterSelect.innerHTML = Array.from({ length: duration }, (_, index) => `<option value="${index + 1}">${index + 1}</option>`).join('');
       semesterSelect.value = String(Math.min(current || 1, duration));
+      modalRoot.querySelector('[data-subject-code-prefix]').textContent = /^\d{2}$/.test(course?.codigo || '') ? `${course.codigo}${String(Number(semesterSelect.value)).padStart(2, '0')}` : '--';
+    });
+    modalRoot.querySelector('[name="semestre"]').addEventListener('change', () => {
+      const course = courses.find(item => item.id === courseSelect.value);
+      modalRoot.querySelector('[data-subject-code-prefix]').textContent = /^\d{2}$/.test(course?.codigo || '') ? `${course.codigo}${String(Number(modalRoot.querySelector('[name="semestre"]').value)).padStart(2, '0')}` : '--';
     });
   }
 

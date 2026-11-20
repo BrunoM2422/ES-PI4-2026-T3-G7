@@ -72,7 +72,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       opcaoInicial.selected = true;
       select.add(opcaoInicial);
       data.aulasHoje.forEach(aula => {
-        const option = new Option(`${aula.disciplina} · Turma ${window.formatarCodigoTurmaDisciplina(turma.codigo, aula.codigoDisciplina)} · ${String(aula.inicio).padStart(2, '0')}:00–${String(aula.fim).padStart(2, '0')}:00`, aula.id);
+        const situacao = aula.chamadaRegistrada ? ' · chamada registrada' : '';
+        const option = new Option(`${aula.disciplina} · Turma ${window.formatarCodigoTurmaDisciplina(turma.codigo, aula.codigoDisciplina)} · ${String(aula.inicio).padStart(2, '0')}:00–${String(aula.fim).padStart(2, '0')}:00${situacao}`, aula.id);
         option.dataset.disciplinaId = aula.disciplinaId;
         option.disabled = minutos < aula.inicio * 60 || minutos >= aula.fim * 60;
         if (!option.disabled && select.value === '') option.selected = true;
@@ -85,6 +86,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       const mensagem = criar('p', 'teacher-class-module-note', data.aulasHoje.length ? 'A chamada só fica disponível durante o horário da aula.' : 'Não há aulas suas hoje nesta turma.');
       const form = document.createElement('form');
       form.className = 'teacher-roster-table-wrap';
+      const salvar = criar('button', 'teacher-class-action is-primary', 'Registrar chamada');
+      salvar.type = 'submit';
+      salvar.disabled = true;
       const tabela = document.createElement('table');
       tabela.className = 'teacher-roster-table';
       tabela.innerHTML = '<thead><tr><th>Aluno</th><th>Presente</th></tr></thead>';
@@ -92,25 +96,28 @@ document.addEventListener('DOMContentLoaded', async () => {
       const renderizarAlunosDaAula = () => {
         corpo.replaceChildren();
         const aulaSelecionada = data.aulasHoje.find(aula => aula.id === select.value);
+        const presencasRegistradas = new Map((aulaSelecionada?.presencas || []).map(item => [item.alunoId, item.presente]));
         (aulaSelecionada ? data.alunosPorDisciplina[aulaSelecionada.disciplinaId] || [] : []).forEach(aluno => {
           const tr = document.createElement('tr');
           const nome = criar('td', 'teacher-roster-name', aluno.nome);
           const presenca = document.createElement('td');
           const label = document.createElement('label');
           const checkbox = document.createElement('input');
-          checkbox.type = 'checkbox'; checkbox.checked = true; checkbox.dataset.aluno = aluno.id;
-          label.append(checkbox, document.createTextNode(' Presente'));
+          checkbox.type = 'checkbox'; checkbox.checked = aulaSelecionada.chamadaRegistrada ? presencasRegistradas.get(aluno.id) === true : true; checkbox.dataset.aluno = aluno.id;
+          checkbox.disabled = aulaSelecionada.chamadaRegistrada;
+          label.append(checkbox, document.createTextNode(aulaSelecionada.chamadaRegistrada ? (checkbox.checked ? ' Presente' : ' Ausente') : ' Presente'));
           presenca.append(label); tr.append(nome, presenca); corpo.append(tr);
         });
         mensagem.textContent = aulaSelecionada
-          ? (corpo.childElementCount ? 'A chamada só fica disponível durante o horário da aula.' : 'Não há alunos matriculados nesta disciplina e turma.')
+          ? aulaSelecionada.chamadaRegistrada
+            ? 'Chamada já registrada. A lista fica disponível somente para consulta.'
+            : (corpo.childElementCount ? 'A chamada só fica disponível durante o horário da aula.' : 'Não há alunos matriculados nesta disciplina e turma.')
           : 'Selecione uma aula para exibir os alunos matriculados naquela disciplina.';
+        salvar.disabled = !aulaSelecionada || aulaSelecionada.chamadaRegistrada || minutos < aulaSelecionada.inicio * 60 || minutos >= aulaSelecionada.fim * 60;
       };
       select.addEventListener('change', renderizarAlunosDaAula);
       renderizarAlunosDaAula();
       tabela.append(corpo);
-      const salvar = criar('button', 'teacher-class-action is-primary', 'Registrar chamada');
-      salvar.type = 'submit';
       const feedback = criar('p', 'teacher-announcement-feedback', '');
       feedback.setAttribute('role', 'status');
       form.append(tabela, salvar, feedback);
@@ -124,8 +131,16 @@ document.addEventListener('DOMContentLoaded', async () => {
           const result = await response.json();
           if (!response.ok) throw new Error(result.mensagem || 'Não foi possível registrar a chamada.');
           feedback.textContent = result.mensagem;
+          const aulaRegistrada = data.aulasHoje.find(aula => aula.id === select.value);
+          if (aulaRegistrada) {
+            aulaRegistrada.chamadaRegistrada = true;
+            aulaRegistrada.presencas = presencas;
+            const option = [...select.options].find(item => item.value === aulaRegistrada.id);
+            if (option && !option.textContent.includes('chamada registrada')) option.textContent += ' · chamada registrada';
+            renderizarAlunosDaAula();
+          }
         } catch (erro) { feedback.textContent = erro.message; }
-        finally { salvar.disabled = false; }
+        finally { renderizarAlunosDaAula(); }
       });
       chamada.append(mensagem, form);
       telaChamada.append(chamada);

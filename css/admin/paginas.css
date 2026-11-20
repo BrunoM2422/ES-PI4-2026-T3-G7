@@ -173,7 +173,8 @@
   font-weight: 700;
 }
 
-.admin-discipline-code input {
+.admin-discipline-code input,
+.admin-discipline-code select {
   flex: 1;
   min-width: 0;
   border-radius: 0 7px 7px 0;

@@ -464,13 +464,19 @@ function semestreDaTurma(periodoLetivo) {
 
 function codigoTurmaValido(codigo, periodoLetivo, cursoCodigo = null) {
   const semestre = Number(periodoLetivo);
-  const texto = String(codigo || '');
+  const texto = String(codigo || '').trim().toUpperCase();
   if (!Number.isInteger(semestre)) return false;
-  const antigo = /^\d{4}$/.test(texto) && texto.startsWith(String(semestre).padStart(2, '0'));
-  const novo = /^\d{6}$/.test(texto) && texto.slice(2, 4) === String(semestre).padStart(2, '0');
-  const sufixo = Number(texto.slice(-2));
-  if (cursoCodigo) return novo && texto.startsWith(String(cursoCodigo)) && sufixo >= 1 && sufixo <= 3;
-  return (antigo || novo) && sufixo >= 1 && sufixo <= 99 && texto.slice(-2) === String(sufixo).padStart(2, '0');
+  const novo = /^\d{4}[ABC]$/.test(texto) && texto.slice(2, 4) === String(semestre).padStart(2, '0');
+  if (cursoCodigo) return novo && texto.startsWith(String(cursoCodigo));
+  const legado = /^\d{4}$/.test(texto) && texto.slice(0, 2) === String(semestre).padStart(2, '0');
+  return novo || legado;
+}
+
+function letraTurma(codigo) {
+  const texto = String(codigo || '').trim().toUpperCase();
+  if (/\d{4}[ABC]$/.test(texto)) return texto.slice(-1);
+  const legado = Number(texto.slice(-2));
+  return legado >= 1 && legado <= 3 ? String.fromCharCode(64 + legado) : '';
 }
 
 router.get('/turmas', async (req, res) => {
@@ -528,14 +534,14 @@ router.post('/turmas', async (req, res) => {
       return res.status(400).json({ mensagem: 'Preencha código, curso, período letivo e vagas com valores válidos.' });
     }
     if (!codigoTurmaValido(codigo.trim(), periodoLetivo)) {
-      return res.status(400).json({ mensagem: 'O código deve conter o semestre em dois dígitos seguido do número da turma em dois dígitos. Exemplo: 0201.' });
+      return res.status(400).json({ mensagem: 'O código deve conter curso, semestre e a letra da turma (A, B ou C). Exemplo: 0102A.' });
     }
 
     const curso = await Curso.findById(cursoId).select('_id duracao codigo');
     if (!curso) return res.status(404).json({ mensagem: 'O curso selecionado não foi encontrado.' });
     if (Number(periodoLetivo) > curso.duracao) return res.status(400).json({ mensagem: 'O semestre da turma deve estar dentro da duração do curso.' });
 
-    if (!codigoTurmaValido(codigo.trim(), periodoLetivo, curso.codigo)) return res.status(400).json({ mensagem: `O código deve começar por ${curso.codigo}, seguido do semestre e de 01, 02 ou 03.` });
+    if (!codigoTurmaValido(codigo.trim(), periodoLetivo, curso.codigo)) return res.status(400).json({ mensagem: `O código deve começar por ${curso.codigo}, seguido do semestre e da letra A, B ou C.` });
     const turma = await Turma.create({
       codigo: codigo.trim().toUpperCase(),
       cursoId: curso._id,
@@ -565,7 +571,7 @@ router.put('/turmas/:id', async (req, res) => {
       !Number.isInteger(vagasNumericas) || vagasNumericas < 1 || vagasNumericas > 300
     ) return res.status(400).json({ mensagem: 'Preencha código, curso, período letivo e vagas com valores válidos.' });
     if (!codigoTurmaValido(codigo.trim(), periodoLetivo)) {
-      return res.status(400).json({ mensagem: 'O código deve conter o semestre em dois dígitos seguido do número da turma em dois dígitos. Exemplo: 0201.' });
+      return res.status(400).json({ mensagem: 'O código deve conter curso, semestre e a letra da turma (A, B ou C). Exemplo: 0102A.' });
     }
 
     const turmaAtual = await Turma.findById(id).select('cursoId horarios alunosIds codigo');
@@ -577,7 +583,7 @@ router.put('/turmas/:id', async (req, res) => {
     const curso = await Curso.findById(cursoId).select('_id duracao codigo');
     if (!curso) return res.status(404).json({ mensagem: 'O curso selecionado não foi encontrado.' });
     if (Number(periodoLetivo) > curso.duracao) return res.status(400).json({ mensagem: 'O semestre da turma deve estar dentro da duração do curso.' });
-    if (!codigoTurmaValido(codigo.trim(), periodoLetivo, curso.codigo)) return res.status(400).json({ mensagem: `O código deve começar por ${curso.codigo}, seguido do semestre e de 01, 02 ou 03.` });
+    if (!codigoTurmaValido(codigo.trim(), periodoLetivo, curso.codigo)) return res.status(400).json({ mensagem: `O código deve começar por ${curso.codigo}, seguido do semestre e da letra A, B ou C.` });
     if (turmaAtual.horarios.length && Number(periodoLetivo) !== semestreDaTurma(turmaAtual.periodoLetivo)) {
       return res.status(409).json({ mensagem: 'Remova os horários vinculados antes de alterar o semestre desta turma.' });
     }
@@ -598,7 +604,7 @@ router.delete('/turmas/:id', async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ mensagem: 'Turma inválida.' });
     const turma = await Turma.findById(req.params.id);
-    if (turma && /^\d{6}$/.test(turma.codigo) && Number(turma.codigo.slice(-2)) >= 1 && Number(turma.codigo.slice(-2)) <= 3) return res.status(409).json({ mensagem: 'Os três grupos de cada semestre são fixos e não podem ser removidos.' });
+    if (turma && (letraTurma(turma.codigo) || (/^\d{6}$/.test(turma.codigo) && Number(turma.codigo.slice(-2)) >= 1 && Number(turma.codigo.slice(-2)) <= 3))) return res.status(409).json({ mensagem: 'Os três grupos de cada semestre são fixos e não podem ser removidos.' });
     if (!turma) return res.status(404).json({ mensagem: 'Turma não encontrada.' });
     if (turma.alunosIds?.length) return res.status(409).json({ mensagem: 'Remova as matrículas dos alunos antes de excluir esta turma.' });
     if (turma.horarios.length) return res.status(409).json({ mensagem: 'Remova os horários de aula associados antes de excluir esta turma.' });

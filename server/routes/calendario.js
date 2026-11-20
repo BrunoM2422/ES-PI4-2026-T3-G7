@@ -76,6 +76,7 @@ function formatarEvento(evento, usuario) {
     category: evento.category,
     scope: evento.scope,
     turmaId: evento.turmaId ? String(evento.turmaId) : null,
+    disciplinaId: evento.disciplinaId ? String(evento.disciplinaId) : null,
     cursoId: evento.cursoId ? String(evento.cursoId) : null,
     canManage: evento.scope === 'global'
       ? usuario.papel === 'admin'
@@ -97,10 +98,23 @@ router.get('/minhas-turmas', autenticar, async (req, res) => {
     const docente = await Docente.findOne(filtroPerfil(req.usuario, 'professor')).select('_id');
     if (!docente) return res.status(404).json({ mensagem: 'Perfil docente não encontrado.' });
     const turmas = await Turma.find({ 'horarios.docenteId': docente._id })
-      .select('codigo periodoLetivo')
+      .select('codigo periodoLetivo horarios')
+      .populate('horarios.disciplinaId', 'nome codigo')
       .sort({ codigo: 1 })
       .lean();
-    return res.json({ turmas: turmas.map(turma => ({ id: String(turma._id), codigo: turma.codigo, periodoLetivo: turma.periodoLetivo })) });
+    const paresOferta = turmas.flatMap(turma => (turma.horarios || [])
+      .filter(horario => String(horario.docenteId) === String(docente._id) && horario.disciplinaId)
+      .map(horario => {
+        const oferta = {
+          turmaId: String(turma._id), turmaCodigo: turma.codigo,
+          periodoLetivo: turma.periodoLetivo,
+          disciplinaId: String(horario.disciplinaId._id), disciplina: horario.disciplinaId.nome,
+          codigoDisciplina: horario.disciplinaId.codigo
+        };
+        return [`${oferta.turmaId}:${oferta.disciplinaId}`, oferta];
+      }));
+    const ofertas = [...new Map(paresOferta).values()];
+    return res.json({ ofertas });
   } catch (erro) {
     console.error('Erro ao carregar turmas do docente:', erro);
     return res.status(500).json({ mensagem: 'Não foi possível carregar suas turmas.' });
@@ -155,13 +169,14 @@ router.get('/eventos', autenticar, async (req, res) => {
       const matriculas = estudante?.gradeMatriculas || [];
       if (matriculas.length) {
         for (const matricula of matriculas) {
-          if (matricula.turmaId) permissoes.push({ scope: 'turma', turmaId: matricula.turmaId });
+          if (matricula.turmaId && matricula.disciplinaId) {
+            permissoes.push({ scope: 'turma', turmaId: matricula.turmaId, disciplinaId: matricula.disciplinaId });
+          }
         }
       } else if (estudante?.turmaId) {
-        // Compatibilidade com cadastros antigos sem gradeMatriculas.
-        permissoes.push({ scope: 'turma', turmaId: estudante.turmaId });
+        // Compatibilidade com turmas antigas sem matrícula por disciplina.
+        permissoes.push({ scope: 'turma', turmaId: estudante.turmaId, disciplinaId: null });
       }
-      if (estudante?.cursoId) permissoes.push({ scope: 'curso', cursoId: estudante.cursoId });
       filtro = { $or: permissoes };
     } else if (req.usuario.papel === 'admin' && req.usuario.nivelPermissao === 'admin_2') {
       const permissoes = [{ scope: 'global' }];
@@ -234,6 +249,7 @@ router.post('/eventos', autenticar, async (req, res) => {
 
     let scope;
     let turmaId = null;
+    let disciplinaId = null;
     let cursoId = null;
     if (req.usuario.papel === 'admin') {
       if (req.usuario.nivelPermissao === 'admin_2') {
@@ -244,15 +260,16 @@ router.post('/eventos', autenticar, async (req, res) => {
         scope = 'global';
       }
     } else if (req.usuario.papel === 'professor') {
-      if (!mongoose.isValidObjectId(req.body.turmaId)) {
-        return res.status(400).json({ mensagem: 'Selecione uma turma válida para compartilhar o evento.' });
+      if (!mongoose.isValidObjectId(req.body.turmaId) || !mongoose.isValidObjectId(req.body.disciplinaId)) {
+        return res.status(400).json({ mensagem: 'Selecione uma disciplina e turma válidas para compartilhar o evento.' });
       }
       const docente = await Docente.findOne(filtroPerfil(req.usuario, 'professor')).select('_id');
       if (!docente) return res.status(404).json({ mensagem: 'Perfil docente não encontrado.' });
-      const turma = await Turma.findOne({ _id: req.body.turmaId, 'horarios.docenteId': docente._id }).select('_id');
-      if (!turma) return res.status(403).json({ mensagem: 'Você não está alocado a essa turma.' });
+      const turma = await Turma.findOne({ _id: req.body.turmaId, horarios: { $elemMatch: { docenteId: docente._id, disciplinaId: req.body.disciplinaId } } }).select('_id');
+      if (!turma) return res.status(403).json({ mensagem: 'Você não está alocado a essa disciplina nesta turma.' });
       scope = 'turma';
       turmaId = turma._id;
+      disciplinaId = req.body.disciplinaId;
     } else {
       scope = 'privado';
     }
@@ -265,6 +282,7 @@ router.post('/eventos', autenticar, async (req, res) => {
       scope,
       createdBy: req.usuario.id,
       turmaId,
+      disciplinaId,
       cursoId,
       start: feriado ? '' : req.body.start,
       end: feriado ? '' : req.body.end,
@@ -299,15 +317,18 @@ router.put('/eventos/:eventoId', autenticar, async (req, res) => {
     }
 
     let turmaId = existente.turmaId || null;
+    let disciplinaId = existente.disciplinaId || null;
     if (existente.scope === 'turma' && req.usuario.papel === 'professor') {
       const turmaSolicitada = req.body.turmaId || turmaId;
-      if (!mongoose.isValidObjectId(turmaSolicitada)) {
-        return res.status(400).json({ mensagem: 'Selecione uma turma válida para o evento.' });
+      const disciplinaSolicitada = req.body.disciplinaId || disciplinaId;
+      if (!mongoose.isValidObjectId(turmaSolicitada) || !mongoose.isValidObjectId(disciplinaSolicitada)) {
+        return res.status(400).json({ mensagem: 'Selecione uma disciplina e turma válidas para o evento.' });
       }
       const docente = await Docente.findOne(filtroPerfil(req.usuario, 'professor')).select('_id');
-      const turma = docente && await Turma.findOne({ _id: turmaSolicitada, 'horarios.docenteId': docente._id }).select('_id');
-      if (!turma) return res.status(403).json({ mensagem: 'Você não está alocado a essa turma.' });
+      const turma = docente && await Turma.findOne({ _id: turmaSolicitada, horarios: { $elemMatch: { docenteId: docente._id, disciplinaId: disciplinaSolicitada } } }).select('_id');
+      if (!turma) return res.status(403).json({ mensagem: 'Você não está alocado a essa disciplina nesta turma.' });
       turmaId = turma._id;
+      disciplinaId = disciplinaSolicitada;
     }
 
     const feriado = req.body.category === 'feriado';
@@ -315,6 +336,7 @@ router.put('/eventos/:eventoId', autenticar, async (req, res) => {
     existente.date = req.body.date;
     existente.category = req.body.category;
     existente.turmaId = turmaId;
+    existente.disciplinaId = disciplinaId;
     existente.start = feriado ? '' : req.body.start;
     existente.end = feriado ? '' : req.body.end;
     existente.location = feriado ? '' : (req.body.location || '').trim();
