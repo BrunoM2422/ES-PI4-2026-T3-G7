@@ -1,4 +1,5 @@
 // Autores:
+// Nícolas Mitjans Nunes - 25005124
 const mongoose = require('mongoose');
 
 const cursoSchema = new mongoose.Schema({

@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const codigo = document.createElement('span');
         codigo.className = 'teacher-week-lesson-meta';
-        codigo.textContent = `Código da turma: ${aula.codigoTurma || '—'}`;
+        codigo.textContent = `Código da turma: ${window.formatarCodigoTurmaDisciplina(aula.codigoTurma, aula.codigoDisciplina) || '—'}`;
 
         const local = document.createElement('div');
         local.className = 'teacher-week-lesson-location';

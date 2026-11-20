@@ -1,4 +1,5 @@
 // Autores:
+// Nícolas Mitjans Nunes - 25005124
 const express = require('express');
 const mongoose = require('mongoose');
 const { autenticar } = require('../services/autenticacao');
@@ -117,10 +118,9 @@ router.get('/professor/:turmaId/:disciplinaId', autenticar, async (req, res) => 
     const docente = await docenteDaSessao(req.usuario);
     const turma = docente && await turmaAutorizada(req.params.turmaId, req.params.disciplinaId, docente._id);
     if (!turma) return res.status(404).json({ mensagem: 'Disciplina não encontrada entre suas turmas.' });
-    const idsAlunos = new Set((turma.alunosIds || []).map(item => String(item._id || item)));
-    const matriculados = await Estudante.find({ 'gradeMatriculas.turmaId': turma._id }).select('_id nome ra statusAcademico').sort({ nome: 1 }).lean();
-    matriculados.forEach(aluno => idsAlunos.add(String(aluno._id)));
-    const alunos = idsAlunos.size ? await Estudante.find({ _id: { $in: [...idsAlunos] } }).select('_id nome ra statusAcademico').sort({ nome: 1 }).lean() : [];
+    const alunos = await Estudante.find({
+      gradeMatriculas: { $elemMatch: { turmaId: turma._id, disciplinaId: req.params.disciplinaId } }
+    }).select('_id nome ra statusAcademico').sort({ nome: 1 }).lean();
     const componentes = await ComponenteNota.find({ turmaId: turma._id, disciplinaId: req.params.disciplinaId }).sort({ createdAt: 1 }).lean();
     let configuracao = await ConfiguracaoNota.findOne({ turmaId: turma._id, disciplinaId: req.params.disciplinaId }).lean();
     if (!configuracao && componentes.length) {
@@ -220,6 +220,52 @@ router.post('/professor/:turmaId/:disciplinaId/componentes', autenticar, async (
   }
 });
 
+router.put('/professor/:turmaId/:disciplinaId/componentes/:componenteId', autenticar, async (req, res) => {
+  if (req.usuario.papel !== 'professor') return res.status(403).json({ mensagem: 'Acesso exclusivo de docentes.' });
+  if (![req.params.turmaId, req.params.disciplinaId, req.params.componenteId].every(id)) return res.status(400).json({ mensagem: 'Turma, disciplina ou componente inválido.' });
+  const titulo = typeof req.body.titulo === 'string' ? req.body.titulo.trim() : '';
+  const valorMaximo = Number(req.body.valorMaximo);
+  const peso = Number(req.body.peso);
+  if (!titulo || titulo.length > 80 || !Number.isFinite(valorMaximo) || valorMaximo <= 0 || valorMaximo > 100 || !Number.isFinite(peso) || peso <= 0 || peso > 100) return res.status(400).json({ mensagem: 'Informe nome, valor máximo e peso válidos.' });
+  try {
+    const docente = await docenteDaSessao(req.usuario);
+    const turma = docente && await turmaAutorizada(req.params.turmaId, req.params.disciplinaId, docente._id);
+    if (!turma) return res.status(404).json({ mensagem: 'Disciplina não encontrada entre suas turmas.' });
+    const componente = await ComponenteNota.findOne({ _id: req.params.componenteId, turmaId: turma._id, disciplinaId: req.params.disciplinaId });
+    if (!componente) return res.status(404).json({ mensagem: 'Componente não encontrado.' });
+    const notaAcimaDoNovoMaximo = await Nota.exists({ componenteId: componente._id, valor: { $gt: valorMaximo } });
+    if (notaAcimaDoNovoMaximo) return res.status(409).json({ mensagem: 'O valor máximo não pode ser menor que uma nota já lançada.' });
+    componente.titulo = titulo;
+    componente.valorMaximo = valorMaximo;
+    componente.peso = peso;
+    await componente.save();
+    return res.json({ mensagem: 'Componente atualizado.', componente: { id: String(componente._id), titulo, valorMaximo, peso, tipoMedia: componente.tipoMedia } });
+  } catch (erro) {
+    if (erro.code === 11000) return res.status(409).json({ mensagem: 'Já existe um componente com esse nome nesta disciplina.' });
+    console.error('Erro ao atualizar componente de nota:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível atualizar o componente.' });
+  }
+});
+
+router.delete('/professor/:turmaId/:disciplinaId/componentes/:componenteId', autenticar, async (req, res) => {
+  if (req.usuario.papel !== 'professor') return res.status(403).json({ mensagem: 'Acesso exclusivo de docentes.' });
+  if (![req.params.turmaId, req.params.disciplinaId, req.params.componenteId].every(id)) return res.status(400).json({ mensagem: 'Turma, disciplina ou componente inválido.' });
+  try {
+    const docente = await docenteDaSessao(req.usuario);
+    const turma = docente && await turmaAutorizada(req.params.turmaId, req.params.disciplinaId, docente._id);
+    if (!turma) return res.status(404).json({ mensagem: 'Disciplina não encontrada entre suas turmas.' });
+    const componente = await ComponenteNota.findOneAndDelete({ _id: req.params.componenteId, turmaId: turma._id, disciplinaId: req.params.disciplinaId });
+    if (!componente) return res.status(404).json({ mensagem: 'Componente não encontrado.' });
+    await Nota.deleteMany({ componenteId: componente._id, turmaId: turma._id, disciplinaId: req.params.disciplinaId });
+    const componentesRestantes = await ComponenteNota.exists({ turmaId: turma._id, disciplinaId: req.params.disciplinaId });
+    if (!componentesRestantes) await ConfiguracaoNota.deleteOne({ turmaId: turma._id, disciplinaId: req.params.disciplinaId });
+    return res.json({ mensagem: 'Componente e notas associadas excluídos.' });
+  } catch (erro) {
+    console.error('Erro ao excluir componente de nota:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível excluir o componente.' });
+  }
+});
+
 router.put('/professor/:turmaId/:disciplinaId/notas', autenticar, async (req, res) => {
   if (req.usuario.papel !== 'professor') return res.status(403).json({ mensagem: 'Acesso exclusivo de docentes.' });
   if (!id(req.params.turmaId) || !id(req.params.disciplinaId)) return res.status(400).json({ mensagem: 'Turma ou disciplina inválida.' });
@@ -228,9 +274,10 @@ router.put('/professor/:turmaId/:disciplinaId/notas', autenticar, async (req, re
     const docente = await docenteDaSessao(req.usuario);
     const turma = docente && await turmaAutorizada(req.params.turmaId, req.params.disciplinaId, docente._id);
     if (!turma) return res.status(404).json({ mensagem: 'Disciplina não encontrada entre suas turmas.' });
-    const alunos = await Estudante.find({ 'gradeMatriculas.turmaId': turma._id }).select('_id').lean();
+    const alunos = await Estudante.find({
+      gradeMatriculas: { $elemMatch: { turmaId: turma._id, disciplinaId: req.params.disciplinaId } }
+    }).select('_id').lean();
     const idsPermitidos = new Set(alunos.map(a => String(a._id)));
-    (turma.alunosIds || []).forEach(aluno => idsPermitidos.add(String(aluno._id || aluno)));
     const componentes = await ComponenteNota.find({ turmaId: turma._id, disciplinaId: req.params.disciplinaId }).select('_id valorMaximo').lean();
     const maximos = new Map(componentes.map(c => [String(c._id), c.valorMaximo]));
     const existentes = await Nota.find({ turmaId: turma._id, disciplinaId: req.params.disciplinaId }).select('alunoId componenteId valor').lean();

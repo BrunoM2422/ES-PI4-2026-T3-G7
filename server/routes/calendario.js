@@ -1,4 +1,5 @@
 // Autores:
+// Nícolas Mitjans Nunes - 25005124
 const express = require('express');
 const mongoose = require('mongoose');
 const Evento = require('../models/Evento');
@@ -125,6 +126,7 @@ router.get('/minhas-aulas', autenticar, async (req, res) => {
       .filter(horario => String(horario.docenteId) === String(docente._id))
       .map(horario => ({
         materia: horario.disciplinaId?.nome || 'Matéria não identificada',
+        codigoDisciplina: horario.disciplinaId?.codigo || '',
         turma: turma.cursoId?.nome || `Turma ${turma.codigo}`,
         codigoTurma: turma.codigo,
         dia: horario.dia,
@@ -141,15 +143,24 @@ router.get('/minhas-aulas', autenticar, async (req, res) => {
 });
 
 router.get('/eventos', autenticar, async (req, res) => {
+  res.set('Cache-Control', 'private, no-store');
   try {
     if (req.usuario.papel === 'admin' && req.usuario.nivelPermissao === 'admin_3') return res.status(403).json({ mensagem: 'Calendário indisponível para este perfil.' });
     let filtro = { scope: 'global' };
     if (req.usuario.papel === 'professor') {
       filtro = { $or: [{ scope: 'global' }, { createdBy: req.usuario.id }] };
     } else if (req.usuario.papel === 'aluno') {
-      const estudante = await Estudante.findOne(filtroPerfil(req.usuario, 'aluno')).select('turmaId cursoId').lean();
+      const estudante = await Estudante.findOne(filtroPerfil(req.usuario, 'aluno')).select('turmaId gradeMatriculas cursoId').lean();
       const permissoes = [{ scope: 'global' }, { scope: 'privado', createdBy: req.usuario.id }];
-      if (estudante?.turmaId) permissoes.push({ scope: 'turma', turmaId: estudante.turmaId });
+      const matriculas = estudante?.gradeMatriculas || [];
+      if (matriculas.length) {
+        for (const matricula of matriculas) {
+          if (matricula.turmaId) permissoes.push({ scope: 'turma', turmaId: matricula.turmaId });
+        }
+      } else if (estudante?.turmaId) {
+        // Compatibilidade com cadastros antigos sem gradeMatriculas.
+        permissoes.push({ scope: 'turma', turmaId: estudante.turmaId });
+      }
       if (estudante?.cursoId) permissoes.push({ scope: 'curso', cursoId: estudante.cursoId });
       filtro = { $or: permissoes };
     } else if (req.usuario.papel === 'admin' && req.usuario.nivelPermissao === 'admin_2') {

@@ -1,4 +1,5 @@
 // Autores:
+// Nícolas Mitjans Nunes - 25005124
 document.addEventListener('DOMContentLoaded', async () => {
   const cards = document.querySelector('[data-grade-cards]');
   const count = document.querySelector('[data-grade-count]');
@@ -16,7 +17,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     detail.hidden = false;
     detail.replaceChildren();
     const head = el('div', 'grades-detail-heading');
-    const infos = el('div'); infos.append(el('span', 'grades-eyebrow', `Turma ${disciplina.turma} · ${disciplina.periodoLetivo}`), el('h2', '', disciplina.disciplina), el('p', '', 'Notas registradas pelos seus professores.'));
+    const codigoTurma = window.formatarCodigoTurmaDisciplina(disciplina.turma, disciplina.codigo);
+    const infos = el('div'); infos.append(el('span', 'grades-eyebrow', `Turma ${codigoTurma} · ${disciplina.periodoLetivo}`), el('h2', '', disciplina.disciplina), el('p', '', 'Notas registradas pelos seus professores.'));
     const back = el('button', 'grades-back', '← Voltar'); back.type = 'button'; back.addEventListener('click', fechar); head.append(infos, back); detail.append(head);
     if (!disciplina.componentes.length) { detail.append(el('p', 'grades-empty', 'Ainda não há componentes ou notas lançadas nesta disciplina.')); return; }
 
@@ -46,7 +48,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const card = el('button', 'grades-card'); card.type = 'button';
       const quantidade = `${disciplina.componentes.length} ${disciplina.componentes.length === 1 ? 'componente lançado' : 'componentes lançados'}`;
       const rodape = temMedia(disciplina.media) ? `Média ${formatarMedia(disciplina.media)} · ${quantidade}  →` : `${quantidade}  →`;
-      card.append(el('span', 'grades-card-top', `${disciplina.codigo || 'Disciplina'} · Turma ${disciplina.turma}`), el('strong', '', disciplina.disciplina), el('span', 'grades-card-bottom', rodape));
+      const codigoTurma = window.formatarCodigoTurmaDisciplina(disciplina.turma, disciplina.codigo);
+      card.append(el('span', 'grades-card-top', `${disciplina.codigo || 'Disciplina'} · Turma ${codigoTurma}`), el('strong', '', disciplina.disciplina), el('span', 'grades-card-bottom', rodape));
       card.addEventListener('click', () => abrir(disciplina)); cards.append(card);
     });
   } catch (error) { count.textContent = '—'; cards.replaceChildren(el('p', 'student-dashboard-empty', error.message || 'Não foi possível carregar suas disciplinas.')); }

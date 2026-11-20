@@ -251,6 +251,16 @@
 .teacher-announcement-form .teacher-class-action { justify-self: start; }
 .grades-component-form { grid-template-columns: repeat(3, minmax(120px, 1fr)); align-items: end; padding: 14px; border: 1px solid var(--line, #e3eaf3); border-radius: 9px; }
 .grades-component-form .teacher-announcement-feedback { grid-column: 1 / -1; }
+.grades-component-manager { margin-bottom: 18px; }
+.grades-component-edit { display: grid; grid-template-columns: minmax(150px, 2fr) minmax(110px, 1fr) minmax(90px, .7fr) auto; gap: 10px; align-items: end; padding: 12px; border: 1px solid var(--line, #e3eaf3); border-radius: 9px; margin: 10px 0; }
+.grades-component-edit label { display: grid; gap: 5px; color: var(--muted, #71809b); font-size: 10px; font-weight: 650; }
+.grades-component-edit input { min-width: 0; min-height: 36px; padding: 0 9px; border: 1px solid var(--line, #e3eaf3); border-radius: 7px; background: #fff; color: var(--ink, #172033); font: inherit; font-size: 11px; }
+.grades-component-edit input:disabled { background: #f1f3f7; color: #9aa5b7; cursor: not-allowed; }
+.teacher-roster-discipline-filter { display: grid; gap: 6px; max-width: 360px; margin: 12px 0; color: var(--muted, #71809b); font-size: 11px; font-weight: 650; }
+.teacher-roster-discipline-filter select { min-height: 38px; padding: 0 10px; border: 1px solid var(--line, #e3eaf3); border-radius: 7px; background: #fff; color: var(--ink, #172033); font: inherit; }
+.grades-component-actions { display: flex; gap: 7px; }
+.teacher-class-action.is-danger { border-color: #d94841; color: #b42318; }
+.grades-component-edit .teacher-class-action { min-height: 36px; padding: 0 10px; }
 .grades-entry-table { min-width: 620px; }
 .grades-entry-table td { min-width: 120px; }
 .grade-value-input { width: 90px; min-height: 32px; padding: 0 8px; border: 1px solid var(--line, #e3eaf3); border-radius: 6px; background: #fff; color: var(--ink, #172033); font: inherit; font-size: 11px; }
@@ -269,6 +279,7 @@ body.theme-dark .teacher-announcement-form input,
 body.theme-dark .teacher-announcement-form select,
 body.theme-dark .teacher-announcement-form textarea { border-color: var(--line); background: #202735; color: var(--ink); }
 body.theme-dark .teacher-announcement-form input:disabled { background: #171d28; color: #748096; }
+body.theme-dark .teacher-roster-discipline-filter select { border-color: var(--line); background: #202735; color: var(--ink); }
 body.theme-dark .teacher-class-card:hover,
 body.theme-dark .teacher-class-card.is-selected { background: #252e3e; }
 body.theme-dark .teacher-class-action.is-primary { background: var(--primary); color: #fff; }
@@ -507,6 +518,9 @@ body.theme-dark .teacher-stat > i {
   .teacher-class-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .teacher-class-action { padding: 0 8px; }
   .grades-component-form { grid-template-columns: 1fr; }
+  .grades-component-edit { grid-template-columns: 1fr 1fr; }
+  .grades-component-edit label:first-child { grid-column: 1 / -1; }
+  .grades-component-actions { grid-column: 1 / -1; }
 }
 @media (max-width: 540px) {
   .teacher-stat-grid {

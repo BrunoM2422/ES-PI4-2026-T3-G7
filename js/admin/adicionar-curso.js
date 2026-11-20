@@ -1,4 +1,5 @@
 // Autores:
+// Nícolas Mitjans Nunes - 25005124
 document.addEventListener('DOMContentLoaded', () => {
   const botaoCadastrar = document.querySelector('.admin-button');
   if (!botaoCadastrar) return;

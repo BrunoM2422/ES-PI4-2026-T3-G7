@@ -1,4 +1,5 @@
 // Autores:
+// Nícolas Mitjans Nunes - 25005124
 document.addEventListener('DOMContentLoaded', async () => {
   const grid = document.querySelector('[data-frequency-grid]');
   const details = document.querySelector('[data-frequency-details]');
@@ -29,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       card.append(topo);
       card.append(criar('strong', 'teacher-class-card-course', `Turma ${turma.codigo}`));
       card.append(criar('span', 'teacher-class-card-subject-count', `${turma.materias.length} ${turma.materias.length === 1 ? 'disciplina' : 'disciplinas'}`));
-      card.append(criar('span', 'teacher-class-card-subjects', turma.materias.map(m => `${m.nome}: até ${m.maxFaltas} faltas`).join(' · ')));
+      card.append(criar('span', 'teacher-class-card-subjects', turma.materias.map(m => `${m.nome} · Turma ${window.formatarCodigoTurmaDisciplina(turma.codigo, m.codigo)}: até ${m.maxFaltas} faltas`).join(' · ')));
       card.addEventListener('click', () => abrir(turma));
       grid.append(card);
     });
@@ -55,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const info = criar('div');
       info.append(criar('span', 'teacher-classes-eyebrow', `Turma ${data.turma.codigo}`));
       info.append(criar('h2', '', 'Chamada e faltas'));
-      info.append(criar('p', '', data.materias.map(m => `${m.nome}: ${m.ocorrenciasSemanais * 4} faltas permitidas (75% de presença)`).join(' · ')));
+      info.append(criar('p', '', data.materias.map(m => `${m.nome} · Turma ${window.formatarCodigoTurmaDisciplina(data.turma.codigo, m.codigo)}: ${m.ocorrenciasSemanais * 4} faltas permitidas (75% de presença)`).join(' · ')));
       heading.append(info);
       telaChamada.append(heading);
 
@@ -71,7 +72,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       opcaoInicial.selected = true;
       select.add(opcaoInicial);
       data.aulasHoje.forEach(aula => {
-        const option = new Option(`${aula.disciplina} · ${String(aula.inicio).padStart(2, '0')}:00–${String(aula.fim).padStart(2, '0')}:00`, aula.id);
+        const option = new Option(`${aula.disciplina} · Turma ${window.formatarCodigoTurmaDisciplina(turma.codigo, aula.codigoDisciplina)} · ${String(aula.inicio).padStart(2, '0')}:00–${String(aula.fim).padStart(2, '0')}:00`, aula.id);
+        option.dataset.disciplinaId = aula.disciplinaId;
         option.disabled = minutos < aula.inicio * 60 || minutos >= aula.fim * 60;
         if (!option.disabled && select.value === '') option.selected = true;
         select.add(option);
@@ -87,20 +89,25 @@ document.addEventListener('DOMContentLoaded', async () => {
       tabela.className = 'teacher-roster-table';
       tabela.innerHTML = '<thead><tr><th>Aluno</th><th>Presente</th></tr></thead>';
       const corpo = document.createElement('tbody');
-      data.alunos.forEach(aluno => {
-        const tr = document.createElement('tr');
-        const nome = criar('td', 'teacher-roster-name', aluno.nome);
-        const presenca = document.createElement('td');
-        const label = document.createElement('label');
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = true;
-        checkbox.dataset.aluno = aluno.id;
-        label.append(checkbox, document.createTextNode(' Presente'));
-        presenca.append(label);
-        tr.append(nome, presenca);
-        corpo.append(tr);
-      });
+      const renderizarAlunosDaAula = () => {
+        corpo.replaceChildren();
+        const aulaSelecionada = data.aulasHoje.find(aula => aula.id === select.value);
+        (aulaSelecionada ? data.alunosPorDisciplina[aulaSelecionada.disciplinaId] || [] : []).forEach(aluno => {
+          const tr = document.createElement('tr');
+          const nome = criar('td', 'teacher-roster-name', aluno.nome);
+          const presenca = document.createElement('td');
+          const label = document.createElement('label');
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox'; checkbox.checked = true; checkbox.dataset.aluno = aluno.id;
+          label.append(checkbox, document.createTextNode(' Presente'));
+          presenca.append(label); tr.append(nome, presenca); corpo.append(tr);
+        });
+        mensagem.textContent = aulaSelecionada
+          ? (corpo.childElementCount ? 'A chamada só fica disponível durante o horário da aula.' : 'Não há alunos matriculados nesta disciplina e turma.')
+          : 'Selecione uma aula para exibir os alunos matriculados naquela disciplina.';
+      };
+      select.addEventListener('change', renderizarAlunosDaAula);
+      renderizarAlunosDaAula();
       tabela.append(corpo);
       const salvar = criar('button', 'teacher-class-action is-primary', 'Registrar chamada');
       salvar.type = 'submit';

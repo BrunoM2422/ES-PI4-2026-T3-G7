@@ -27,7 +27,7 @@ router.get('/', autenticar, async (req, res) => {
       ? aluno.gradeMatriculas
       : aluno.turmaId ? [{ turmaId: aluno.turmaId, disciplinaId: null }] : [];
     const turmaIds = [...new Set(matriculas.map(item => String(item.turmaId)))];
-    const turmas = turmaIds.length ? await Turma.find({ _id: { $in: turmaIds } }).select('codigo horarios').populate('horarios.disciplinaId', 'nome').lean() : [];
+    const turmas = turmaIds.length ? await Turma.find({ _id: { $in: turmaIds } }).select('codigo horarios').populate('horarios.disciplinaId', 'nome codigo').lean() : [];
     const disciplinas = new Map();
     for (const matricula of matriculas) {
       const turma = turmas.find(item => String(item._id) === String(matricula.turmaId));
@@ -35,7 +35,7 @@ router.get('/', autenticar, async (req, res) => {
       const aulas = turma.horarios.filter(aula => !matricula.disciplinaId || String(aula.disciplinaId?._id || aula.disciplinaId) === String(matricula.disciplinaId));
       for (const aula of aulas) {
         const idDisciplina = String(aula.disciplinaId?._id || aula.disciplinaId);
-        if (!disciplinas.has(idDisciplina)) disciplinas.set(idDisciplina, { id: idDisciplina, nome: aula.disciplinaId?.nome || 'Disciplina', turmaId: String(turma._id), turma: turma.codigo, totalAulasSemanais: 0 });
+        if (!disciplinas.has(idDisciplina)) disciplinas.set(idDisciplina, { id: idDisciplina, nome: aula.disciplinaId?.nome || 'Disciplina', codigo: aula.disciplinaId?.codigo || '', turmaId: String(turma._id), turma: turma.codigo, totalAulasSemanais: 0 });
         disciplinas.get(idDisciplina).totalAulasSemanais++;
       }
     }

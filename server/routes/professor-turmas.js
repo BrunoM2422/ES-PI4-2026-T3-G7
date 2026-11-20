@@ -22,6 +22,19 @@ function aulasDoDocente(turma, docenteId) {
     .filter(Boolean);
 }
 
+function disciplinasDoDocente(turma, docenteId) {
+  const disciplinas = new Map();
+  (turma.horarios || [])
+    .filter(item => String(item.docenteId?._id || item.docenteId) === String(docenteId))
+    .forEach(item => {
+      const disciplinaId = String(item.disciplinaId?._id || item.disciplinaId);
+      if (disciplinaId && !disciplinas.has(disciplinaId)) disciplinas.set(disciplinaId, {
+        id: disciplinaId, nome: item.disciplinaId?.nome || 'Disciplina', codigo: item.disciplinaId?.codigo || ''
+      });
+    });
+  return [...disciplinas.values()];
+}
+
 async function idsDosAlunos(turma) {
   const ids = new Set((turma.alunosIds || []).map(id => String(id?._id || id)));
   const matriculadosNaGrade = await Estudante.find({ 'gradeMatriculas.turmaId': turma._id })
@@ -31,17 +44,19 @@ async function idsDosAlunos(turma) {
   return [...ids];
 }
 
-async function idsDosAlunosPorTurma(turmas) {
-  const mapa = new Map(turmas.map(turma => [
-    String(turma._id), new Set((turma.alunosIds || []).map(id => String(id?._id || id)))
+async function idsDosAlunosPorTurma(turmas, docenteId) {
+  const disciplinasPorTurma = new Map(turmas.map(turma => [
+    String(turma._id), new Set(disciplinasDoDocente(turma, docenteId).map(item => item.id))
   ]));
+  const mapa = new Map(turmas.map(turma => [String(turma._id), new Set()]));
   if (!turmas.length) return mapa;
   const matriculas = await Estudante.find({ 'gradeMatriculas.turmaId': { $in: turmas.map(turma => turma._id) } })
     .select('_id gradeMatriculas')
     .lean();
   matriculas.forEach(aluno => (aluno.gradeMatriculas || []).forEach(item => {
-    const ids = mapa.get(String(item.turmaId));
-    if (ids) ids.add(String(aluno._id));
+    const turmaId = String(item.turmaId);
+    const ids = mapa.get(turmaId);
+    if (ids && disciplinasPorTurma.get(turmaId)?.has(String(item.disciplinaId))) ids.add(String(aluno._id));
   }));
   return mapa;
 }
@@ -55,11 +70,11 @@ router.get('/', autenticar, async (req, res) => {
     const turmas = await Turma.find({ 'horarios.docenteId': docente._id })
       .select('codigo periodoLetivo vagas cursoId horarios alunosIds')
       .populate('cursoId', 'nome')
-      .populate('horarios.disciplinaId', 'nome')
+      .populate('horarios.disciplinaId', 'nome codigo')
       .sort({ codigo: 1 })
       .lean();
 
-    const idsPorTurma = await idsDosAlunosPorTurma(turmas);
+    const idsPorTurma = await idsDosAlunosPorTurma(turmas, docente._id);
     return res.json({ turmas: turmas.map(turma => ({
       id: String(turma._id),
       codigo: turma.codigo,
@@ -67,7 +82,8 @@ router.get('/', autenticar, async (req, res) => {
       periodoLetivo: turma.periodoLetivo,
       vagas: turma.vagas,
       alunos: idsPorTurma.get(String(turma._id)).size,
-      disciplinas: [...new Set(aulasDoDocente(turma, docente._id))]
+      disciplinas: [...new Set(aulasDoDocente(turma, docente._id))],
+      disciplinasInfo: disciplinasDoDocente(turma, docente._id)
     })) });
   } catch (erro) {
     console.error('Erro ao carregar turmas do docente:', erro);
@@ -84,21 +100,25 @@ router.get('/:turmaId/alunos', autenticar, async (req, res) => {
     const turma = await Turma.findOne({ _id: req.params.turmaId, 'horarios.docenteId': docente._id })
       .select('codigo periodoLetivo cursoId horarios alunosIds')
       .populate('cursoId', 'nome')
-      .populate('horarios.disciplinaId', 'nome')
+      .populate('horarios.disciplinaId', 'nome codigo')
       .lean();
     if (!turma) return res.status(404).json({ mensagem: 'Turma não encontrada entre suas turmas.' });
 
-    const ids = await idsDosAlunos(turma);
-    const alunos = ids.length
-      ? await Estudante.find({ _id: { $in: ids } }).select('nome ra statusAcademico').sort({ nome: 1 }).lean()
-      : [];
+    const disciplinas = disciplinasDoDocente(turma, docente._id);
+    const disciplinaId = req.query.disciplinaId;
+    if (!mongoose.isValidObjectId(disciplinaId) || !disciplinas.some(item => item.id === String(disciplinaId))) {
+      return res.status(400).json({ mensagem: 'Selecione uma disciplina desta turma.' });
+    }
+    const alunos = await Estudante.find({
+      gradeMatriculas: { $elemMatch: { turmaId: turma._id, disciplinaId } }
+    }).select('nome ra statusAcademico').sort({ nome: 1 }).lean();
     return res.json({
       turma: {
         id: String(turma._id),
         codigo: turma.codigo,
         curso: turma.cursoId?.nome || 'Curso não informado',
         periodoLetivo: turma.periodoLetivo,
-        disciplinas: [...new Set(aulasDoDocente(turma, docente._id))]
+        disciplinas
       },
       alunos: alunos.map(aluno => ({
         id: String(aluno._id), nome: aluno.nome, ra: aluno.ra || '',
@@ -114,6 +134,7 @@ router.get('/:turmaId/alunos', autenticar, async (req, res) => {
 router.post('/:turmaId/comunicados', autenticar, async (req, res) => {
   if (req.usuario.papel !== 'professor') return res.status(403).json({ mensagem: 'Acesso exclusivo de docentes.' });
   if (!mongoose.isValidObjectId(req.params.turmaId)) return res.status(400).json({ mensagem: 'Turma inválida.' });
+  if (!mongoose.isValidObjectId(req.body.disciplinaId)) return res.status(400).json({ mensagem: 'Selecione uma disciplina válida.' });
 
   const titulo = typeof req.body.titulo === 'string' ? req.body.titulo.trim() : '';
   const mensagem = typeof req.body.mensagem === 'string' ? req.body.mensagem.trim() : '';
@@ -125,19 +146,24 @@ router.post('/:turmaId/comunicados', autenticar, async (req, res) => {
     const docente = await docenteDaSessao(req.usuario);
     if (!docente) return res.status(404).json({ mensagem: 'Perfil docente não encontrado.' });
     const turma = await Turma.findOne({ _id: req.params.turmaId, 'horarios.docenteId': docente._id })
-      .select('alunosIds')
+      .select('horarios')
       .lean();
     if (!turma) return res.status(404).json({ mensagem: 'Turma não encontrada entre suas turmas.' });
+    const ministraDisciplina = (turma.horarios || []).some(aula =>
+      String(aula.docenteId) === String(docente._id) && String(aula.disciplinaId) === String(req.body.disciplinaId)
+    );
+    if (!ministraDisciplina) return res.status(403).json({ mensagem: 'Você não está alocado a essa disciplina nesta turma.' });
 
-    const ids = await idsDosAlunos(turma);
-    const alunos = ids.length
-      ? await Estudante.find({ _id: { $in: ids }, statusAcademico: { $ne: 'trancado' } }).select('_id').lean()
-      : [];
+    const alunos = await Estudante.find({
+      statusAcademico: { $ne: 'trancado' },
+      gradeMatriculas: { $elemMatch: { turmaId: req.params.turmaId, disciplinaId: req.body.disciplinaId } }
+    }).select('_id').lean();
     if (!alunos.length) return res.status(409).json({ mensagem: 'Esta turma ainda não possui alunos ativos para receber o comunicado.' });
 
     await Notificacao.insertMany(alunos.map(aluno => ({
       alunoId: aluno._id,
       turmaId: turma._id,
+      disciplinaId: req.body.disciplinaId,
       docenteId: docente._id,
       titulo,
       mensagem

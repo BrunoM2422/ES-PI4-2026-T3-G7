@@ -9,10 +9,11 @@ const router = express.Router();
 
 router.get('/', autenticar, async (req, res) => {
   if (req.usuario.papel !== 'aluno') return res.status(403).json({ mensagem: 'Acesso exclusivo de alunos.' });
+  res.set('Cache-Control', 'private, no-store');
   try {
     const filtros = [{ email: req.usuario.email }];
     if (req.usuario.ra) filtros.push({ ra: req.usuario.ra });
-    const aluno = await Estudante.findOne({ $or: filtros }).select('_id cursoId statusAcademico').lean();
+    const aluno = await Estudante.findOne({ $or: filtros }).select('_id cursoId turmaId gradeMatriculas statusAcademico').lean();
     if (!aluno) return res.status(404).json({ mensagem: 'Cadastro de aluno não encontrado.' });
 
     if (aluno.cursoId && aluno.statusAcademico !== 'trancado') {
@@ -34,7 +35,17 @@ router.get('/', autenticar, async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(100)
       .lean();
-    return res.json({ notificacoes: notificacoes.map(item => ({
+    const matriculas = aluno.gradeMatriculas || [];
+    const chavesMatricula = new Set(matriculas.map(item => `${item.turmaId}:${item.disciplinaId}`));
+    const notificacoesVisiveis = notificacoes.filter(item => {
+      if (!item.turmaId || item.tipo === 'sistema') return true;
+      if (item.disciplinaId) return chavesMatricula.has(`${item.turmaId._id || item.turmaId}:${item.disciplinaId}`);
+      // Notificações antigas não têm disciplina de origem, então não podem ser
+      // exibidas com segurança para alunos matriculados por disciplina.
+      if (matriculas.length) return false;
+      return String(item.turmaId._id || item.turmaId) === String(aluno.turmaId || '');
+    });
+    return res.json({ notificacoes: notificacoesVisiveis.map(item => ({
       id: String(item._id), titulo: item.titulo, mensagem: item.mensagem,
       tipo: item.tipo || 'comunicado', curso: item.curso || '',
       turma: item.turmaId?.codigo || '', professor: item.docenteId?.nome || '',

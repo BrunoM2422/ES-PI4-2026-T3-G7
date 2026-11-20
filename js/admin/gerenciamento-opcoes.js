@@ -1,4 +1,5 @@
 // Autores:
+// Nícolas Mitjans Nunes - 25005124
 document.addEventListener('DOMContentLoaded', async () => {
   const $ = selector => document.querySelector(selector);
   const buttons = { grade: $('[data-continue]'), equivalencias: $('[data-continue-equivalencias]'), avaliacao: $('[data-continue-avaliacao]') };

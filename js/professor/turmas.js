@@ -1,4 +1,5 @@
 // Autores:
+// Nícolas Mitjans Nunes - 25005124
 document.addEventListener('DOMContentLoaded', async () => {
   const grid = document.querySelector('[data-class-grid]');
   const details = document.querySelector('[data-class-details]');
@@ -36,8 +37,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       topo.append(criar('span', 'teacher-class-card-arrow', '→'));
       card.append(topo);
       card.append(criar('strong', 'teacher-class-card-course', turma.curso));
-      const disciplinas = criar('span', 'teacher-class-card-subjects', turma.disciplinas.length
-        ? turma.disciplinas.join(' · ')
+      const disciplinas = criar('span', 'teacher-class-card-subjects', turma.disciplinasInfo?.length
+        ? turma.disciplinasInfo.map(item => `${item.nome} · Turma ${window.formatarCodigoTurmaDisciplina(turma.codigo, item.codigo)}`).join(' · ')
+        : turma.disciplinas.length ? turma.disciplinas.join(' · ')
         : 'Disciplinas não identificadas');
       card.append(disciplinas);
       card.append(criar('span', 'teacher-class-card-code', `Turma ${turma.codigo}`));
@@ -57,7 +59,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const titulo = criar('div');
     titulo.append(criar('span', 'teacher-classes-eyebrow', `Turma ${turma.codigo} · ${turma.periodoLetivo}º período`));
     titulo.append(criar('h2', '', turma.curso));
-    titulo.append(criar('p', '', turma.disciplinas.join(' · ') || 'Disciplinas não identificadas'));
+    titulo.append(criar('p', '', turma.disciplinasInfo?.length
+      ? turma.disciplinasInfo.map(item => `${item.nome} · Turma ${window.formatarCodigoTurmaDisciplina(turma.codigo, item.codigo)}`).join(' · ')
+      : turma.disciplinas.join(' · ') || 'Disciplinas não identificadas'));
     const fechar = criar('button', 'teacher-class-close', 'Fechar');
     fechar.type = 'button';
     fechar.addEventListener('click', () => {
@@ -97,7 +101,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       comunicados.hidden = true;
       roster.hidden = !roster.hidden;
       if (!roster.hidden && !alunosCarregados) {
-        await carregarAlunos(turma, roster);
+        const disciplinas = turma.disciplinasInfo || [];
+        if (!disciplinas.length) mostrarErro(roster, 'Não foi possível identificar as disciplinas desta turma.');
+        else if (disciplinas.length === 1) await carregarAlunos(turma, roster, disciplinas[0]);
+        else {
+          const label = document.createElement('label'); label.className = 'teacher-roster-discipline-filter';
+          label.append(criar('span', '', 'Disciplina'));
+          const select = document.createElement('select');
+          const placeholder = document.createElement('option'); placeholder.value = ''; placeholder.textContent = 'Selecione uma disciplina'; select.append(placeholder);
+          disciplinas.forEach(disciplina => { const option = document.createElement('option'); option.value = disciplina.id; option.textContent = disciplina.nome; select.append(option); });
+          label.append(select); roster.replaceChildren(label);
+          select.addEventListener('change', async () => {
+            const disciplina = disciplinas.find(item => item.id === select.value);
+            if (disciplina) await carregarAlunos(turma, roster, disciplina, label);
+          });
+        }
         alunosCarregados = true;
       }
     });
@@ -109,14 +127,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     details.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
-  async function carregarAlunos(turma, container) {
+  async function carregarAlunos(turma, container, disciplina, filtro = null) {
     mostrarErro(container, 'Carregando alunos...');
     try {
-      const response = await fetch(`/api/professor/turmas/${encodeURIComponent(turma.id)}/alunos`);
+      const query = new URLSearchParams({ disciplinaId: disciplina.id });
+      const response = await fetch(`/api/professor/turmas/${encodeURIComponent(turma.id)}/alunos?${query}`);
       const data = await response.json();
       if (!response.ok) throw new Error(data.mensagem || 'Não foi possível carregar os alunos.');
       container.replaceChildren();
-      const titulo = criar('h3', '', `Alunos matriculados (${data.alunos.length})`);
+      if (filtro) container.append(filtro);
+      const codigoTurma = window.formatarCodigoTurmaDisciplina(turma.codigo, disciplina.codigo);
+      const titulo = criar('h3', '', `Alunos matriculados em ${disciplina.nome} · Turma ${codigoTurma} (${data.alunos.length})`);
       const descricao = criar('p', 'teacher-class-module-note', 'As médias ainda não foram lançadas.');
       container.append(titulo, descricao);
 
@@ -150,9 +171,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function montarFormularioComunicado(turma, container) {
     const titulo = criar('h3', '', 'Enviar comunicado');
-    const instrucao = criar('p', 'teacher-class-module-note', 'O comunicado aparecerá na área de notificações dos alunos ativos desta turma.');
+    const instrucao = criar('p', 'teacher-class-module-note', 'O comunicado será enviado somente aos alunos ativos matriculados na disciplina e turma selecionadas.');
     const form = document.createElement('form');
     form.className = 'teacher-announcement-form';
+
+    const labelDisciplina = document.createElement('label');
+    labelDisciplina.append(criar('span', '', 'Disciplina destinatária'));
+    const selectDisciplina = document.createElement('select');
+    selectDisciplina.name = 'disciplinaId'; selectDisciplina.required = true;
+    selectDisciplina.append(new Option('Selecione uma disciplina', ''));
+    (turma.disciplinasInfo || []).forEach(disciplina => selectDisciplina.add(new Option(disciplina.nome, disciplina.id)));
+    labelDisciplina.append(selectDisciplina);
 
     const labelTitulo = document.createElement('label');
     labelTitulo.append(criar('span', '', 'Título'));
@@ -177,7 +206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     feedback.setAttribute('role', 'status');
     const enviar = criar('button', 'teacher-class-action is-primary', 'Enviar comunicado');
     enviar.type = 'submit';
-    form.append(labelTitulo, labelMensagem, feedback, enviar);
+    form.append(labelDisciplina, labelTitulo, labelMensagem, feedback, enviar);
     container.append(titulo, instrucao, form);
 
     form.addEventListener('submit', async event => {
@@ -189,7 +218,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const response = await fetch(`/api/professor/turmas/${encodeURIComponent(turma.id)}/comunicados`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ titulo: inputTitulo.value.trim(), mensagem: textarea.value.trim() })
+          body: JSON.stringify({ disciplinaId: selectDisciplina.value, titulo: inputTitulo.value.trim(), mensagem: textarea.value.trim() })
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.mensagem || 'Não foi possível enviar o comunicado.');

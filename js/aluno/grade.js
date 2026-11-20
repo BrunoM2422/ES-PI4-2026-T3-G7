@@ -1,4 +1,5 @@
-﻿// Autores:
+// Autores:
+// Nícolas Mitjans Nunes - 25005124
 document.addEventListener('DOMContentLoaded', async () => {
   const cardsRoot = document.querySelector('[data-subject-cards]');
   const status = document.querySelector('[data-grade-status]');
@@ -39,8 +40,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       cell.classList.add('has-class');
       const bloco = document.createElement('div');
       bloco.className = 'curriculum-class-block';
-      bloco.title = `${aula.disciplina?.nome || 'Matéria'} · Turma ${aula.turma.codigo} · ${aula.docente || 'Docente não informado'}`;
-      bloco.innerHTML = `<button type="button" class="curriculum-class-remove" data-remove-class-subject="${escapar(aula.disciplina.id)}" aria-label="Remover ${escapar(aula.disciplina?.nome || 'matéria')} da grade" title="Remover matéria">×</button><strong>${escapar(aula.disciplina?.nome || 'Matéria')}</strong><span>Turma ${escapar(aula.turma.codigo)}</span><small>${escapar(aula.docente || '')}</small>`;
+      const codigoTurma = window.formatarCodigoTurmaDisciplina(aula.turma.codigo, aula.disciplina?.codigo);
+      bloco.title = `${aula.disciplina?.nome || 'Matéria'} · Turma ${codigoTurma} · ${aula.docente || 'Docente não informado'}`;
+      bloco.innerHTML = `<button type="button" class="curriculum-class-remove" data-remove-class-subject="${escapar(aula.disciplina.id)}" aria-label="Remover ${escapar(aula.disciplina?.nome || 'matéria')} da grade" title="Remover matéria">×</button><strong>${escapar(aula.disciplina?.nome || 'Matéria')}</strong><span>Turma ${escapar(codigoTurma)}</span><small>${escapar(aula.docente || '')}</small>`;
       cell.append(bloco);
     }
     weekGrid.querySelectorAll('[data-remove-class-subject]').forEach(botao => botao.addEventListener('click', () => removerMateria(botao.dataset.removeClassSubject)));
@@ -67,7 +69,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       const origemEquivalente = disciplina.equivalente
         ? `<span class="curriculum-subject-origin">Equivalente de ${escapar(disciplina.cursoNome)}</span>`
         : '';
-      return `<button type="button" class="curriculum-subject-card${escolhida ? ' is-selected' : ''}" data-subject="${escapar(disciplina.id)}"><span class="curriculum-subject-semester">${disciplina.semestre}º semestre</span>${origemEquivalente}<strong>${escapar(disciplina.nome)}</strong><span class="curriculum-subject-code">${escapar(disciplina.codigo)}</span><small>${escolhida ? `Turma ${escapar(turmaDaSelecao(disciplina.id, selecionadas.get(disciplina.id))?.codigo || '')} selecionada` : `${disciplina.turmas.length} turma(s) disponível(is)`}</small></button>`;
+      const turmaSelecionada = turmaDaSelecao(disciplina.id, selecionadas.get(disciplina.id));
+      const turmaFormatada = turmaSelecionada ? window.formatarCodigoTurmaDisciplina(turmaSelecionada.codigo, disciplina.codigo) : '';
+      return `<button type="button" class="curriculum-subject-card${escolhida ? ' is-selected' : ''}" data-subject="${escapar(disciplina.id)}"><span class="curriculum-subject-semester">${disciplina.semestre}º semestre</span>${origemEquivalente}<strong>${escapar(disciplina.nome)}</strong><span class="curriculum-subject-code">${escapar(disciplina.codigo)}</span><small>${escolhida ? `Turma ${escapar(turmaFormatada)} selecionada` : `${disciplina.turmas.length} turma(s) disponível(is)`}</small></button>`;
     }).join('') : '<p class="curriculum-no-results">Nenhuma matéria encontrada para esse filtro.</p>';
     cardsRoot.querySelectorAll('[data-subject]').forEach(card => card.addEventListener('click', () => abrirModal(disciplinaPorId(card.dataset.subject))));
   }
@@ -91,7 +95,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const jaEstaNaTurma = [...selecionadas.values()].includes(turma.id);
       const cheia = turma.vagasDisponiveis < 1 && !turma.matriculado && !jaEstaNaTurma && !ativa;
       const horario = turma.horarios.map(item => `${item.diaNome} às ${String(item.hora).padStart(2, '0')}:00`).join(' · ');
-      return `<button type="button" class="curriculum-class-option${ativa ? ' is-selected' : ''}" data-class="${escapar(turma.id)}" ${cheia ? 'disabled' : ''}><span><strong>Turma ${escapar(turma.codigo)}</strong><small>${escapar(turma.periodoLetivo)}º período${horario ? ` · ${escapar(horario)}` : ''}</small><small>${turma.vagasDisponiveis} vaga(s) disponível(is)</small></span><b>${ativa ? 'Selecionada' : cheia ? 'Lotada' : 'Escolher turma'}</b></button>`;
+      const codigoTurma = window.formatarCodigoTurmaDisciplina(turma.codigo, disciplina.codigo);
+      return `<button type="button" class="curriculum-class-option${ativa ? ' is-selected' : ''}" data-class="${escapar(turma.id)}" ${cheia ? 'disabled' : ''}><span><strong>Turma ${escapar(codigoTurma)}</strong><small>${escapar(turma.periodoLetivo)}º período${horario ? ` · ${escapar(horario)}` : ''}</small><small>${turma.vagasDisponiveis} vaga(s) disponível(is)</small></span><b>${ativa ? 'Selecionada' : cheia ? 'Lotada' : 'Escolher turma'}</b></button>`;
     }).join('') : '<p class="curriculum-no-results">Ainda não há turmas disponíveis para esta matéria.</p>';
     const fechar = () => modalRoot.replaceChildren();
     modalRoot.querySelectorAll('[data-close-modal]').forEach(botao => botao.addEventListener('click', fechar));

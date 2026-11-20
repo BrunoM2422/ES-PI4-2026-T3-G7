@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         dia: horario.dia,
                         hora: Number(horario.hora),
                         disciplina: disciplina.nome,
-                        turma: turma.codigo,
+                        turma: window.formatarCodigoTurmaDisciplina(turma.codigo, disciplina.codigo),
                         docente: horario.docente || ''
                     })))
             );

@@ -1,5 +1,10 @@
 // Autores:
 const originalFetch = window.fetch.bind(window);
+window.formatarCodigoTurmaDisciplina = (codigoTurma, codigoDisciplina) => {
+  const turma = String(codigoTurma ?? '').trim();
+  const disciplina = String(codigoDisciplina ?? '').trim();
+  return turma && disciplina ? `${turma}-${disciplina.slice(-2)}` : turma;
+};
 window.fetch = (input, options = {}) => {
   const url = new URL(input instanceof Request ? input.url : input, location.href);
   if (url.origin !== location.origin || !url.pathname.startsWith('/api/')) return originalFetch(input, options);

@@ -1,4 +1,5 @@
 // Autores:
+// Nícolas Mitjans Nunes - 25005124
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');

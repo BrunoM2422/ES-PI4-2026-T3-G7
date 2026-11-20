@@ -1,4 +1,5 @@
 // Autores:
+// Nícolas Mitjans Nunes - 25005124
 document.addEventListener('DOMContentLoaded', async () => {
   const cards = document.querySelector('[data-grade-cards]'); const count = document.querySelector('[data-grade-count]'); const detail = document.querySelector('[data-grade-detail]');
   if (!cards || !detail) return;
@@ -18,7 +19,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderizar(disciplina, data, url) {
     detail.replaceChildren();
     const heading = el('div', 'teacher-class-detail-heading'); const info = el('div');
-    info.append(el('span', 'teacher-classes-eyebrow', `Turma ${data.turma} · ${disciplina.periodoLetivo}`), el('h2', '', data.disciplina), el('p', '', 'Configure os componentes e registre as notas da turma.'));
+    const codigoTurma = window.formatarCodigoTurmaDisciplina(disciplina.turma, disciplina.codigo);
+    info.append(el('span', 'teacher-classes-eyebrow', `Turma ${codigoTurma} · ${disciplina.periodoLetivo}`), el('h2', '', data.disciplina), el('p', '', 'Configure os componentes e registre as notas da turma.'));
     const back = el('button', 'teacher-class-close', '← Voltar'); back.type = 'button'; back.addEventListener('click', voltar); heading.append(info, back); detail.append(heading);
     const form = document.createElement('form'); form.className = 'teacher-announcement-form grades-component-form';
     const titleLabel = document.createElement('label'); titleLabel.append(el('span', '', 'Nome do componente'));
@@ -61,6 +63,44 @@ document.addEventListener('DOMContentLoaded', async () => {
       try { const response = await fetch(`${url}/componentes`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titulo: title.value.trim(), valorMaximo: Number(max.value), tipoMedia: tipoMedia.value, peso: tipoMedia.value === 'ponderada' ? Number(weight.value) : 1 }) }); const result = await response.json(); if (!response.ok) throw new Error(result.mensagem || 'Não foi possível criar componente.'); await abrir(disciplina); }
       catch (error) { feedback.textContent = error.message || 'Não foi possível criar componente.'; submit.disabled = false; }
     });
+    if (data.componentes.length) {
+      const manager = el('section', 'teacher-class-roster grades-component-manager');
+      manager.append(el('h3', '', 'Gerenciar componentes'), el('p', 'teacher-class-module-note', 'Você pode editar os dados dos componentes ou excluí-los. Excluir também apaga as notas lançadas para esse componente.'));
+      const managerFeedback = el('p', 'teacher-announcement-feedback', '');
+      data.componentes.forEach(componente => {
+        const editForm = document.createElement('form'); editForm.className = 'grades-component-edit';
+        const titleLabel = document.createElement('label'); titleLabel.append(el('span', '', 'Nome'));
+        const titleInput = document.createElement('input'); titleInput.name = 'titulo'; titleInput.maxLength = 80; titleInput.required = true; titleInput.value = componente.titulo; titleLabel.append(titleInput);
+        const maxLabel = document.createElement('label'); maxLabel.append(el('span', '', 'Valor máximo'));
+        const maxInput = document.createElement('input'); maxInput.name = 'valorMaximo'; maxInput.type = 'number'; maxInput.min = '0.01'; maxInput.max = '100'; maxInput.step = '0.01'; maxInput.required = true; maxInput.value = componente.valorMaximo; maxLabel.append(maxInput);
+        const weightLabel = document.createElement('label'); weightLabel.append(el('span', '', 'Peso'));
+        const weightInput = document.createElement('input'); weightInput.name = 'peso'; weightInput.type = 'number'; weightInput.min = '0.01'; weightInput.max = '100'; weightInput.step = '0.01'; weightInput.required = true; weightInput.value = componente.tipoMedia === 'ponderada' ? componente.peso : 1; weightInput.disabled = componente.tipoMedia !== 'ponderada'; weightLabel.append(weightInput);
+        const actions = el('div', 'grades-component-actions');
+        const saveComponent = el('button', 'teacher-class-action is-primary', 'Salvar'); saveComponent.type = 'submit';
+        const deleteComponent = el('button', 'teacher-class-action is-danger', 'Excluir'); deleteComponent.type = 'button';
+        actions.append(saveComponent, deleteComponent); editForm.append(titleLabel, maxLabel, weightLabel, actions);
+        editForm.addEventListener('submit', async event => {
+          event.preventDefault(); if (!editForm.reportValidity()) return;
+          saveComponent.disabled = true; managerFeedback.textContent = 'Salvando componente...';
+          try {
+            const response = await fetch(`${url}/componentes/${encodeURIComponent(componente.id)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titulo: titleInput.value.trim(), valorMaximo: Number(maxInput.value), peso: Number(weightInput.value) }) });
+            const result = await response.json(); if (!response.ok) throw new Error(result.mensagem || 'Não foi possível atualizar componente.');
+            await abrir(disciplina);
+          } catch (error) { managerFeedback.textContent = error.message || 'Não foi possível atualizar componente.'; saveComponent.disabled = false; }
+        });
+        deleteComponent.addEventListener('click', async () => {
+          if (!window.confirm(`Excluir "${componente.titulo}" e todas as notas lançadas para esse componente?`)) return;
+          deleteComponent.disabled = true; managerFeedback.textContent = 'Excluindo componente...';
+          try {
+            const response = await fetch(`${url}/componentes/${encodeURIComponent(componente.id)}`, { method: 'DELETE' });
+            const result = await response.json(); if (!response.ok) throw new Error(result.mensagem || 'Não foi possível excluir componente.');
+            await abrir(disciplina);
+          } catch (error) { managerFeedback.textContent = error.message || 'Não foi possível excluir componente.'; deleteComponent.disabled = false; }
+        });
+        manager.append(editForm);
+      });
+      manager.append(managerFeedback); detail.append(manager);
+    }
     const roster = el('section', 'teacher-class-roster'); roster.append(el('h3', '', `Diário da turma (${data.alunos.length} alunos)`), el('p', 'teacher-class-module-note', 'Notas e componentes ficam salvos no banco de dados. A média é calculada pelo servidor Java.'));
     if (!data.componentes.length) roster.append(el('p', 'teacher-empty-message', 'Crie um componente acima para começar a lançar notas.'));
     else if (!data.alunos.length) roster.append(el('p', 'teacher-empty-message', 'Esta turma ainda não possui alunos matriculados.'));
@@ -112,6 +152,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (turmaSolicitada) disciplinas = disciplinas.filter(disciplina => disciplina.turmaId === turmaSolicitada);
     count.textContent = `${disciplinas.length} ${disciplinas.length === 1 ? 'disciplina' : 'disciplinas'}`; cards.replaceChildren();
     if (!disciplinas.length) { cards.append(el('p', 'teacher-empty-message', 'Você ainda não está vinculado a disciplinas com aulas organizadas.')); return; }
-    disciplinas.forEach(disciplina => { const card = el('button', 'teacher-class-card'); card.type = 'button'; card.append(el('span', 'teacher-class-card-top', `${disciplina.codigo || 'Disciplina'} · Turma ${disciplina.turma}`), el('strong', 'teacher-class-card-course', disciplina.disciplina), el('span', 'teacher-class-card-meta', `${disciplina.periodoLetivo} · abrir diário →`)); card.addEventListener('click', () => abrir(disciplina)); cards.append(card); });
+    disciplinas.forEach(disciplina => { const card = el('button', 'teacher-class-card'); card.type = 'button'; const codigoTurma = window.formatarCodigoTurmaDisciplina(disciplina.turma, disciplina.codigo); card.append(el('span', 'teacher-class-card-top', `${disciplina.codigo || 'Disciplina'} · Turma ${codigoTurma}`), el('strong', 'teacher-class-card-course', disciplina.disciplina), el('span', 'teacher-class-card-meta', `${disciplina.periodoLetivo} · abrir diário →`)); card.addEventListener('click', () => abrir(disciplina)); cards.append(card); });
   } catch (error) { count.textContent = '—'; cards.replaceChildren(el('p', 'teacher-empty-message', error.message || 'Não foi possível carregar suas disciplinas.')); }
 });

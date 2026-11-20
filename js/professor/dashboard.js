@@ -111,7 +111,7 @@ function iniciarAgendaHoje() {
                 start: startStr,
                 end: endStr,
                 location: '',
-                description: `Curso: ${aula.turma || 'Não identificado'} | Código da turma: ${aula.codigoTurma || '—'}`,
+                description: `Curso: ${aula.turma || 'Não identificado'} | Código da turma: ${window.formatarCodigoTurmaDisciplina(aula.codigoTurma, aula.codigoDisciplina) || '—'}`,
                 turmaId: null
             };
         });

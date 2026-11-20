@@ -1,4 +1,5 @@
 // Autores:
+// Nícolas Mitjans Nunes - 25005124
 document.addEventListener('DOMContentLoaded', async () => {
   const painel = document.querySelector('[data-student-frequency]');
   if (!painel) return;
@@ -11,11 +12,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   function abrirDetalhes(item) {
+    const codigoTurma = window.formatarCodigoTurmaDisciplina(item.turma, item.codigo);
     const modal = elemento('dialog', 'frequency-modal');
     modal.setAttribute('aria-labelledby', 'frequency-modal-title');
     const cabecalho = elemento('div', 'frequency-modal-heading');
     const texto = elemento('div');
-    texto.append(elemento('span', 'frequency-modal-kicker', `Turma ${item.turma}`));
+    texto.append(elemento('span', 'frequency-modal-kicker', `Turma ${codigoTurma}`));
     const titulo = elemento('h3', '', item.nome);
     titulo.id = 'frequency-modal-title';
     texto.append(titulo);
@@ -64,12 +66,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     const lista = elemento('div', 'student-courses-grid');
     data.disciplinas.forEach(item => {
+      const codigoTurma = window.formatarCodigoTurmaDisciplina(item.turma, item.codigo);
       const percentual = Math.max(0, Math.min(100, Number(item.percentualPresenca) || 0));
       const card = elemento('button', 'student-course-card');
       card.type = 'button';
-      card.setAttribute('aria-label', `${item.nome}, turma ${item.turma}, ${percentual}% de presença. Abrir detalhes.`);
+      card.setAttribute('aria-label', `${item.nome}, turma ${codigoTurma}, ${percentual}% de presença. Abrir detalhes.`);
       const topo = elemento('span', 'student-course-card-heading');
-      topo.append(elemento('span', 'student-course-card-tag', `Turma ${item.turma}`), elemento('span', 'student-course-card-arrow', '↗'));
+      topo.append(elemento('span', 'student-course-card-tag', `Turma ${codigoTurma}`), elemento('span', 'student-course-card-arrow', '↗'));
       const nome = elemento('strong', 'student-course-name', item.nome);
       const donut = elemento('span', 'frequency-donut');
       donut.style.setProperty('--attendance', `${percentual}%`);

@@ -1,4 +1,5 @@
-﻿// Autores:
+// Autores:
+// Nícolas Mitjans Nunes - 25005124
 const express = require('express');
 const mongoose = require('mongoose');
 const { autenticar } = require('../services/autenticacao');
