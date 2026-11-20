@@ -7,6 +7,7 @@ const turmaSchema = new mongoose.Schema({
     required: true,
     trim: true,
     uppercase: true,
+    match: /^\d{4}[ABC]$/,
     unique: true
   },
   cursoId: {

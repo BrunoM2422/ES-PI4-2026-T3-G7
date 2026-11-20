@@ -73,11 +73,24 @@ router.get('/turmas', async (req, res) => {
     const chamadas = await Promise.all(turmas.map(async turma => {
       const minhasAulas = turma.horarios.filter(item => String(item.docenteId) === String(docente._id));
       const materias = [...new Map(minhasAulas.map(item => [String(item.disciplinaId?._id || item.disciplinaId), { id: String(item.disciplinaId?._id || item.disciplinaId), nome: item.disciplinaId?.nome || 'Disciplina', codigo: item.disciplinaId?.codigo || '', maxFaltas: minhasAulas.filter(a => String(a.disciplinaId?._id || a.disciplinaId) === String(item.disciplinaId?._id || item.disciplinaId)).length * 4 }])).values()];
-      const aulasHoje = minhasAulas.filter(item => item.dia === dia).map(item => ({
+      const aulasHojeBase = minhasAulas.filter(item => item.dia === dia).map(item => ({
         id: String(item.aulaId), disciplinaId: String(item.disciplinaId?._id || item.disciplinaId),
         disciplina: item.disciplinaId?.nome || 'Disciplina', codigoDisciplina: item.disciplinaId?.codigo || '', dia: item.dia, inicio: item.hora,
         fim: item.hora + 1, disponivel: agora >= item.hora * 60 && agora < (item.hora + 1) * 60
       }));
+      const chamadasHoje = aulasHojeBase.length ? await Frequencia.find({
+        turmaId: turma._id, aulaId: { $in: aulasHojeBase.map(aula => aula.id) },
+        data: `${hoje.year}-${hoje.month}-${hoje.day}`
+      }).lean() : [];
+      const chamadasPorAula = new Map(chamadasHoje.map(chamada => [String(chamada.aulaId), chamada]));
+      const aulasHoje = aulasHojeBase.map(aula => {
+        const chamada = chamadasPorAula.get(aula.id);
+        return {
+          ...aula,
+          chamadaRegistrada: Boolean(chamada),
+          presencas: chamada ? chamada.registros.map(registro => ({ alunoId: String(registro.alunoId), presente: registro.presente })) : []
+        };
+      });
       const registros = await Frequencia.find({ turmaId: turma._id, docenteId: docente._id }).lean();
       const faltasPorAlunoMateria = new Map();
       registros.forEach(sessao => sessao.registros.filter(registro => !registro.presente).forEach(registro => {
@@ -153,10 +166,21 @@ router.get('/turmas/:turmaId/semestre', async (req, res) => {
     for (const disciplinaId of new Set(minhasAulas.map(aula => String(aula.disciplinaId?._id || aula.disciplinaId)))) {
       alunosPorDisciplina.set(disciplinaId, await alunosDaTurma(turma, disciplinaId));
     }
+    const alunosRegistradosIds = [...new Set(registros.flatMap(sessao => (sessao.registros || []).map(item => String(item.alunoId))))];
+    const alunosRegistrados = alunosRegistradosIds.length
+      ? await Estudante.find({ _id: { $in: alunosRegistradosIds } }).select('_id nome ra').lean()
+      : [];
+    const alunosPorId = new Map(alunosRegistrados.map(aluno => [String(aluno._id), aluno]));
+    alunosPorDisciplina.forEach(alunos => alunos.forEach(aluno => alunosPorId.set(String(aluno._id), aluno)));
     aulas.forEach(aula => {
       const frequencia = registrosPorChave.get(`${aula.aulaId}:${aula.data}`);
       const porAluno = new Map((frequencia?.registros || []).map(item => [String(item.alunoId), item.presente]));
-      aula.alunos = (alunosPorDisciplina.get(aula.disciplinaId) || []).map(aluno => ({
+      const roster = new Map((alunosPorDisciplina.get(aula.disciplinaId) || []).map(aluno => [String(aluno._id), aluno]));
+      for (const registro of frequencia?.registros || []) {
+        const alunoId = String(registro.alunoId);
+        if (!roster.has(alunoId) && alunosPorId.has(alunoId)) roster.set(alunoId, alunosPorId.get(alunoId));
+      }
+      aula.alunos = [...roster.values()].map(aluno => ({
         id: String(aluno._id), nome: aluno.nome,
         presente: porAluno.has(String(aluno._id)) ? porAluno.get(String(aluno._id)) : true
       }));
@@ -209,7 +233,18 @@ router.post('/turmas/:turmaId/chamada', async (req, res) => {
     const alunos = await alunosDaTurma(turma, String(aula.disciplinaId?._id || aula.disciplinaId));
     const idsPermitidos = new Set(alunos.map(a => String(a._id)));
     if (presencas.some(item => !item || !mongoose.isValidObjectId(item.alunoId) || !idsPermitidos.has(String(item.alunoId)) || typeof item.presente !== 'boolean') || new Set(presencas.map(item => String(item.alunoId))).size !== presencas.length || presencas.length !== alunos.length) return res.status(400).json({ mensagem: 'Informe a presença de todos os alunos da turma.' });
-    await Frequencia.findOneAndUpdate({ turmaId: turma._id, aulaId: aula.aulaId, data }, { $set: { docenteId: docente._id, disciplinaId: aula.disciplinaId._id || aula.disciplinaId, registros: presencas.map(item => ({ alunoId: item.alunoId, presente: item.presente })) } }, { upsert: true, new: true, runValidators: true });
+    const chamadaExistente = await Frequencia.exists({ turmaId: turma._id, aulaId: aula.aulaId, data });
+    if (chamadaExistente) return res.status(409).json({ mensagem: 'A chamada desta aula já foi registrada e não pode ser refeita.' });
+    try {
+      await Frequencia.create({
+        turmaId: turma._id, aulaId: aula.aulaId, data, docenteId: docente._id,
+        disciplinaId: aula.disciplinaId._id || aula.disciplinaId,
+        registros: presencas.map(item => ({ alunoId: item.alunoId, presente: item.presente }))
+      });
+    } catch (erro) {
+      if (erro.code === 11000) return res.status(409).json({ mensagem: 'A chamada desta aula já foi registrada e não pode ser refeita.' });
+      throw erro;
+    }
     res.json({ mensagem: 'Chamada registrada.' });
   } catch (erro) {
     console.error('Erro ao registrar chamada:', erro);

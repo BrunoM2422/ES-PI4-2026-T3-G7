@@ -93,10 +93,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     list.innerHTML = disciplina.turmas.length ? disciplina.turmas.map(turma => {
       const ativa = selecionadas.get(disciplina.id) === turma.id;
       const jaEstaNaTurma = [...selecionadas.values()].includes(turma.id);
+      const horariosPendentes = turma.gradeConfigurada === false;
       const cheia = turma.vagasDisponiveis < 1 && !turma.matriculado && !jaEstaNaTurma && !ativa;
       const horario = turma.horarios.map(item => `${item.diaNome} às ${String(item.hora).padStart(2, '0')}:00`).join(' · ');
       const codigoTurma = window.formatarCodigoTurmaDisciplina(turma.codigo, disciplina.codigo);
-      return `<button type="button" class="curriculum-class-option${ativa ? ' is-selected' : ''}" data-class="${escapar(turma.id)}" ${cheia ? 'disabled' : ''}><span><strong>Turma ${escapar(codigoTurma)}</strong><small>${escapar(turma.periodoLetivo)}º período${horario ? ` · ${escapar(horario)}` : ''}</small><small>${turma.vagasDisponiveis} vaga(s) disponível(is)</small></span><b>${ativa ? 'Selecionada' : cheia ? 'Lotada' : 'Escolher turma'}</b></button>`;
+      return `<button type="button" class="curriculum-class-option${ativa ? ' is-selected' : ''}" data-class="${escapar(turma.id)}" ${(horariosPendentes || cheia) ? 'disabled' : ''}><span><strong>Turma ${escapar(codigoTurma)}</strong><small>${escapar(turma.periodoLetivo)}º período${horario ? ` · ${escapar(horario)}` : ''}</small><small>${horariosPendentes ? 'Horários ainda não organizados' : `${turma.vagasDisponiveis} vaga(s) disponível(is)`}</small></span><b>${ativa ? 'Selecionada' : horariosPendentes ? 'Horários pendentes' : cheia ? 'Lotada' : 'Escolher turma'}</b></button>`;
     }).join('') : '<p class="curriculum-no-results">Ainda não há turmas disponíveis para esta matéria.</p>';
     const fechar = () => modalRoot.replaceChildren();
     modalRoot.querySelectorAll('[data-close-modal]').forEach(botao => botao.addEventListener('click', fechar));

@@ -139,16 +139,16 @@
       envio.codigo = `${cursoSelecionado.codigo}${String(semestre).padStart(2, '0')}${sequencia}`;
     }
     if (entidade === 'turmas') {
-      const codigo = String(dados.codigo || '').trim();
+      const codigo = String(dados.codigo || '').trim().toUpperCase();
       const periodo = String(Number(dados.periodoLetivo)).padStart(2, '0');
-      const numeroTurma = codigo.slice(2);
+      const letraTurma = codigo.slice(-1).toUpperCase();
       if (
-        !/^\d{4}$/.test(codigo) || !codigo.startsWith(periodo) ||
-        !/^\d{2}$/.test(numeroTurma) || Number(numeroTurma) < 1 || Number(numeroTurma) > 99 ||
-        String(Number(numeroTurma)).padStart(2, '0') !== numeroTurma
+        !cursoSelecionado || !/^\d{4}[ABC]$/.test(codigo) || !codigo.startsWith(cursoSelecionado.codigo + periodo) ||
+        !['A', 'B', 'C'].includes(letraTurma)
       ) {
-        throw new Error('O código da turma deve usar o semestre em dois dígitos e um número de turma de 01 a 99.');
+        throw new Error('O código da turma deve seguir curso + semestre + grupo A, B ou C (ex.: 0102A).');
       }
+      envio.codigo = codigo.slice(0, -1) + letraTurma;
     }
     if (tipo) envio.tipo = tipo;
     return envio;

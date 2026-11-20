@@ -3,7 +3,10 @@ const originalFetch = window.fetch.bind(window);
 window.formatarCodigoTurmaDisciplina = (codigoTurma, codigoDisciplina) => {
   const turma = String(codigoTurma ?? '').trim();
   const disciplina = String(codigoDisciplina ?? '').trim();
-  return turma && disciplina ? `${turma}-${disciplina.slice(-2)}` : turma;
+  const legado = Number(turma.slice(-2));
+  const letra = /^[0-9]{4}[ABC]$/i.test(turma) ? turma.slice(-1).toUpperCase()
+    : legado >= 1 && legado <= 3 ? String.fromCharCode(64 + legado) : '';
+  return turma && disciplina && letra ? `${disciplina}${letra}` : turma;
 };
 window.fetch = (input, options = {}) => {
   const url = new URL(input instanceof Request ? input.url : input, location.href);

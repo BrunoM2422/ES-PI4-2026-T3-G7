@@ -12,6 +12,13 @@ const OpcoesSistema = require('../models/OpcoesSistema');
 const router = express.Router();
 const dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
 
+function semestreDaTurma(periodoLetivo) {
+  const valor = String(periodoLetivo ?? '').trim();
+  if (/^\d{1,2}$/.test(valor)) return Number(valor);
+  const legado = valor.match(/\.(\d{1,2})$/);
+  return legado ? Number(legado[1]) : null;
+}
+
 async function estudanteAtivo(req) {
   if (req.usuario.papel !== 'aluno') return { erro: 'Apenas alunos podem acessar a grade curricular.', status: 403 };
   const identificadores = [{ email: req.usuario.email }];
@@ -59,7 +66,7 @@ router.get('/', autenticar, async (req, res) => {
       .lean();
     const cursoIds = [...new Set(disciplinas.map(disciplina => String(disciplina.cursoId?._id || disciplina.cursoId)))];
     const turmas = cursoIds.length
-      ? await Turma.find({ cursoId: { $in: cursoIds }, 'horarios.0': { $exists: true } })
+      ? await Turma.find({ cursoId: { $in: cursoIds } })
         .populate('horarios.disciplinaId', 'nome codigo')
         .populate('horarios.docenteId', 'nome')
         .populate('cursoId', 'codigo nome')
@@ -76,6 +83,7 @@ router.get('/', autenticar, async (req, res) => {
         id: String(disciplina._id), nome: disciplina.nome, codigo: disciplina.codigo,
         semestre: disciplina.semestre, descricao: disciplina.descricao, turmas: [],
         equivalente: cursoDisciplinaId !== String(estudante.cursoId),
+        cursoId: cursoDisciplinaId,
         cursoNome: cursoDisciplina?.nome || ''
       }];
     }));
@@ -95,7 +103,28 @@ router.get('/', autenticar, async (req, res) => {
           vagasDisponiveis: Math.max(0, turma.vagas - preenchidas),
           matriculado: (turma.alunosIds || []).some(id => String(id) === String(estudante._id)),
           selecionada: matriculasPorDisciplina.get(disciplinaId) === String(turma._id),
+          gradeConfigurada: true,
           horarios
+        });
+      }
+    }
+
+    // Turmas recém-criadas também aparecem ao aluno, mas não podem ser escolhidas
+    // até que a administração configure a oferta desta disciplina na turma.
+    for (const disciplina of disciplinasPorId.values()) {
+      for (const turma of turmas) {
+        const cursoTurmaId = String(turma.cursoId?._id || turma.cursoId);
+        if (cursoTurmaId !== disciplina.cursoId || semestreDaTurma(turma.periodoLetivo) !== Number(disciplina.semestre)) continue;
+        if (disciplina.turmas.some(item => item.id === String(turma._id))) continue;
+        const preenchidas = (turma.alunosIds || []).length;
+        disciplina.turmas.push({
+          id: String(turma._id), codigo: turma.codigo, periodoLetivo: turma.periodoLetivo,
+          vagas: turma.vagas, preenchidas,
+          vagasDisponiveis: Math.max(0, Number(turma.vagas) - preenchidas),
+          matriculado: (turma.alunosIds || []).some(id => String(id) === String(estudante._id)),
+          selecionada: matriculasPorDisciplina.get(disciplina.id) === String(turma._id),
+          gradeConfigurada: false,
+          horarios: []
         });
       }
     }

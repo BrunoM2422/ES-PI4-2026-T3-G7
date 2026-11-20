@@ -13,6 +13,7 @@ const eventoSchema = new mongoose.Schema({
   scope: { type: String, required: true, enum: ['global', 'curso', 'turma', 'privado'], default: 'privado' },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' },
   turmaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Turma', default: null },
+  disciplinaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Disciplina', default: null },
   cursoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Curso', default: null, index: true },
   start: { type: String, default: '' },
   end: { type: String, default: '' },
@@ -20,5 +21,7 @@ const eventoSchema = new mongoose.Schema({
   description: { type: String, trim: true, maxlength: 400, default: '' },
   legacyKey: { type: String, unique: true, sparse: true, select: false }
 }, { timestamps: true, collection: 'eventos' });
+
+eventoSchema.index({ scope: 1, turmaId: 1, disciplinaId: 1, date: 1 });
 
 module.exports = mongoose.models.Evento || mongoose.model('Evento', eventoSchema);
