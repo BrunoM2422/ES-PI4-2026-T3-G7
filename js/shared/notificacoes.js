@@ -27,6 +27,23 @@
         return `${d}/${m}/${y}`;
     }
 
+
+    function preferenciasDeNotificacao() {
+        let usuario = null;
+        try {
+            usuario = JSON.parse(sessionStorage.getItem('notadez_user') || 'null');
+        } catch {
+            usuario = null;
+        }
+        const papel = document.getElementById('app')?.dataset.role;
+        try {
+            const salvo = JSON.parse(localStorage.getItem(`notadez_settings_${usuario?.email || papel}`) || '{}');
+            return salvo.notifications || {};
+        } catch {
+            return {};
+        }
+    }
+
     const ROTULOS_CATEGORIA = {
         feriado: 'Feriado',
         institucional: 'Evento Institucional'
@@ -34,6 +51,9 @@
 
     function calendario({ dias = 5, categorias = ['feriado', 'institucional'] } = {}) {
         return async () => {
+            const preferencias = preferenciasDeNotificacao();
+            const permitidas = categorias.filter(categoria => preferencias[categoria] !== false);
+            if (!permitidas.length) return [];
             const token = sessionStorage.getItem('notadez_token');
             const resposta = await fetch('/api/calendario/eventos', {
                 headers: { Authorization: `Bearer ${token || ''}` }
@@ -49,7 +69,7 @@
             return dados.eventos
                 .filter(ev =>
                     ev.scope === 'global' &&
-                    categorias.includes(ev.category) &&
+                    permitidas.includes(ev.category) &&
                     ev.date >= hoje &&
                     ev.date <= limite
                 )
@@ -64,6 +84,7 @@
 
                     return {
                         id: `calendario:${ev.id}`,
+                        categoria: ev.category,
                         titulo: ev.title,
                         tipo: ROTULOS_CATEGORIA[ev.category] || ev.category,
                         quando: `${formatarData(ev.date)}${horario ? ` às ${horario}` : ''}`,
@@ -94,6 +115,7 @@
                 }).format(criadoEm);
                 return {
                     id: `comunicado:${item.id}`,
+                    categoria: item.tipo === 'sistema' ? 'sistema' : 'comunicados',
                     titulo: item.titulo,
                     tipo: item.tipo === 'sistema' ? 'Aviso do sistema' : 'Comunicado da turma',
                     quando: dataFormatada,
@@ -152,7 +174,9 @@
             });
 
             const dispensadas = lerDispensadas();
+            const preferencias = preferenciasDeNotificacao();
             visiveis = todas
+                .filter(n => !n.categoria || preferencias[n.categoria] !== false)
                 .filter(n => {
                     const ultima = dispensadas[n.id];
                     if (!ultima) return true;

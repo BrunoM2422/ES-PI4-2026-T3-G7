@@ -364,3 +364,80 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
     }
   }).catch(error => console.error('Erro ao carregar componentes compartilhados:', error));
 })();
+
+
+(() => {
+  const CHAVE_ATIVIDADE = 'notadez_atividade';
+  const EVENTOS = ['pointerdown', 'pointermove', 'keydown', 'wheel', 'touchstart', 'scroll'];
+  const VERIFICAR_A_CADA = 15000;
+  const AVISO_ANTES = 60000;
+
+  const assinatura = () => (sessionStorage.getItem('notadez_token') || '').slice(-12);
+
+  function limiteDeInatividade() {
+    let usuario = null;
+    try {
+      usuario = JSON.parse(sessionStorage.getItem('notadez_user') || 'null');
+    } catch {
+      usuario = null;
+    }
+    const papel = document.querySelector('#app')?.dataset.role;
+    try {
+      const salvo = JSON.parse(localStorage.getItem(`notadez_settings_${usuario?.email || papel}`) || '{}');
+      const minutos = Number(salvo.sessionTimeout);
+      return Number.isFinite(minutos) && minutos > 0 ? minutos * 60000 : 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  function lerUltimaAtividade() {
+    const [assin, instante] = (sessionStorage.getItem(CHAVE_ATIVIDADE) || '').split(':');
+    return assin === assinatura() && Number(instante) ? Number(instante) : Date.now();
+  }
+
+  let ultima = lerUltimaAtividade();
+  let ultimoRegistro = 0;
+  let avisou = false;
+
+  function guardar() {
+    sessionStorage.setItem(CHAVE_ATIVIDADE, `${assinatura()}:${ultima}`);
+  }
+
+  function registrarAtividade() {
+    const agora = Date.now();
+    ultima = agora;
+    avisou = false;
+    if (agora - ultimoRegistro > 5000) {
+      ultimoRegistro = agora;
+      guardar();
+    }
+  }
+
+  function encerrar() {
+    sessionStorage.removeItem('notadez_user');
+    sessionStorage.removeItem('notadez_token');
+    sessionStorage.removeItem(CHAVE_ATIVIDADE);
+    window.location.replace('../../login.html?motivo=inatividade');
+  }
+
+  function verificar() {
+    if (!sessionStorage.getItem('notadez_token')) return;
+    const limite = limiteDeInatividade();
+    if (!limite) return;
+
+    const ocioso = Date.now() - ultima;
+    if (ocioso >= limite) {
+      encerrar();
+    } else if (!avisou && limite - ocioso <= AVISO_ANTES) {
+      avisou = true;
+      window.showAppMessage?.('Sua sessão será encerrada em 1 minuto por inatividade.', 'error');
+    }
+  }
+
+  if (sessionStorage.getItem('notadez_token')) guardar();
+  EVENTOS.forEach(nome => window.addEventListener(nome, registrarAtividade, { passive: true, capture: true }));
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) verificar(); });
+  window.setInterval(verificar, VERIFICAR_A_CADA);
+  verificar();
+})();

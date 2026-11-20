@@ -1,6 +1,8 @@
 // Autores:
 const express = require('express');
+const mongoose = require('mongoose');
 const Chamado = require('../models/Chamado');
+const Usuario = require('../models/Usuario');
 const Estudante = require('../models/Estudante');
 const Curso = require('../models/Curso');
 const { autenticar } = require('../services/autenticacao');
@@ -17,11 +19,21 @@ async function filtroDoAdministrador(req) {
   return { $or: pertencentes };
 }
 
-async function chamadoDoEscopo(req, id) {
+async function chamadoDoEscopo(req, id, { lean = false } = {}) {
+  if (!mongoose.isValidObjectId(id)) return null;
   const filtro = req.usuario.papel === 'admin' ? await filtroDoAdministrador(req) : { email: req.usuario.email };
-  return Chamado.findOne({ _id: id, ...filtro });
+  const consulta = Chamado.findOne({ _id: id, ...filtro });
+  return lean ? consulta.lean() : consulta;
 }
 
+async function nomeDoAdministrador(req) {
+  if (req.usuario.nome) return req.usuario.nome;
+  if (mongoose.isValidObjectId(req.usuario.id)) {
+    const usuario = await Usuario.findById(req.usuario.id).select('nome').lean();
+    if (usuario?.nome) return usuario.nome;
+  }
+  return 'Administrador';
+}
 
 router.get('/', async (req, res) => {
   try {
@@ -90,7 +102,7 @@ router.post('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
-    const chamado = await chamadoDoEscopo(req, req.params.id).lean();
+    const chamado = await chamadoDoEscopo(req, req.params.id, { lean: true });
     if (!chamado) {
       return res.status(404).json({ mensagem: 'Chamado não encontrado.' });
     }
@@ -105,7 +117,7 @@ router.get('/:id', async (req, res) => {
 
 router.post('/:id/mensagens', async (req, res) => {
   try {
-    const { mensagem, remetente_nome, remetente_tipo } = req.body;
+    const { mensagem } = req.body;
 
     if (!mensagem || !mensagem.trim()) {
       return res.status(400).json({ mensagem: 'A mensagem não pode estar vazia.' });
@@ -118,7 +130,7 @@ router.post('/:id/mensagens', async (req, res) => {
     if (req.usuario.papel !== 'admin' && chamado.email !== req.usuario.email) return res.status(403).json({ mensagem: 'Acesso não permitido a este chamado.' });
 
     const tipo = req.usuario.papel === 'admin' ? 'admin' : 'estudante';
-    const nome = tipo === 'admin' ? (req.usuario.nome || 'Administrador') : chamado.nome;
+    const nome = tipo === 'admin' ? await nomeDoAdministrador(req) : chamado.nome;
 
     chamado.mensagens.push({
       remetente_tipo: tipo,
