@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 
+  // Carrega os chamados cadastrados pela API e atualiza a listagem.
   async function carregarChamados() {
     try {
       const response = await fetch('http://localhost:3000/api/chamados');
@@ -33,6 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 
+  // Filtra os chamados por status e pelo texto digitado na busca.
   function renderizarChamados() {
     const search = searchInput.value.trim().toLowerCase();
     list.innerHTML = '';
@@ -195,6 +197,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) modalOverlay.remove(); });
 
 
+      // Envia a resposta do administrador ao estudante pela API.
       document.getElementById('modal-send-reply').addEventListener('click', async () => {
         const texto = document.getElementById('modal-reply-text').value.trim();
         if (!texto) return alert('Digite uma mensagem.');

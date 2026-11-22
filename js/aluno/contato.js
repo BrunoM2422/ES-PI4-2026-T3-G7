@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 
+  // Atualiza o histórico de chamados do estudante consultando a API.
   async function carregarHistorico() {
     try {
       const response = await fetch(`http://localhost:3000/api/chamados?email=${encodeURIComponent(user.email)}`);
@@ -89,6 +90,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 
+  // Busca os detalhes do chamado e exibe a conversa em uma janela modal.
   async function abrirModalConversa(id) {
     try {
       const response = await fetch(`http://localhost:3000/api/chamados/${id}`);
@@ -204,6 +206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 
+  // Envia um novo chamado para a coordenação com os dados preenchidos pelo estudante.
   form.addEventListener('submit', async event => {
     event.preventDefault();
 

@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const especialidade = document.querySelector('input[name="especialidade"]').value.trim();
     const instituicao = document.querySelector('input[name="instituicao"]').value.trim();
 
+    // Verifica se o CPF e o telefone informados são válidos.
     if (!window.NotaDezValidacaoBrasil.validarCpf(cpf)) {
       window.showAppMessage('Informe um CPF válido.');
       document.querySelector('input[name="cpf"]').focus();
@@ -34,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
+      // Envia os dados preenchidos para a API realizar o cadastro do docente.
       const response = await fetch('http://localhost:3000/api/admin/cadastrar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -56,6 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       window.showAppMessage('Docente cadastrado com sucesso!');
+
+      // Limpa os campos após a confirmação de sucesso do cadastro.
       ['nome', 'email', 'cpf', 'telefone', 'especialidade', 'instituicao'].forEach(name => {
         const field = document.querySelector(`[name="${name}"]`);
         if (field) field.value = '';

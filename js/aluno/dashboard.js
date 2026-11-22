@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let gradeEmCache = null;
     let gradeBuscadaEm = 0;
 
+    // Inicializa as notificações do aluno e carrega a agenda e a grade de aulas.
     NotaDezNotificacoes.iniciar({
         perfil: 'aluno',
         fontes: [
@@ -186,6 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return geral || daTurma;
         }
 
+        // Busca os eventos da agenda e as turmas selecionadas do aluno.
         async function carregar() {
             const hoje = agoraSP().data;
             const limite = somarDias(hoje, JANELA_AGENDA);
@@ -324,6 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return blocos.sort((a, b) => a.inicio - b.inicio);
         }
 
+        // Monta a lista de aulas do dia selecionado, destacando as aulas em andamento.
         function renderizar() {
             const agora = agoraSP();
             const ehHoje = dataSelecionada === agora.data;
