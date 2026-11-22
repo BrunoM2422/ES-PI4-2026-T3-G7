@@ -1,4 +1,5 @@
-// Autores:
+//Autor Matheus Antony Lucas Lima RA:25013260
+
 const express = require('express');
 const { autenticar } = require('../services/autenticacao');
 const javaServerService = require('../services/javaServerService');

@@ -1,7 +1,7 @@
-// Autores:
-package server.cliente_servidor;
+//Autor Matheus Antony Lucas Lima RA:25013260
 
-import server.cliente_servidor.Comunicado;
+
+package server.cliente_servidor;
 
 public class PedidoParaSair extends Comunicado{
     //Classe oca

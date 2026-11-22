@@ -1,4 +1,4 @@
-<!-- Autores: -->
+<!-- Autores: Matheus Antony Lucas Lima RA:25013260 -->
 <!doctype html>
 <html lang="pt-BR">
   <head>
@@ -19,24 +19,77 @@
           <div data-component="header">
           </div>
           <section class="content">
-            <article class="finance-host">
+            <article class="finance-host" data-finance-student>
               <div class="finance-page">
-                <section class="finance-summary-grid student-summary">
+
+                <section class="finance-summary-grid student-summary" aria-label="Resumo financeiro">
                   <article class="finance-summary">
-                    <span>Total Pendente</span><strong>—</strong><small>Dados financeiros não disponíveis.</small>
+                    <span>Mensalidade</span>
+                    <strong data-fin="mensalidade">—</strong>
+                    <small data-fin="mensalidade-detalhe">Calculando com base nas suas disciplinas...</small>
+                  </article>
+                  <article class="finance-summary">
+                    <span>Total Pendente</span>
+                    <strong data-fin="pendente">—</strong>
+                    <small data-fin="pendente-detalhe">&nbsp;</small>
                   </article>
                   <article class="finance-summary finance-accent">
-                    <span>Próximo Vencimento</span><strong>—</strong><small>Dados financeiros não disponíveis.</small>
+                    <span>Próximo Vencimento</span>
+                    <strong data-fin="vencimento">—</strong>
+                    <small data-fin="vencimento-detalhe">&nbsp;</small>
                   </article>
                 </section>
-                <section class="finance-panel">
+
+                <section class="finance-panel" data-fin="painel-pagamento">
                   <div class="finance-panel-heading">
                     <h2>
-                      Formas de Pagamento Rápidas
+                      Formas de Pagamento
                     </h2>
                   </div>
-                  <p class="finance-empty">Formas de pagamento não disponíveis.</p>
+
+                  <p class="finance-empty" data-fin="pagamento-vazio">Carregando suas informações financeiras...</p>
+
+                  <div class="finance-payment" data-fin="pagamento-conteudo" hidden>
+
+                    <div data-fin="escolha">
+                      <div class="finance-method-group" role="radiogroup" aria-label="Forma de pagamento">
+                        <label class="finance-method">
+                          <input type="radio" name="metodo" value="pix" checked>
+                          <span class="finance-method-card">
+                            <strong>Pix</strong>
+                            <small>Pagamento na hora, por QR Code ou código copia e cola.</small>
+                          </span>
+                        </label>
+                        <label class="finance-method">
+                          <input type="radio" name="metodo" value="boleto">
+                          <span class="finance-method-card">
+                            <strong>Boleto</strong>
+                            <small>Compensação em até 3 dias úteis, com código de barras.</small>
+                          </span>
+                        </label>
+                      </div>
+
+                      <div class="finance-checkout">
+                        <dl class="finance-checkout-info">
+                          <div><dt>Parcela</dt><dd data-fin="parcela-ref">—</dd></div>
+                          <div><dt>Valor</dt><dd data-fin="parcela-valor">—</dd></div>
+                          <div><dt>Vencimento</dt><dd data-fin="parcela-venc">—</dd></div>
+                        </dl>
+                        <button type="button" class="finance-btn is-primary" data-fin="gerar">Gerar QR Code</button>
+                      </div>
+                    </div>
+
+                    <div class="finance-output" data-fin="saida" hidden></div>
+
+                    <div class="finance-validate" data-fin="validar-bloco" hidden>
+                      <button type="button" class="finance-btn is-success" data-fin="validar">✓ Confirmar pagamento</button>
+                      <small>Use este botão depois de pagar para validar o pagamento desta parcela.</small>
+                    </div>
+
+                    <div class="finance-success" data-fin="sucesso" role="status" aria-live="polite" hidden></div>
+                  </div>
                 </section>
+
                 <section class="finance-panel finance-table-panel">
                   <div class="finance-panel-heading">
                     <h2>
@@ -64,7 +117,7 @@
                           </th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody data-fin="tabela">
                         <tr>
                           <td colspan="5" class="finance-empty">
                             Nenhuma parcela disponível.
@@ -83,6 +136,8 @@
       </div>
     </div>
     <script src="../../js/shared/app.js">
+    </script>
+    <script src="../../js/aluno/financeiro.js">
     </script>
   </body>
 </html>

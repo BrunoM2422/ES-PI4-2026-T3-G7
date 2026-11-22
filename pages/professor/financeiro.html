@@ -1,4 +1,4 @@
-<!-- Autores: -->
+<!-- Autores: Matheus Antony Lucas Lima RA: 25013260 -->
 <!doctype html>
 <html lang="pt-BR">
   <head>
@@ -19,17 +19,23 @@
           <div data-component="header">
           </div>
           <section class="content">
-            <article class="finance-host">
+            <article class="finance-host" data-finance-professor>
               <div class="finance-page">
-                <section class="finance-summary-grid professor-summary">
+                <section class="finance-summary-grid professor-summary" aria-label="Resumo salarial">
                   <article class="finance-summary">
-                    <span>Salário Base</span><strong>—</strong><small>Dados financeiros não disponíveis.</small>
+                    <span>Salário Base</span>
+                    <strong data-fin="salario">—</strong>
+                    <small data-fin="salario-detalhe">Calculando com base nas suas disciplinas...</small>
                   </article>
                   <article class="finance-summary finance-accent">
-                    <span>Adicionais & Gratificações</span><strong>—</strong><small>Dados financeiros não disponíveis.</small>
+                    <span>Adicionais & Gratificações</span>
+                    <strong data-fin="adicionais">—</strong>
+                    <small data-fin="adicionais-detalhe">&nbsp;</small>
                   </article>
                   <article class="finance-summary">
-                    <span>Líquido Médio</span><strong>—</strong><small>Dados financeiros não disponíveis.</small>
+                    <span>Líquido Médio</span>
+                    <strong data-fin="liquido">—</strong>
+                    <small data-fin="liquido-detalhe">&nbsp;</small>
                   </article>
                 </section>
                 <div class="professor-finance-grid">
@@ -38,7 +44,7 @@
                       <h2>
                         Demonstrativos de Pagamento
                       </h2>
-                      <button type="button" disabled>
+                      <button type="button" data-fin="exportar" disabled>
                         Exportar Todos (PDF)
                       </button>
                     </div>
@@ -66,15 +72,18 @@
                             </th>
                           </tr>
                         </thead>
-                        <tbody>
+                        <tbody data-fin="tabela">
                           <tr>
                             <td colspan="6" class="finance-empty">
-                              Nenhum demonstrativo disponível.
+                              Carregando demonstrativos...
                             </td>
                           </tr>
                         </tbody>
                       </table>
                     </div>
+                    <p class="finance-note" data-fin="nota" hidden>
+                      Valores simulados com base nas disciplinas e turmas que você leciona hoje. Descontos estimados.
+                    </p>
                   </section>
                   <section class="finance-panel finance-detail">
                     <div class="finance-panel-heading">
@@ -82,7 +91,8 @@
                         Demonstrativo Detalhado
                       </h2>
                     </div>
-                    <p class="finance-empty">Dados do demonstrativo não disponíveis.</p>
+                    <p class="finance-empty" data-fin="detalhe-vazio">Dados do demonstrativo não disponíveis.</p>
+                    <div data-fin="detalhe-conteudo" hidden></div>
                   </section>
                 </div>
               </div>
@@ -94,6 +104,8 @@
       </div>
     </div>
     <script src="../../js/shared/app.js">
+    </script>
+    <script src="../../js/professor/financeiro.js">
     </script>
   </body>
 </html>

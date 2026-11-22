@@ -1,9 +1,10 @@
-// Autores:
+//Autor Matheus Antony Lucas Lima RA:25013260
+
+
 package server.cliente_servidor;
 import java.util.ArrayList;
 import java.util.List;
 
-import server.cliente_servidor.Comunicado;
 import server.cliente_servidor.servidor.CalculadoraDeMedias;;
 //cliente manda essa classe
 //indiretamente herda de serializable

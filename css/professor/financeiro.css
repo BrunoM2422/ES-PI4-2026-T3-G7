@@ -1,4 +1,4 @@
-/* Autores: */
+/* Autores: Matheus Antony Lucas Lima*/
 .finance-host {
   padding: 0;
   background: transparent;
@@ -160,12 +160,101 @@
   color: #00a875;
   font-size: 15px;
 }
+
+/* ---------- Demonstrativos do professor ---------- */
+.finance-page [hidden] {
+  display: none !important;
+}
+.finance-heading-action button:not(:disabled) {
+  cursor: pointer;
+}
+.finance-heading-action button:not(:disabled):hover {
+  text-decoration: underline;
+}
+.finance-heading-action button:focus-visible, .finance-link:focus-visible, .finance-btn:focus-visible {
+  outline: 2px solid #5145ed;
+  outline-offset: 2px;
+}
+.finance-panel > .finance-note {
+  margin: 0;
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--border, #e8edf3);
+  color: var(--muted, #75849b);
+  font-size: 11px;
+  line-height: 1.4;
+}
+.finance-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #5145ed;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.finance-link:hover {
+  text-decoration: underline;
+}
+.finance-table-wrap tr.is-selected td {
+  background: rgba(81, 69, 237, .07);
+}
+.finance-negative {
+  color: #e34b4b;
+}
+.finance-strong {
+  color: var(--text, #172033);
+  font-weight: 700;
+}
+.finance-muted {
+  color: var(--muted, #75849b);
+}
+.finance-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--border, #e1e8f0);
+  border-radius: 7px;
+  background: var(--surface-muted, #f7f9fc);
+  color: var(--text, #34445e);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.finance-btn:hover {
+  border-color: #5145ed;
+  color: #5145ed;
+}
+.finance-detail-ref {
+  margin: 0;
+  padding: 0 16px 8px;
+  color: var(--muted, #75849b);
+  font-size: 12px;
+}
+.finance-detail-group {
+  margin: 6px 0 0;
+  padding: 0 16px;
+  color: var(--text, #172033);
+  font-size: 12px;
+  font-weight: 650;
+}
+.finance-detail .finance-total {
+  border-top: 1px solid var(--border, #e8edf3);
+  color: var(--text, #172033);
+  font-weight: 600;
+}
+
 body.theme-dark .finance-summary, body.theme-dark .finance-panel {
   background: var(--surface, #1c2433);
   border-color: var(--border, #303a4a);
 }
 body.theme-dark .payment-options button, body.theme-dark .finance-table-wrap th {
   background: var(--surface-muted, #242e3e);
+}
+body.theme-dark .finance-btn {
+  border-color: var(--border, #303a4a);
+  background: var(--surface-muted, #242e3e);
+}
+body.theme-dark .finance-table-wrap tr.is-selected td {
+  background: rgba(81, 69, 237, .18);
 }
 @media (max-width: 900px) {
   .professor-finance-grid {

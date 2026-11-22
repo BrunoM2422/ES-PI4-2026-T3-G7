@@ -1,4 +1,5 @@
-// Autores:
+//Autor Matheus Antony Lucas Lima RA:25013260
+
 const { spawn } = require('child_process');
 const path = require('path');
 
