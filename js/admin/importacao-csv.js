@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Luca Filippi — RA: 25022556
 (() => {
   const painel = document.querySelector('[data-importacao-csv]');
   if (!painel) return;

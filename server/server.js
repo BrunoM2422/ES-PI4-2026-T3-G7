@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Luca Filippi — RA: 25022556
 require('dotenv').config();
 
 const express = require('express');

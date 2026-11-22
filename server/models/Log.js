@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Luca Filippi — RA: 25022556
 const mongoose = require('mongoose');
 
 const schema = new mongoose.Schema({

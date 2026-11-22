@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Luca Filippi — RA: 25022556
 const router = require('express').Router();
 const Log = require('../models/Log');
 const { autenticar } = require('../services/autenticacao');

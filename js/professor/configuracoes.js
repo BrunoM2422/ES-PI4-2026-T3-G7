@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Luca Filippi — RA: 25022556
 (() => {
   const app = document.querySelector('#app');
   const host = app?.querySelector('.content > .card');

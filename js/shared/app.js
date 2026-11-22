@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Luca Filippi — RA: 25022556
 const originalFetch = window.fetch.bind(window);
 window.formatarCodigoTurmaDisciplina = (codigoTurma, codigoDisciplina) => {
   const turma = String(codigoTurma ?? '').trim();

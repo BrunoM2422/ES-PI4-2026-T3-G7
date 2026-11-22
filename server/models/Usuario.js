@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Luca Filippi — RA: 25022556
 // Gabriel Scolfaro de Azeredo - 25006194
 const mongoose = require('mongoose');
 
