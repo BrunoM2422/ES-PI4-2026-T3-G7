@@ -4,6 +4,7 @@
   if (!painel) return;
 
   const configuracoes = {
+    predios: ['predios/importar', 'predio', 'sala'],
     alunos: ['cadastrar', 'nome email cpf instituicao telefone endereco curso', '', 'estudante'],
     docentes: ['cadastrar', 'nome email cpf instituicao especialidade', 'telefone', 'professor'],
     disciplinas: ['disciplinas', 'nome codigo semestre curso descricao', ''],
@@ -90,6 +91,9 @@
     }
 
     const envio = { ...dados };
+    if (entidade === 'predios' && (dados.predio.length > 80 || dados.sala.length > 80)) {
+      throw new Error('Use até 80 caracteres por campo.');
+    }
     let cursoSelecionado = null;
     for (const campo of campos) {
       if (campo === 'curso' || campo === 'semestre' || (entidade === 'turmas' && campo === 'periodoLetivo')) continue;
@@ -169,6 +173,9 @@
       if (!linhas.length) throw new Error('Inclua o cabeçalho e pelo menos um registro.');
       if (linhas.length > 500) throw new Error('Divida o CSV em arquivos de até 500 registros.');
       const colunas = cabecalho.map(normalizar);
+      if (entidade === 'predios' && colunas.some(coluna => !campos.includes(coluna))) {
+        throw new Error('Use as colunas predio e sala, ou apenas predio.');
+      }
       if (entidade === 'alunos' && colunas.includes('turma')) throw new Error('Remove the turma column: students are imported without a linked class.');
       if (new Set(colunas).size !== colunas.length) throw new Error('Há colunas repetidas.');
       const faltantes = camposObrigatorios.filter(campo => !colunas.includes(normalizar(campo)));
@@ -225,7 +232,7 @@
           const dados = await resposta.json().catch(() => ({}));
           throw new Error(dados.mensagem || 'O servidor retornou HTTP ' + resposta.status + '.');
         }
-        resultado.textContent = 'Importado';
+        resultado.textContent = entidade === 'predios' ? (await resposta.json()).mensagem : 'Importado';
         salvos++;
       } catch (erro) {
         resultado.textContent = erro instanceof TypeError ? 'Conexão interrompida. Confira se o registro foi salvo.' : erro.message;
@@ -235,6 +242,10 @@
 
     const invalidos = registros.length - salvos - falhas;
     status.textContent = salvos + ' importado(s), ' + falhas + ' com falha e ' + invalidos + ' inválido(s).';
+    if (entidade === 'predios') {
+      status.textContent = salvos + ' processado(s), ' + falhas + ' com falha e ' + invalidos + ' inválido(s).';
+      painel.dispatchEvent(new Event('importacao-concluida'));
+    }
     arquivo.disabled = false;
   });
 })();

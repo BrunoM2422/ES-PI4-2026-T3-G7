@@ -1,3 +1,4 @@
+// Autores: Luca Filippi — RA: 25022556
 // Autores: Bruno Machado — RA: 25008041
 const mongoose = require('mongoose');
 
@@ -29,7 +30,10 @@ const turmaSchema = new mongoose.Schema({
   },
   alunosIds: { type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Estudante' }], default: [] },
   semestreOrganizacao: { type: Number, min: 1, max: 20, default: null },
+  reservasSala: { type: [String], default: undefined },
   horarios: [{
+    salaId: mongoose.Schema.Types.ObjectId,
+    local: String,
     gradeHorarioId: { type: mongoose.Schema.Types.ObjectId, ref: 'GradeHorario', required: true },
     aulaId: { type: mongoose.Schema.Types.ObjectId, required: true },
     disciplinaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Disciplina', required: true },
@@ -39,5 +43,15 @@ const turmaSchema = new mongoose.Schema({
     semestre: { type: Number, required: true, min: 1, max: 20 }
   }]
 }, { timestamps: true, collection: 'turmas' });
+
+// A chave única no banco protege também contra salvamentos simultâneos.
+turmaSchema.index({ reservasSala: 1 }, { unique: true, sparse: true });
+turmaSchema.pre('validate', function () {
+  if (!this.isModified('horarios')) return;
+  const chaves = this.horarios.filter(aula => aula.salaId)
+    .map(aula => [aula.salaId, aula.dia, aula.hora].join(':'));
+  if (new Set(chaves).size !== chaves.length) this.invalidate('horarios', 'Sala ocupada neste horário.');
+  this.reservasSala = chaves.length ? chaves : undefined;
+});
 
 module.exports = mongoose.models.Turma || mongoose.model('Turma', turmaSchema);

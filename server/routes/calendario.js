@@ -1,3 +1,4 @@
+// Autores: Luca Filippi — RA: 25022556
 // Autores: Bruno Machado — RA: 25008041
 // Nícolas Mitjans Nunes - 25005124
 const express = require('express');
@@ -147,7 +148,7 @@ router.get('/minhas-aulas', autenticar, async (req, res) => {
         codigoTurma: turma.codigo,
         dia: horario.dia,
         hora: horario.hora,
-        local: ''
+        local: horario.local || ''
       })))
       .sort((a, b) => a.dia - b.dia || a.hora - b.hora || a.turma.localeCompare(b.turma));
 
