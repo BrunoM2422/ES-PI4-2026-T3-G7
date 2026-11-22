@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Luca Filippi — RA: 25022556
 //Matheus Antony Lucas Lima RA:25013260
 // Nícolas Mitjans Nunes - 25005124
 const express = require('express');
@@ -384,31 +384,47 @@ router.put('/professor/:turmaId/:disciplinaId/notas', autenticar, async (req, re
     if (!turma) return res.status(404).json({ mensagem: 'Disciplina não encontrada entre suas turmas.' });
     const alunos = await Estudante.find({
       gradeMatriculas: { $elemMatch: { turmaId: turma._id, disciplinaId: req.params.disciplinaId } }
-    }).select('_id').lean();
-    const idsPermitidos = new Set(alunos.map(a => String(a._id)));
-    const componentes = await ComponenteNota.find({ turmaId: turma._id, disciplinaId: req.params.disciplinaId }).select('_id valorMaximo').lean();
-    const maximos = new Map(componentes.map(c => [String(c._id), c.valorMaximo]));
+    }).select('_id nome').lean();
+    const alunosPorId = new Map(alunos.map(aluno => [String(aluno._id), aluno]));
+    const componentes = await ComponenteNota.find({ turmaId: turma._id, disciplinaId: req.params.disciplinaId }).select('_id titulo valorMaximo').lean();
+    const componentesPorId = new Map(componentes.map(componente => [String(componente._id), componente]));
     const existentes = await Nota.find({ turmaId: turma._id, disciplinaId: req.params.disciplinaId }).select('alunoId componenteId valor').lean();
     const valoresAtuais = new Map(existentes.map(n => [`${n.alunoId}:${n.componenteId}`, n.valor]));
     const operacoes = [];
+    const detalhes = [];
+    const formatoNota = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 20 });
+    const exibirNota = valor => valor == null ? 'sem nota' : formatoNota.format(valor);
     for (const item of req.body.notas) {
-      const maximo = maximos.get(String(item.componenteId));
-      if (!id(item.alunoId) || maximo === undefined || !idsPermitidos.has(String(item.alunoId))) return res.status(400).json({ mensagem: 'Uma nota referencia aluno ou componente inválido.' });
+      const aluno = alunosPorId.get(String(item.alunoId));
+      const componente = componentesPorId.get(String(item.componenteId));
+      if (!id(item.alunoId) || !aluno || !componente) return res.status(400).json({ mensagem: 'Uma nota referencia aluno ou componente inválido.' });
+      const maximo = componente.valorMaximo;
       if (item.valor !== null && item.valor !== '' && (!Number.isFinite(Number(item.valor)) || Number(item.valor) < 0 || Number(item.valor) > maximo)) return res.status(400).json({ mensagem: `As notas devem estar entre 0 e ${maximo}.` });
       const filtro = { alunoId: item.alunoId, componenteId: item.componenteId };
       const valor = item.valor === null || item.valor === '' ? null : Number(item.valor);
       const chave = `${item.alunoId}:${item.componenteId}`;
-      const atual = valoresAtuais.has(chave) ? valoresAtuais.get(chave) : null;
+      const atual = valoresAtuais.get(chave) ?? null;
       if (valor === atual) continue;
       if (valor === null) operacoes.push({ deleteOne: { filter: filtro } });
       else operacoes.push({ updateOne: { filter: filtro, update: { $set: { ...filtro, turmaId: turma._id, disciplinaId: req.params.disciplinaId, valor } }, upsert: true } });
+      detalhes.push(`${aluno.nome} — ${componente.titulo}: ${exibirNota(atual)} → ${exibirNota(valor)}`);
+      valoresAtuais.set(chave, valor);
     }
-    if (operacoes.length) {
-      await Nota.bulkWrite(operacoes, { ordered: true });
-      // as médias salvas ficam marcadas como desatualizadas e são recalculadas em segundo plano
-      await aposAlterarDiario(turma._id, req.params.disciplinaId);
-    }
-    return res.json({ mensagem: 'Notas salvas no banco de dados.', salvas: req.body.notas.length });
+    const dados = { mensagem: 'Notas salvas no banco de dados.', salvas: req.body.notas.length, alteracoes: 0 };
+    if (!operacoes.length) return res.json(dados);
+    const resultado = await Nota.bulkWrite(operacoes, { ordered: true });
+    dados.alteracoes = resultado.upsertedCount + resultado.modifiedCount + resultado.deletedCount;
+    if (!dados.alteracoes) return res.json(dados);
+    await aposAlterarDiario(turma._id, req.params.disciplinaId);
+    const disciplina = turma.horarios.find(item => String(item.disciplinaId?._id || item.disciplinaId) === req.params.disciplinaId)?.disciplinaId;
+    return responderComLog(req, res, dados, 'Notas', [
+      `Turma: ${turma.codigo || turma._id}`,
+      `Disciplina: ${disciplina?.nome || req.params.disciplinaId}`,
+      `Notas lançadas: ${resultado.upsertedCount}`,
+      `Notas atualizadas: ${resultado.modifiedCount}`,
+      `Notas removidas: ${resultado.deletedCount}`,
+      ...detalhes
+    ], 'Lançamento de notas salvo');
   } catch (erro) { 
     console.error('Erro ao salvar notas:', erro); 
     return res.status(500).json({ mensagem: 'Não foi possível salvar as notas.' }); 

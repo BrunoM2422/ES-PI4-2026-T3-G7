@@ -1,4 +1,4 @@
-// Autores: Bruno Machado — RA: 25008041
+// Autores: Bruno Machado — RA: 25008041; Luca Filippi — RA: 25022556
 require('dotenv').config();
 
 const express = require('express');

@@ -1,4 +1,4 @@
-// Autores: Bruno Machado — RA: 25008041
+// Autores: Bruno Machado — RA: 25008041; Luca Filippi — RA: 25022556
 const express = require('express');
 const mongoose = require('mongoose');
 const { autenticar } = require('../services/autenticacao');
@@ -146,7 +146,7 @@ router.post('/:turmaId/comunicados', autenticar, async (req, res) => {
     const docente = await docenteDaSessao(req.usuario);
     if (!docente) return res.status(404).json({ mensagem: 'Perfil docente não encontrado.' });
     const turma = await Turma.findOne({ _id: req.params.turmaId, 'horarios.docenteId': docente._id })
-      .select('horarios')
+      .select('codigo horarios')
       .lean();
     if (!turma) return res.status(404).json({ mensagem: 'Turma não encontrada entre suas turmas.' });
     const ministraDisciplina = (turma.horarios || []).some(aula =>
@@ -168,7 +168,13 @@ router.post('/:turmaId/comunicados', autenticar, async (req, res) => {
       titulo,
       mensagem
     })));
-    return res.status(201).json({ mensagem: 'Comunicado enviado aos alunos da turma.', enviados: alunos.length });
+    const dados = { mensagem: 'Comunicado enviado aos alunos da turma.', enviados: alunos.length };
+    return responderComLog(req, res.status(201), dados, 'Comunicados', [
+      `Turma: ${turma.codigo || turma._id}`,
+      `Disciplina: ${req.body.disciplinaId}`,
+      `Título: ${titulo}`,
+      `Destinatários: ${alunos.length}`
+    ]);
   } catch (erro) {
     console.error('Erro ao enviar comunicado da turma:', erro);
     return res.status(500).json({ mensagem: 'Não foi possível enviar o comunicado.' });

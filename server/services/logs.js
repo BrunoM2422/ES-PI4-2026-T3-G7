@@ -1,10 +1,20 @@
-// Autores:
+// Autores: Luca Filippi — RA: 25022556
 const Log = require('../models/Log');
 const mongoose = require('mongoose');
 
 async function registrar(usuario, tipo, acao, descricao) {
   if (!['admin', 'professor'].includes(usuario.papel)) return;
   await Log.create({ usuarioId: usuario.id, usuario: usuario.email, tipo, acao, descricao });
+}
+
+async function responderComLog(req, res, dados, tipo, detalhes, acao = dados.mensagem) {
+  try {
+    await registrar(req.usuario, tipo, acao, detalhes.join('\n'));
+  } catch (erro) {
+    console.error('Falha ao registrar log:', erro.message);
+    return res.json({ ...dados, avisoLog: 'A ação foi concluída, mas o registro de atividade falhou.' });
+  }
+  return res.json(dados);
 }
 
 // Capture referências antes da ação, inclusive para registros que serão excluídos.
@@ -54,10 +64,7 @@ async function auditar(req, res, next) {
         const entidade = dados[recurso];
         if (entidade) detalhes.push(`${recurso}: ${entidade.nome || entidade.title || entidade.assunto || entidade.codigo || ''} (${entidade.id || entidade._id || ''})`);
       }
-      return registrar(usuario, tipo, acao, detalhes.join('\n')).then(() => enviar(dados)).catch(erro => {
-        console.error('Falha ao registrar log:', erro.message);
-        return enviar({ ...dados, avisoLog: 'A ação foi concluída, mas o registro de atividade falhou.' });
-      });
+      return responderComLog(req, res, dados, tipo, detalhes, acao);
     };
     next();
   } catch (erro) {
@@ -65,4 +72,4 @@ async function auditar(req, res, next) {
     res.status(503).json({ mensagem: 'Não foi possível preparar o registro de atividade. Tente novamente.' });
   }
 }
-module.exports = { registrar, auditar };
+module.exports = { registrar, auditar, responderComLog };

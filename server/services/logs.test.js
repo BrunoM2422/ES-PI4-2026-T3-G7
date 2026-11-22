@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Luca Filippi — RA: 25022556
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const Log = require('../models/Log');

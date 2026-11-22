@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Luca Filippi — RA: 25022556
 // Nícolas Mitjans Nunes - 25005124
 const express = require('express');
 const mongoose = require('mongoose');
@@ -57,6 +57,16 @@ async function alunosDaTurma(turma, disciplinaId) {
 async function turmaDoDocente(turmaId, docenteId) {
   return Turma.findOne({ _id: turmaId, 'horarios.docenteId': docenteId })
     .populate('horarios.disciplinaId', 'nome codigo').lean();
+}
+
+function responderFrequencia(req, res, mensagem, turma, aula, data, detalhes) {
+  return responderComLog(req, res, { mensagem }, 'Frequência', [
+    `Turma: ${turma.codigo || turma._id}`,
+    `Disciplina: ${aula.disciplinaId?.nome || aula.disciplinaId || 'Não informada'}`,
+    `Data da aula: ${data}`,
+    `Aula: ${aula.aulaId}`,
+    ...detalhes
+  ]);
 }
 
 router.use(autenticar, (req, res, next) => req.usuario.papel === 'professor'
@@ -214,7 +224,7 @@ router.patch('/turmas/:turmaId/semestre/:aulaId/:data/faltas/:alunoId', async (r
       registros: { $elemMatch: { alunoId, presente: false } }
     }, { $set: { 'registros.$.presente': true } });
     if (!resultado.modifiedCount) return res.status(409).json({ mensagem: 'Só é possível reverter uma ausência registrada; presenças não podem ser alteradas.' });
-    res.json({ mensagem: 'Ausência revertida; a presença foi restaurada.' });
+    return responderFrequencia(req, res, 'Ausência revertida; a presença foi restaurada.', turma, aula, data, [`Aluno: ${alunoId}`]);
   } catch (erro) {
     console.error('Erro ao reverter ausência de aula passada:', erro);
     res.status(500).json({ mensagem: 'Não foi possível reverter a ausência.' });
@@ -249,7 +259,11 @@ router.post('/turmas/:turmaId/chamada', async (req, res) => {
       if (erro.code === 11000) return res.status(409).json({ mensagem: 'A chamada desta aula já foi registrada e não pode ser refeita.' });
       throw erro;
     }
-    res.json({ mensagem: 'Chamada registrada.' });
+    const presentes = presencas.filter(item => item.presente).length;
+    return responderFrequencia(req, res, 'Chamada registrada.', turma, aula, data, [
+      `Presentes: ${presentes}`,
+      `Ausentes: ${presencas.length - presentes}`
+    ]);
   } catch (erro) {
     console.error('Erro ao registrar chamada:', erro);
     res.status(500).json({ mensagem: 'Não foi possível registrar a chamada.' });
@@ -261,8 +275,7 @@ router.get('/turmas/:turmaId/aulas/:aulaId/historico', async (req, res) => {
   try {
     const docente = await Docente.findOne(docenteQuery(req.usuario)).select('_id').lean();
     const turma = docente && await turmaDoDocente(req.params.turmaId, docente._id);
-    if (!turma || !turma.horarios.some(item => String(item.aulaId) === req.params.aulaId && String(item.docenteId) === String(docente._id))) return res.status(404).json({ mensagem: 'Aula não encontrada entre suas aulas.' });
-    const aula = turma.horarios.find(item => String(item.aulaId) === req.params.aulaId && String(item.docenteId) === String(docente._id));
+    const aula = turma?.horarios.find(item => String(item.aulaId) === req.params.aulaId && String(item.docenteId) === String(docente._id));
     if (!aula) return res.status(404).json({ mensagem: 'Aula não encontrada entre suas aulas.' });
     const alunos = await alunosDaTurma(turma, String(aula.disciplinaId?._id || aula.disciplinaId));
     const registros = await Frequencia.find({ turmaId: turma._id, aulaId: req.params.aulaId, docenteId: docente._id, data: { $lt: partesLocais().year + '-' + partesLocais().month + '-' + partesLocais().day } }).sort({ data: -1 }).lean();
@@ -283,7 +296,7 @@ router.delete('/turmas/:turmaId/aulas/:aulaId/faltas/:alunoId/:data', async (req
     if (req.params.data >= `${hoje.year}-${hoje.month}-${hoje.day}`) return res.status(403).json({ mensagem: 'Só é possível remover faltas de aulas passadas.' });
     const resultado = await Frequencia.updateOne({ turmaId: turma._id, aulaId: req.params.aulaId, data: req.params.data, docenteId: docente._id }, { $pull: { registros: { alunoId: req.params.alunoId, presente: false } } });
     if (!resultado.modifiedCount) return res.status(404).json({ mensagem: 'Falta não encontrada.' });
-    res.json({ mensagem: 'Ausência removida.' });
+    return responderFrequencia(req, res, 'Ausência removida.', turma, aula, req.params.data, [`Aluno: ${req.params.alunoId}`]);
   } catch (erro) {
     console.error('Erro ao remover ausência:', erro);
     res.status(500).json({ mensagem: 'Não foi possível remover a ausência.' });

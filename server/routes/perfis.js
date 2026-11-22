@@ -1,4 +1,4 @@
-// Autores: Bruno Machado — RA: 25008041
+// Autores: Bruno Machado — RA: 25008041; Luca Filippi — RA: 25022556
 // Gabriel Scolfaro de Azeredo - 25006194
 const express = require('express');
 const bcrypt = require('bcryptjs');

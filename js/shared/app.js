@@ -1,4 +1,4 @@
-// Autores: Bruno Machado — RA: 25008041
+// Autores: Bruno Machado — RA: 25008041; Luca Filippi — RA: 25022556
 const originalFetch = window.fetch.bind(window);
 window.formatarCodigoTurmaDisciplina = (codigoTurma, codigoDisciplina) => {
   const turma = String(codigoTurma ?? '').trim();
