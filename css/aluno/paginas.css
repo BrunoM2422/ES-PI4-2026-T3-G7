@@ -825,3 +825,13 @@ body.theme-dark .student-agenda-chip {
   background: rgb(255 255 255 / 8%);
   color: var(--ink);
 }
+
+.student-agenda-item.is-aula {
+  --chip-bg: #e6f7ef;
+  --chip-fg: #12724b;
+}
+
+.student-agenda-item.is-atividade {
+  --chip-bg: #e8f1fe;
+  --chip-fg: #1f5fb8;
+}

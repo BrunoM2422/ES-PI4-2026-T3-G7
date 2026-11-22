@@ -1,9 +1,18 @@
 // Autores:
+// Gabriel Scolfaro de Azeredo - 25006194
 document.addEventListener('DOMContentLoaded', () => {
     const FUSO = 'America/Sao_Paulo';
     const DIAS_RECENTES = 15;
     const JANELA_AGENDA = 30;
-    const ROTULOS_EVENTO = { feriado: 'Feriado', institucional: 'Evento Institucional' };
+    const ROTULOS_EVENTO = {
+        feriado: 'Feriado',
+        institucional: 'Evento Institucional',
+        aula: 'Alteração de aula',
+        atividade: 'Atividade da turma'
+    };
+
+    let gradeEmCache = null;
+    let gradeBuscadaEm = 0;
 
     NotaDezNotificacoes.iniciar({
         perfil: 'aluno',
@@ -67,6 +76,30 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!resposta.ok) throw new Error(dados.mensagem || 'Erro ao carregar dados.');
         return dados;
     }
+
+    function obterGrade() {
+        if (gradeEmCache && Date.now() - gradeBuscadaEm < 30000) return gradeEmCache;
+        gradeBuscadaEm = Date.now();
+        gradeEmCache = buscarJson('/api/aluno/grade');
+        gradeEmCache.catch(() => { gradeEmCache = null; });
+        return gradeEmCache;
+    }
+
+    function turmasDaGrade(dados) {
+        const porTurma = new Map();
+        (dados.disciplinas || []).forEach(disciplina => {
+            (disciplina.turmas || []).filter(turma => turma.selecionada).forEach(turma => {
+                const item = porTurma.get(turma.id) || {
+                    codigo: window.formatarCodigoTurmaDisciplina(turma.codigo, disciplina.codigo),
+                    nomes: []
+                };
+                item.nomes.push(disciplina.nome);
+                porTurma.set(turma.id, item);
+            });
+        });
+        return new Map([...porTurma].map(([id, item]) => [id, `${item.nomes.join(', ')} · Turma ${item.codigo}`]));
+    }
+
 
     function aoVirarMinuto(callback) {
         const agendar = () => setTimeout(() => {
@@ -143,26 +176,37 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!lista) return;
 
         let eventos = [];
+        let turmasDoAluno = new Map();
         let dataCarregada = '';
         let falhou = false;
 
+        function entraNaAgenda(ev) {
+            const geral = ev.scope === 'global' && (ev.category === 'feriado' || ev.category === 'institucional');
+            const daTurma = ev.scope === 'turma' && (ev.category === 'aula' || ev.category === 'atividade');
+            return geral || daTurma;
+        }
+
         async function carregar() {
             const hoje = agoraSP().data;
-            try {
-                const dados = await buscarJson('/api/calendario/eventos');
-                const limite = somarDias(hoje, JANELA_AGENDA);
-                eventos = (dados.eventos || []).filter(ev =>
-                    ev.scope === 'global' &&
-                    ROTULOS_EVENTO[ev.category] &&
-                    ev.date >= hoje &&
-                    ev.date <= limite
-                );
-                dataCarregada = hoje;
-                falhou = false;
-            } catch (erro) {
-                console.error('Erro ao carregar a agenda geral:', erro);
+            const limite = somarDias(hoje, JANELA_AGENDA);
+            const [resEventos, resGrade] = await Promise.allSettled([
+                buscarJson('/api/calendario/eventos'),
+                obterGrade()
+            ]);
+
+            if (resEventos.status === 'rejected') {
+                console.error('Erro ao carregar a agenda geral:', resEventos.reason);
                 falhou = true;
+                renderizar();
+                return;
             }
+
+            eventos = (resEventos.value.eventos || []).filter(ev =>
+                entraNaAgenda(ev) && ev.date >= hoje && ev.date <= limite
+            );
+            turmasDoAluno = resGrade.status === 'fulfilled' ? turmasDaGrade(resGrade.value) : new Map();
+            dataCarregada = hoje;
+            falhou = false;
             renderizar();
         }
 
@@ -195,6 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const mes = new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC', month: 'short' })
                     .format(new Date(Date.UTC(a, m - 1, d))).replace('.', '');
                 const horario = ev.start ? `${ev.start}${ev.end ? ` - ${ev.end}` : ''}` : 'Dia todo';
+                const turma = ev.turmaId ? turmasDoAluno.get(ev.turmaId) : '';
 
                 const item = document.createElement('article');
                 item.className = `student-agenda-item is-${ev.category}`;
@@ -206,9 +251,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="student-agenda-body">
                         <strong>${escapeHtml(ev.title)}</strong>
                         <div class="student-agenda-meta">
-                            <span class="student-agenda-chip">${escapeHtml(ROTULOS_EVENTO[ev.category])}</span>
+                            <span class="student-agenda-chip">${escapeHtml(ROTULOS_EVENTO[ev.category] || ev.category)}</span>
                             ${ev.date === agora.data ? '<span class="student-agenda-chip">Hoje</span>' : ''}
                             <span>${escapeHtml(horario)}</span>
+                            ${turma ? `<span>${escapeHtml(turma)}</span>` : ''}
                             ${ev.location ? `<span>${escapeHtml(ev.location)}</span>` : ''}
                         </div>
                         ${ev.description ? `<p class="student-agenda-desc">${escapeHtml(ev.description)}</p>` : ''}
@@ -331,7 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         async function carregar() {
             try {
-                const dados = await buscarJson('/api/aluno/grade');
+                const dados = await obterGrade();
                 aulas = montarAulas(dados);
                 mensagemErro = '';
             } catch (erro) {
