@@ -1,4 +1,4 @@
-// Autores: Luca Filippi — RA: 25022556
+// Autores: Bruno Machado — RA: 25008041; Luca Filippi — RA: 25022556
 // Gabriel Scolfaro de Azeredo - 25006194
 const express = require('express');
 const bcrypt = require('bcryptjs');
@@ -23,6 +23,7 @@ router.get('/foto', async (req, res) => {
       perfil = await Docente.findOne({ email }).select('foto').lean();
     }
 
+    // Converte a foto armazenada em Base64 para imagem e valida seu formato.
     const foto = String(perfil?.foto || '').trim();
     if (!foto) return res.status(404).json({ mensagem: 'Este perfil não possui foto.' });
 
@@ -56,6 +57,7 @@ router.get('/', async (req, res) => {
       return res.status(404).json({ mensagem: 'Usuário não encontrado.' });
     }
 
+    // Busca os dados complementares do perfil conforme o papel do usuário.
     let detalhesPerfil = null;
     if (usuario.papeis.includes('estudante')) {
       detalhesPerfil = await Estudante.findOne({ email }).lean();
@@ -149,6 +151,7 @@ router.put('/senha', async (req, res) => {
     }
 
 
+    // Criptografa a nova senha antes de atualizar o cadastro do usuário.
     const senhaHash = await bcrypt.hash(novaSenha, 10);
 
     await Usuario.findOneAndUpdate(

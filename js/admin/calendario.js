@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 // Nícolas Mitjans Nunes - 25005124
 (() => {
   const host = document.querySelector('#app .calendar-host');
@@ -144,6 +144,7 @@
     if (event.target === modal) closeEditor();
   });
 
+  // Desenha o mês e seus eventos e atualiza a agenda detalhada.
   function render() {
     const year = displayedMonth.getFullYear();
     const month = displayedMonth.getMonth();
@@ -200,6 +201,7 @@
     renderAgenda(month, year);
   }
 
+  // Lista os eventos do mês em ordem cronológica para acesso rápido.
   function renderAgenda(month, year) {
     const monthEvents = events
       .filter(item => {
@@ -245,6 +247,7 @@
     });
   }
 
+  // Preenche o formulário para criar ou editar um evento do calendário.
   function openEditor(date, id = null) {
     const item = id ? events.find(event => event.id === id) : null;
     editingId = item?.id || null;
@@ -310,6 +313,7 @@
       .sort((a, b) => a.start.localeCompare(b.start));
   }
 
+  // Obtém os eventos e redesenha as visualizações do calendário.
   async function loadEvents() {
     try {
       await migrateLegacyEvents();

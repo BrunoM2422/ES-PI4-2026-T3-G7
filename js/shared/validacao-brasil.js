@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 (() => {
   const normalizarCpf = valor => String(valor || '').replace(/\D/g, '');
   const validarCpf = valor => {

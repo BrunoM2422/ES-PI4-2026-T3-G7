@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 // Nícolas Mitjans Nunes - 25005124
 const express = require('express');
 const bcrypt = require('bcryptjs');
@@ -19,6 +19,7 @@ const { validarCpf, normalizarTelefone, validarTelefone } = require('../services
 
 const router = express.Router();
 
+// Autoriza por perfil e restringe coordenadores aos dados do próprio curso.
 router.use(autenticar, async (req, res, next) => {
   if (req.usuario.papel !== 'admin') return res.status(403).json({ mensagem: 'Acesso exclusivo de administradores.' });
   const nivel = req.usuario.nivelPermissao;
@@ -68,6 +69,7 @@ function normalizarCpf(cpf) {
   return String(cpf || '').replace(/\D/g, '');
 }
 
+// Incrementa contador atômico para gerar RA sequencial sem duplicidade.
 async function proximoRaEstudante() {
   const contadorId = 'ra-estudante-2026';
   const atual = await Contador.findById(contadorId).select('valor').lean();
@@ -247,6 +249,7 @@ router.put('/opcoes/fechar-avaliacao-professores', async (_req, res) => {
   }
 });
 
+// Altera a liberação da grade curricular para um curso específico.
 router.put('/opcoes/grade-curso', async (req, res) => {
   try {
     const { cursoId, liberado } = req.body;
@@ -365,6 +368,7 @@ router.put('/opcoes/fechar-grade-equivalencias', async (_req, res) => {
   }
 });
 
+// Lista os cursos disponíveis para as telas administrativas.
 router.get('/cursos', async (req, res) => {
   try {
     const cursos = await Curso.find(req.usuario.nivelPermissao === 'admin_2' ? { _id: req.usuario.cursoId } : {})
@@ -1244,6 +1248,7 @@ router.post('/administradores', async (req, res) => {
   }
 });
 
+// Valida e cria um curso; os erros de unicidade retornam como resposta legível.
 router.post('/cursos', async (req, res) => {
   try {
     const { codigo, nome, unidade, grau, modalidade, duracao, descricao } = req.body;

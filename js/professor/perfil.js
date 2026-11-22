@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // Carrega os dados pessoais e profissionais do professor a partir da API.
   try {
     const response = await fetch(`http://localhost:3000/api/perfis?email=${encodeURIComponent(user.email)}`);
     const data = await response.json();
@@ -120,6 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     draw(ctx, 1, true);
   }
 
+  // Abre o editor para ajustar o zoom, a posição e a rotação da foto.
   function abrirEditor(src) {
     const img = new Image();
     img.onload = () => {
@@ -233,6 +235,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   const botaoSalvar = document.querySelector('.profile-save');
   if (botaoSalvar) {
+    // Salva as informações atualizadas do perfil, incluindo a descrição e a foto.
     botaoSalvar.addEventListener('click', async () => {
       const telefone = inputCelular ? inputCelular.value.trim() : '';
       const endereco = inputEndereco ? inputEndereco.value.trim() : '';

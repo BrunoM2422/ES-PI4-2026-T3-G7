@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 const express = require('express');
 const { autenticar } = require('../services/autenticacao');
 const Estudante = require('../models/Estudante');

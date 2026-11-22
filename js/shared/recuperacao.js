@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.querySelector('#recovery-request-form');
   const emailInput = document.querySelector('#email');

@@ -2,6 +2,7 @@
 // Nícolas Mitjans Nunes - 25005124
 const mongoose = require('mongoose');
 
+// Modela avaliações e os parâmetros usados para compor a média da disciplina.
 const componenteNotaSchema = new mongoose.Schema({
   turmaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Turma', required: true },
   disciplinaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Disciplina', required: true },

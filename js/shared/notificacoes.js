@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 // Gabriel Scolfaro de Azeredo - 25006194
 (function () {
     const FUSO = 'America/Sao_Paulo';
@@ -29,6 +29,7 @@
     }
 
 
+    // Recupera as preferências do usuário para definir quais notificações serão exibidas.
     function preferenciasDeNotificacao() {
         let usuario = null;
         try {
@@ -166,6 +167,7 @@
             }
         }
 
+        // Busca as notificações nas fontes disponíveis e organiza as que devem aparecer na tela.
         async function carregar() {
             const resultados = await Promise.allSettled(fontes.map(fonte => fonte()));
             const todas = [];
@@ -240,6 +242,7 @@
             carregar();
         }
 
+        // Abre uma janela modal com os detalhes da notificação selecionada.
         function abrirModal(n) {
             document.getElementById('notif-modal')?.remove();
 

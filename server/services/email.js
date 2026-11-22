@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 const nodemailer = require('nodemailer');
 
 function escaparHtml(valor) {

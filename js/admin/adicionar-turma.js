@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 document.addEventListener('DOMContentLoaded', () => {
   const cursoSelect = document.querySelector('[name="cursoId"]');
   const letraTurmaInput = document.querySelector('[name="letraTurma"]');

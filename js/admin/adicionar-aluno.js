@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 document.addEventListener('DOMContentLoaded', () => {
   const botaoCadastrar = document.querySelector('[data-cadastrar-aluno]');
   if (!botaoCadastrar) return;

@@ -29,11 +29,13 @@ async function docenteDaSessao(usuario) {
   return Docente.findOne({ $or: filtros }).select('_id').lean();
 }
 
+// Confere se a turma e a disciplina pertencem ao diário do docente.
 async function turmaAutorizada(turmaId, disciplinaId, docenteId) {
   return Turma.findOne({ _id: turmaId, 'horarios.docenteId': docenteId, 'horarios.disciplinaId': disciplinaId })
     .select('codigo periodoLetivo horarios alunosIds').populate('horarios.disciplinaId', 'nome codigo').lean();
 }
 
+// Combina componentes e notas para entregar um registro pronto à interface.
 function mapearComponentes(componentes, notas = []) {
   const notaPorComponente = new Map(notas.map(nota => [String(nota.componenteId), nota]));
   return componentes.map(componente => {
@@ -58,6 +60,7 @@ function camposDeMedia(info) {
 }
 
 // Recalcula e salva as médias de um diário (turma + disciplina). Lança erro se o Java estiver offline.
+// Reúne notas e componentes do diário e delega o cálculo de médias ao serviço.
 async function recalcularMediasDoDiario(turmaId, disciplinaId) {
   const componentes = await ComponenteNota.find({ turmaId, disciplinaId }).sort({ createdAt: 1 }).lean();
   if (!componentes.length) return;
@@ -97,6 +100,7 @@ async function aposAlterarDiario(turmaId, disciplinaId) {
   });
 }
 
+// Entrega ao aluno as notas e médias das disciplinas em que está matriculado.
 router.get('/aluno', autenticar, async (req, res) => {
   if (req.usuario.papel !== 'aluno') return res.status(403).json({ mensagem: 'Acesso exclusivo de alunos.' });
   try {
@@ -207,6 +211,7 @@ router.get('/professor/pendencias', autenticar, async (req, res) => {
   }
 });
 
+// Carrega o diário autorizado, com componentes, alunos e notas atuais.
 router.get('/professor/:turmaId/:disciplinaId', autenticar, async (req, res) => {
   if (req.usuario.papel !== 'professor') return res.status(403).json({ mensagem: 'Acesso exclusivo de docentes.' });
   if (!id(req.params.turmaId) || !id(req.params.disciplinaId)) return res.status(400).json({ mensagem: 'Turma ou disciplina inválida.' });
@@ -291,6 +296,7 @@ router.post('/professor/:turmaId/:disciplinaId/configuracao', autenticar, async 
   }
 });
 
+// Cria um componente de avaliação no diário do professor.
 router.post('/professor/:turmaId/:disciplinaId/componentes', autenticar, async (req, res) => {
   if (req.usuario.papel !== 'professor') return res.status(403).json({ mensagem: 'Acesso exclusivo de docentes.' });
   if (!id(req.params.turmaId) || !id(req.params.disciplinaId)) return res.status(400).json({ mensagem: 'Turma ou disciplina inválida.' });
@@ -367,6 +373,7 @@ router.delete('/professor/:turmaId/:disciplinaId/componentes/:componenteId', aut
   }
 });
 
+// Valida e grava os valores enviados para as notas dos alunos.
 router.put('/professor/:turmaId/:disciplinaId/notas', autenticar, async (req, res) => {
   if (req.usuario.papel !== 'professor') return res.status(403).json({ mensagem: 'Acesso exclusivo de docentes.' });
   if (!id(req.params.turmaId) || !id(req.params.disciplinaId)) return res.status(400).json({ mensagem: 'Turma ou disciplina inválida.' });

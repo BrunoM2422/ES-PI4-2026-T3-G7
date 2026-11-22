@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 document.addEventListener('DOMContentLoaded', async () => {
   const dias = Array.from(document.querySelectorAll('[data-week-day]'));
   if (!dias.length) return;

@@ -108,6 +108,7 @@ function iniciarAgendaHoje() {
         }
     }
 
+    // Busca os eventos, aulas, turmas e avaliações pendentes do professor.
     async function carregar() {
         const hoje = agoraSP().data;
         const limiteAtividades = somarDias(hoje, DIAS_ATIVIDADES);
@@ -275,6 +276,7 @@ function iniciarAgendaHoje() {
         });
     }
 
+    // Atualiza a exibição da agenda e das atividades conforme o horário atual.
     function renderizar() {
         const agora = agoraSP();
         renderizarAgenda(agora);

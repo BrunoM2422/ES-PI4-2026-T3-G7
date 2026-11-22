@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 // Nícolas Mitjans Nunes - 25005124
 document.addEventListener('DOMContentLoaded', async () => {
   const cardsRoot = document.querySelector('[data-subject-cards]');
@@ -20,8 +20,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     return `<div class="curriculum-week-time">${String(hora).padStart(2, '0')}:00</div>${dias.map((_, dia) => `<div class="curriculum-week-cell" data-cell="${dia}:${hora}"></div>`).join('')}`;
   }).join('');
 
+  // Localiza disciplina e turma escolhida para reutilizar seus dados na grade.
   function disciplinaPorId(id) { return disciplinas.find(disciplina => disciplina.id === id); }
   function turmaDaSelecao(disciplinaId, turmaId) { return disciplinaPorId(disciplinaId)?.turmas.find(turma => turma.id === turmaId); }
+  // Converte as escolhas atuais em aulas e horários para a visualização semanal.
   function aulasSelecionadas(excluirDisciplinaId = null) {
     return [...selecionadas.entries()].flatMap(([disciplinaId, turmaId]) => {
       if (disciplinaId === excluirDisciplinaId) return [];
@@ -31,6 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // Desenha os horários escolhidos e associa cada bloco à ação de remoção.
   function renderGrade() {
     weekGrid.querySelectorAll('.curriculum-week-cell').forEach(cell => { cell.replaceChildren(); cell.classList.remove('has-class'); });
     for (const aula of aulasSelecionadas()) {
@@ -50,6 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelector('[data-selection-count]').textContent = `${quantidade} ${quantidade === 1 ? 'matéria selecionada' : 'matérias selecionadas'}`;
   }
 
+  // Filtra o catálogo por texto/semestre e cria os cards correspondentes.
   function renderDisciplinas() {
     const termo = search.value.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     const semestre = semesterFilter.value;
@@ -76,6 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     cardsRoot.querySelectorAll('[data-subject]').forEach(card => card.addEventListener('click', () => abrirModal(disciplinaPorId(card.dataset.subject))));
   }
 
+  // Remove a escolha local e sinaliza que a grade precisa ser salva.
   function removerMateria(disciplinaId) {
     if (!selecionadas.has(disciplinaId)) return;
     selecionadas.delete(disciplinaId);
@@ -86,6 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderGrade();
   }
 
+  // Exibe as turmas disponíveis e atualiza a turma escolhida pelo aluno.
   function abrirModal(disciplina) {
     const turmaSelecionada = selecionadas.get(disciplina.id);
     modalRoot.innerHTML = `<div class="curriculum-modal-backdrop" data-modal-backdrop><section class="curriculum-class-modal" role="dialog" aria-modal="true" aria-labelledby="curriculum-modal-title"><button type="button" class="curriculum-modal-close" data-close-modal aria-label="Fechar">×</button><span class="curriculum-subject-semester">${disciplina.semestre}º semestre · ${escapar(disciplina.codigo)}</span><h2 id="curriculum-modal-title">${escapar(disciplina.nome)}</h2><p>${escapar(disciplina.descricao || 'Escolha uma turma para cursar esta matéria.')} A inscrição inclui somente esta matéria.</p><div class="curriculum-class-list" data-class-list></div><div class="curriculum-modal-actions"><button type="button" class="curriculum-remove-button" data-remove-selection ${turmaSelecionada ? '' : 'hidden'}>Remover da minha grade</button><button type="button" class="curriculum-modal-done" data-close-modal>Concluir</button></div></section></div>`;
@@ -127,6 +133,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   search.addEventListener('input', renderDisciplinas);
   semesterFilter.addEventListener('change', renderDisciplinas);
+  // Persiste no servidor as matrículas selecionadas na grade.
   saveButton.addEventListener('click', async () => {
     saveButton.disabled = true;
     try {
@@ -145,6 +152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     finally { saveButton.disabled = !alterada; }
   });
 
+  // Busca o catálogo e as escolhas salvas para iniciar a tela.
   async function carregarCatalogo() {
     const resposta = await fetch('/api/aluno/grade', { headers: { Authorization: `Bearer ${token}` } });
     const dados = await resposta.json();

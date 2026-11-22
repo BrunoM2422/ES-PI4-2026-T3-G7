@@ -1,4 +1,4 @@
-// Autores: Luca Filippi — RA: 25022556
+// Autores: Bruno Machado — RA: 25008041; Luca Filippi — RA: 25022556
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');

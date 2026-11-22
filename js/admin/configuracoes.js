@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 (() => {
   const app = document.querySelector('#app');
   const host = app?.querySelector('.content > .card');

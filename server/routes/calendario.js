@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 // Nícolas Mitjans Nunes - 25005124
 const express = require('express');
 const mongoose = require('mongoose');
@@ -15,6 +15,7 @@ const categoriasPorPapel = {
   aluno: ['avaliacao', 'compromisso']
 };
 
+// Define quais categorias de evento cada perfil pode consultar ou criar.
 function categoriasDoUsuario(usuario) {
   if (usuario.papel !== 'admin') return categoriasPorPapel[usuario.papel] || [];
   return usuario.nivelPermissao === 'admin_mestre' ? ['feriado', 'institucional'] : usuario.nivelPermissao === 'admin_2' ? ['institucional'] : [];
@@ -46,6 +47,7 @@ function dataValida(data) {
   return dataUtc.toISOString().slice(0, 10) === data;
 }
 
+// Confere campos e regras de acesso antes de salvar um evento.
 function validarEvento(dados, papel, usuario) {
   const { title, date, category, start, end, location, description } = dados;
   const categoriasPermitidas = usuario ? categoriasDoUsuario(usuario) : categoriasPorPapel[papel] || [];
@@ -156,6 +158,7 @@ router.get('/minhas-aulas', autenticar, async (req, res) => {
   }
 });
 
+// Retorna eventos visíveis ao usuário, respeitando perfil, curso e turma.
 router.get('/eventos', autenticar, async (req, res) => {
   res.set('Cache-Control', 'private, no-store');
   try {
@@ -238,6 +241,7 @@ router.post('/eventos/migrar-legado', autenticar, async (req, res) => {
   }
 });
 
+// Valida e cria um evento associado ao escopo autorizado do usuário.
 router.post('/eventos', autenticar, async (req, res) => {
   try {
     if (req.usuario.papel === 'admin' && req.usuario.nivelPermissao === 'admin_3') return res.status(403).json({ mensagem: 'Calendário indisponível para este perfil.' });
@@ -296,6 +300,7 @@ router.post('/eventos', autenticar, async (req, res) => {
   }
 });
 
+// Atualiza evento existente somente quando o usuário pode editá-lo.
 router.put('/eventos/:eventoId', autenticar, async (req, res) => {
   try {
     if (req.usuario.papel === 'admin' && req.usuario.nivelPermissao === 'admin_3') return res.status(403).json({ mensagem: 'Calendário indisponível para este perfil.' });
@@ -350,6 +355,7 @@ router.put('/eventos/:eventoId', autenticar, async (req, res) => {
   }
 });
 
+// Remove evento após verificar se pertence ao usuário ou ao escopo permitido.
 router.delete('/eventos/:eventoId', autenticar, async (req, res) => {
   try {
     if (req.usuario.papel === 'admin' && req.usuario.nivelPermissao === 'admin_3') return res.status(403).json({ mensagem: 'Calendário indisponível para este perfil.' });

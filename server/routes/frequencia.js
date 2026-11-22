@@ -72,6 +72,7 @@ function responderFrequencia(req, res, mensagem, turma, aula, data, detalhes) {
 router.use(autenticar, (req, res, next) => req.usuario.papel === 'professor'
   ? next() : res.status(403).json({ mensagem: 'Acesso exclusivo de docentes.' }));
 
+// Lista as turmas e chamadas relacionadas ao docente autenticado.
 router.get('/turmas', async (req, res) => {
   try {
     const docente = await Docente.findOne(docenteQuery(req.usuario)).select('_id').lean();
@@ -139,6 +140,7 @@ router.get('/turmas/:turmaId/aulas', async (req, res) => {
   }
 });
 
+// Consolida aulas do semestre com presenças registradas e lista de alunos.
 router.get('/turmas/:turmaId/semestre', async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.turmaId)) return res.status(400).json({ mensagem: 'Turma inválida.' });
   try {
@@ -203,6 +205,7 @@ router.get('/turmas/:turmaId/semestre', async (req, res) => {
   }
 });
 
+// Reverte uma falta passada, desde que a aula e o docente sejam válidos.
 router.patch('/turmas/:turmaId/semestre/:aulaId/:data/faltas/:alunoId', async (req, res) => {
   const { turmaId, aulaId, data, alunoId } = req.params;
   if (![turmaId, aulaId, alunoId].every(mongoose.isValidObjectId) || !dataValida(data)) return res.status(400).json({ mensagem: 'Dados da ausência inválidos.' });
@@ -228,6 +231,7 @@ router.patch('/turmas/:turmaId/semestre/:aulaId/:data/faltas/:alunoId', async (r
   }
 });
 
+// Registra a presença de todos os alunos durante o horário da aula.
 router.post('/turmas/:turmaId/chamada', async (req, res) => {
   const { aulaId, data, presencas } = req.body || {};
   if (!mongoose.isValidObjectId(req.params.turmaId) || !mongoose.isValidObjectId(aulaId) || !dataValida(data) || !Array.isArray(presencas)) return res.status(400).json({ mensagem: 'Dados da chamada inválidos.' });

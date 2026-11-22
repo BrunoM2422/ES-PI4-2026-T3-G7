@@ -1,11 +1,13 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 // Nícolas Mitjans Nunes - 25005124
 document.addEventListener('DOMContentLoaded', () => {
+  // Valida os dados, envia o novo curso à API e limpa o formulário ao concluir.
   const botaoCadastrar = document.querySelector('.admin-button');
   if (!botaoCadastrar) return;
   const codigoInput = document.querySelector('input[name="codigo"]');
 
   codigoInput.addEventListener('input', () => {
+    // Restringe o código a dois algarismos durante a digitação.
     codigoInput.value = codigoInput.value.replace(/\D/g, '').slice(0, 2);
   });
 
@@ -24,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalidade = modalidadeInput.value;
     const duracao = Number(duracaoInput.value);
 
+    // Evita a requisição quando faltam informações obrigatórias.
     if (!codigo || !nome || !unidade || !grau || !modalidade || !duracaoInput.value) {
       window.showAppMessage('Preencha os campos obrigatórios do curso.');
       return;

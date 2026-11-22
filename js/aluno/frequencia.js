@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 // Nícolas Mitjans Nunes - 25005124
 document.addEventListener('DOMContentLoaded', async () => {
   const painel = document.querySelector('[data-student-frequency]');
@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return node;
   };
 
+  // Resume presenças e faltas e apresenta os detalhes da disciplina.
   function abrirDetalhes(item) {
     const codigoTurma = window.formatarCodigoTurmaDisciplina(item.turma, item.codigo);
     const modal = elemento('dialog', 'frequency-modal');

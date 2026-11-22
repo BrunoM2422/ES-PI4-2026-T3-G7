@@ -2,6 +2,7 @@
 // Nícolas Mitjans Nunes - 25005124
 const mongoose = require('mongoose');
 
+// Define os campos do curso e valida formatos, opções permitidas e limites.
 const cursoSchema = new mongoose.Schema({
   codigo: { type: String, required: true, unique: true, trim: true, match: /^\d{2}$/ },
   nome: { type: String, required: true, trim: true },
