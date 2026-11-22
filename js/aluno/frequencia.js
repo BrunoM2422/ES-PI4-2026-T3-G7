@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return node;
   };
 
+  // Resume presenças e faltas e apresenta os detalhes da disciplina.
   function abrirDetalhes(item) {
     const codigoTurma = window.formatarCodigoTurmaDisciplina(item.turma, item.codigo);
     const modal = elemento('dialog', 'frequency-modal');

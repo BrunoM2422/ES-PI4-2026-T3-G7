@@ -29,8 +29,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   let courses = [];
   let released = {};
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+  // Sincroniza as liberações recebidas e atualiza os cards do modo atual.
   const applyOptions = options => { released = Object.fromEntries(Object.values(modes).map(item => [item.ids, (options[item.ids] || []).map(String)])); renderCourses(); };
 
+  // Mostra cada curso com o estado aberto ou fechado da opção selecionada.
   function renderCourses() {
     if (!grid) return;
     const config = modes[mode];
@@ -44,6 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     grid.querySelectorAll('[data-course-id]').forEach(card => card.addEventListener('click', () => openCourse(courses.find(course => String(course.id) === card.dataset.courseId))));
   }
 
+  // Abre as ações de um curso e envia a alteração escolhida à API.
   function openCourse(course) {
     const config = modes[mode];
     const isReleased = (released[config.ids] || []).includes(String(course.id));
@@ -70,6 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // Carrega os cursos e prepara a interface do tipo de opção selecionado.
   async function openMode(nextMode, trigger) {
     buttons.grade.disabled = buttons.equivalencias.disabled = buttons.avaliacao.disabled = true;
     mode = nextMode;
@@ -100,6 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     Object.values(buttons).forEach(button => { button.disabled = false; });
   });
 
+  // Libera ou fecha a opção para todos os cursos após confirmação.
   async function changeAll(release) {
     const config = modes[mode];
     const confirmed = await window.confirmAppAction(`A opcao ${config.label} sera ${release ? 'liberada' : 'fechada'} para todos os cursos. Deseja continuar?`, `${release ? 'Liberar' : 'Fechar'} ${config.label} para todos`);

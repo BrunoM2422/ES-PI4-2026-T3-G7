@@ -11,7 +11,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const temMedia = media => media !== null && media !== undefined;
   const formatarMedia = media => temMedia(media) ? Number(media).toFixed(2) : '—';
   let disciplinas = [];
+  // Fecha o detalhe da disciplina e retorna à lista de notas.
   function fechar() { detail.hidden = true; cards.closest('.grades-panel').hidden = false; }
+  // Mostra componentes, notas lançadas e média da disciplina selecionada.
   function abrir(disciplina) {
     cards.closest('.grades-panel').hidden = true;
     detail.hidden = false;

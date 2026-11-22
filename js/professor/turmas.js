@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     container.replaceChildren(criar('p', 'teacher-empty-message', mensagem));
   }
 
+  // Mostra os cards das turmas disponíveis para o professor.
   function renderizarTurmas() {
     if (count) count.textContent = `${turmas.length} ${turmas.length === 1 ? 'turma' : 'turmas'}`;
     grid.replaceChildren();
@@ -49,6 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // Abre ações da turma, como diário, chamada e consulta de alunos.
   function abrirTurma(turma) {
     turmaAtual = turma;
     renderizarTurmas();
@@ -127,6 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     details.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
+  // Busca e mostra os alunos da turma, com filtro opcional por disciplina.
   async function carregarAlunos(turma, container, disciplina, filtro = null) {
     mostrarErro(container, 'Carregando alunos...');
     try {
@@ -169,6 +172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // Prepara o envio de um comunicado associado à turma.
   function montarFormularioComunicado(turma, container) {
     const titulo = criar('h3', '', 'Enviar comunicado');
     const instrucao = criar('p', 'teacher-class-module-note', 'O comunicado será enviado somente aos alunos ativos matriculados na disciplina e turma selecionadas.');

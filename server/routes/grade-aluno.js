@@ -19,6 +19,7 @@ function semestreDaTurma(periodoLetivo) {
   return legado ? Number(legado[1]) : null;
 }
 
+// Valida perfil, matrícula, curso e liberação antes de expor a grade.
 async function estudanteAtivo(req) {
   if (req.usuario.papel !== 'aluno') return { erro: 'Apenas alunos podem acessar a grade curricular.', status: 403 };
   const identificadores = [{ email: req.usuario.email }];
@@ -42,6 +43,7 @@ async function estudanteAtivo(req) {
   return { estudante, curso, gradeLiberada, equivalenciasLiberadas };
 }
 
+// Padroniza cada horário para o formato enviado à interface.
 function mapearHorario(item) {
   return {
     dia: item.dia, diaNome: dias[item.dia], hora: item.hora,
@@ -49,6 +51,7 @@ function mapearHorario(item) {
   };
 }
 
+// Monta o catálogo de disciplinas/turmas junto com a seleção já salva.
 router.get('/', autenticar, async (req, res) => {
   try {
     const resultado = await estudanteAtivo(req);

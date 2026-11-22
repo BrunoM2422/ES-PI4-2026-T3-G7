@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const query = new URLSearchParams(location.search);
   let turmas = [];
 
+  // Exibe as turmas do professor para escolha da chamada.
   function renderizar() {
     if (count) count.textContent = `${turmas.length} ${turmas.length === 1 ? 'turma' : 'turmas'}`;
     grid.replaceChildren();
@@ -36,6 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // Carrega aulas e alunos para registrar chamada ou consultar o semestre.
   async function abrir(turma) {
     grid.hidden = true;
     if (count) count.hidden = true;

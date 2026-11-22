@@ -3,6 +3,7 @@
 // Gabriel Scolfaro de Azeredo - 25006194
 const mongoose = require('mongoose');
 
+// Reúne dados pessoais, situação acadêmica, curso e matrículas na grade.
 const estudanteSchema = new mongoose.Schema({
   ra: { type: String, unique: true },
   nome: { type: String, required: true },

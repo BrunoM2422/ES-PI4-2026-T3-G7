@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const base = '/api/notas/professor'; let disciplinas = [];
   const formatarMedia = media => (media === null || media === undefined) ? '—' : Number(media).toFixed(2);
+  // Fecha o diário aberto e retorna à lista de turmas.
   function voltar() { detail.hidden = true; cards.closest('.teacher-classes-panel').hidden = false; }
   async function abrir(disciplina) {
     cards.closest('.teacher-classes-panel').hidden = true; detail.hidden = false; detail.replaceChildren(el('p', 'teacher-empty-message', 'Carregando diário de notas...'));
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderizar(disciplina, data, url);
     } catch (error) { detail.replaceChildren(el('p', 'teacher-empty-message', error.message || 'Não foi possível carregar o diário.')); const back = el('button', 'teacher-class-action', '← Voltar às disciplinas'); back.type = 'button'; back.addEventListener('click', voltar); detail.append(back); }
   }
+  // Monta o diário para configurar avaliações, lançar notas e atualizar médias.
   function renderizar(disciplina, data, url) {
     detail.replaceChildren();
     const heading = el('div', 'teacher-class-detail-heading'); const info = el('div');
