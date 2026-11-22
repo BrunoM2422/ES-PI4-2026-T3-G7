@@ -4,6 +4,7 @@
 
   const search = document.querySelector('#logs-search');
   const type = document.querySelector('#logs-type');
+  const defaultTypes = Array.from(type.options, option => option.value).filter(Boolean);
   const date = document.querySelector('#logs-date');
   const empty = document.querySelector('#logs-empty');
   const footer = document.querySelector('#logs-footer');
@@ -103,7 +104,7 @@
     logs.sort((a, b) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime());
     const selectedType = type.value;
     type.replaceChildren(new Option('Todos os tipos', ''));
-    [...new Set(logs.map(log => log.tipo).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'))
+    [...new Set([...defaultTypes, ...logs.map(log => log.tipo).filter(Boolean)])].sort((a, b) => a.localeCompare(b, 'pt-BR'))
       .forEach(value => type.add(new Option(value, value)));
     type.value = selectedType;
     page = 1;
