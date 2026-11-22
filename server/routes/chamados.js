@@ -1,4 +1,5 @@
 // Autores:
+// Gabriel Scolfaro de Azeredo - 25006194
 const express = require('express');
 const mongoose = require('mongoose');
 const Chamado = require('../models/Chamado');

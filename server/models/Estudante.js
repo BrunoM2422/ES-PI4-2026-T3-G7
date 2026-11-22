@@ -1,5 +1,6 @@
 // Autores:
 // Nícolas Mitjans Nunes - 25005124
+// Gabriel Scolfaro de Azeredo - 25006194
 const mongoose = require('mongoose');
 
 const estudanteSchema = new mongoose.Schema({

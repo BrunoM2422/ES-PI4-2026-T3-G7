@@ -1,4 +1,5 @@
 // Autores:
+// Gabriel Scolfaro de Azeredo - 25006194
 const mongoose = require('mongoose');
 
 async function conectarBanco() {

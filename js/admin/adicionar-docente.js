@@ -1,4 +1,5 @@
 // Autores:
+// Gabriel Scolfaro de Azeredo - 25006194
 document.addEventListener('DOMContentLoaded', () => {
   const botaoCadastrar = document.querySelector('.admin-button');
   if (!botaoCadastrar) return;

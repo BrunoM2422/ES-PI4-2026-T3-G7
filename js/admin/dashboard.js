@@ -1,4 +1,5 @@
 // Autores:
+// Gabriel Scolfaro de Azeredo - 25006194
 document.addEventListener('DOMContentLoaded', async () => {
     const contadorElemento = document.getElementById('contador-chamados-ativos');
     const cardChamados = document.getElementById('card-chamados-ativos');
