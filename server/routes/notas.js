@@ -111,6 +111,45 @@ router.get('/professor', autenticar, async (req, res) => {
   }
 });
 
+router.get('/professor/pendencias', autenticar, async (req, res) => {
+  if (req.usuario.papel !== 'professor') return res.status(403).json({ mensagem: 'Acesso exclusivo de docentes.' });
+  try {
+    const docente = await docenteDaSessao(req.usuario);
+    if (!docente) return res.status(404).json({ mensagem: 'Perfil docente não encontrado.' });
+
+    const turmas = await Turma.find({ 'horarios.docenteId': docente._id }).select('horarios alunosIds').lean();
+
+    // Diários (turma + disciplina) que o docente leciona e que já têm aluno matriculado
+    const diarios = turmas
+      .filter(turma => (turma.alunosIds || []).length > 0)
+      .flatMap(turma => [...new Set((turma.horarios || [])
+        .filter(item => String(item.docenteId) === String(docente._id))
+        .map(item => String(item.disciplinaId)))]
+        .map(disciplinaId => ({ turmaId: turma._id, disciplinaId })));
+
+    // Diários que já têm pelo menos uma nota lançada
+    const comNota = new Set();
+    if (diarios.length) {
+      const turmaIds = [...new Set(diarios.map(item => String(item.turmaId)))]
+        .map(valor => new mongoose.Types.ObjectId(valor));
+      const lancadas = await Nota.aggregate([
+        { $match: { turmaId: { $in: turmaIds } } },
+        { $group: { _id: { turmaId: '$turmaId', disciplinaId: '$disciplinaId' } } }
+      ]);
+      lancadas.forEach(item => comNota.add(`${item._id.turmaId}:${item._id.disciplinaId}`));
+    }
+
+    const pendentes = diarios.filter(item => !comNota.has(`${item.turmaId}:${item.disciplinaId}`));
+    return res.json({
+      turmasTotal: new Set(diarios.map(item => String(item.turmaId))).size,
+      turmasPendentes: new Set(pendentes.map(item => String(item.turmaId))).size
+    });
+  } catch (erro) {
+    console.error('Erro ao calcular avaliações pendentes:', erro);
+    return res.status(500).json({ mensagem: 'Não foi possível calcular as avaliações pendentes.' });
+  }
+});
+
 router.get('/professor/:turmaId/:disciplinaId', autenticar, async (req, res) => {
   if (req.usuario.papel !== 'professor') return res.status(403).json({ mensagem: 'Acesso exclusivo de docentes.' });
   if (!id(req.params.turmaId) || !id(req.params.disciplinaId)) return res.status(400).json({ mensagem: 'Turma ou disciplina inválida.' });

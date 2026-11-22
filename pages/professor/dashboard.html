@@ -1,4 +1,5 @@
 <!-- Autores: -->
+<!-- Gabriel Scolfaro de Azeredo - 25006194 -->
 <!doctype html>
 <html lang="pt-BR">
 
@@ -26,12 +27,12 @@
             <div class="teacher-dashboard">
               <section class="teacher-stat-grid">
                 <article class="teacher-stat">
-                  <span>Turmas Ativas</span><strong id="stat-turmas-ativas">—</strong><small id="stat-turmas-ativas-info">Carregando...</small><i
-                    aria-hidden="true">&#127891;</i>
+                  <span>Turmas Ativas</span><strong id="stat-turmas-ativas">—</strong><small
+                    id="stat-turmas-ativas-info">Carregando...</small><i aria-hidden="true">&#127891;</i>
                 </article>
                 <article class="teacher-stat teacher-stat-review">
-                  <span>Avaliações Pendentes</span><strong>—</strong><small>Dados não disponíveis.</small><i
-                    aria-hidden="true">&#9998;</i>
+                  <span>Avaliações Pendentes</span><strong id="stat-avaliacoes-pendentes">—</strong><small
+                    id="stat-avaliacoes-pendentes-info">Carregando...</small><i aria-hidden="true">&#9998;</i>
                 </article>
               </section>
               <div class="teacher-dashboard-grid">
@@ -63,12 +64,17 @@
                   </div>
                 </section>
                 <section class="teacher-panel teacher-activity">
-                  <h2>
-                    Registro de Atividades
-                  </h2>
-                  <p class="teacher-empty-message">
-                    Nenhuma atividade recente.
-                  </p>
+                  <div class="teacher-agenda-heading">
+                    <h2>
+                      Registro de Atividades
+                    </h2>
+                    <span class="teacher-agenda-date" id="atividades-janela"></span>
+                  </div>
+                  <div class="teacher-activity-list" id="atividades-lista">
+                    <p class="teacher-empty-message">
+                      Nenhuma atividade nos próximos dias.
+                    </p>
+                  </div>
                 </section>
               </div>
             </div>
