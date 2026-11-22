@@ -1,4 +1,5 @@
 // Autores:
+// Gabriel Scolfaro de Azeredo - 25006194
 document.addEventListener('DOMContentLoaded', () => {
     NotaDezNotificacoes.iniciar({ perfil: 'professor' });
     iniciarAgendaHoje();
@@ -6,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function iniciarAgendaHoje() {
     const FUSO = 'America/Sao_Paulo';
+    const DIAS_ATIVIDADES = 2;
     const ROTULOS = {
         feriado: 'Feriado',
         institucional: 'Evento Institucional',
@@ -15,12 +17,18 @@ function iniciarAgendaHoje() {
 
     const lista = document.getElementById('agenda-hoje');
     const rotuloData = document.getElementById('agenda-data');
+    const listaAtividades = document.getElementById('atividades-lista');
+    const rotuloJanela = document.getElementById('atividades-janela');
     if (!lista) return;
 
     let eventosDeHoje = [];
+    let atividades = [];
     let turmasPorId = new Map();
     let dataCarregada = '';
     let falhou = false;
+    let atividadesFalharam = false;
+
+    if (rotuloJanela) rotuloJanela.textContent = `Hoje e próximos ${DIAS_ATIVIDADES} dias`;
 
     function agoraSP() {
         const partes = new Intl.DateTimeFormat('en-CA', {
@@ -30,6 +38,11 @@ function iniciarAgendaHoje() {
         }).formatToParts(new Date());
         const v = Object.fromEntries(partes.map(p => [p.type, p.value]));
         return { data: `${v.year}-${v.month}-${v.day}`, hora: `${v.hour}:${v.minute}` };
+    }
+
+    function somarDias(dataStr, dias) {
+        const [a, m, d] = dataStr.split('-').map(Number);
+        return new Date(Date.UTC(a, m - 1, d + dias)).toISOString().slice(0, 10);
     }
 
     function escapeHtml(str) {
@@ -59,29 +72,59 @@ function iniciarAgendaHoje() {
             return;
         }
 
-        const ativas = (resultado.value.turmas || []).filter(t => t.ativa !== false);
-        valor.textContent = String(ativas.length);
+        const total = (resultado.value.turmas || []).length;
+        valor.textContent = String(total);
         if (info) {
-            info.textContent = ativas.length === 0
+            info.textContent = total === 0
                 ? 'Nenhuma turma atribuída.'
-                : ativas.length === 1
+                : total === 1
                     ? '1 turma sob sua responsabilidade.'
-                    : `${ativas.length} turmas sob sua responsabilidade.`;
+                    : `${total} turmas sob sua responsabilidade.`;
+        }
+    }
+
+    function atualizarAvaliacoesPendentes(resultado) {
+        const valor = document.getElementById('stat-avaliacoes-pendentes');
+        const info = document.getElementById('stat-avaliacoes-pendentes-info');
+        if (!valor) return;
+
+        if (resultado.status !== 'fulfilled') {
+            console.error('Erro ao carregar avaliações pendentes:', resultado.reason);
+            valor.textContent = '—';
+            if (info) info.textContent = 'Dados não disponíveis.';
+            return;
+        }
+
+        const { turmasTotal = 0, turmasPendentes = 0 } = resultado.value;
+        valor.textContent = String(turmasPendentes);
+        if (info) {
+            info.textContent = turmasTotal === 0
+                ? 'Nenhuma turma com alunos.'
+                : turmasPendentes === 0
+                    ? 'Nenhuma turma aguardando notas.'
+                    : turmasPendentes === 1
+                        ? '1 turma com notas a lançar.'
+                        : `${turmasPendentes} turmas com notas a lançar.`;
         }
     }
 
     async function carregar() {
         const hoje = agoraSP().data;
+        const limiteAtividades = somarDias(hoje, DIAS_ATIVIDADES);
         const jsDay = new Date(`${hoje}T12:00:00`).getDay();
         const diaIso = jsDay === 0 ? 7 : jsDay;
 
-        const [eventos, turmas, aulasRes] = await Promise.allSettled([
+        const [eventos, turmas, aulasRes, turmasDocente, pendencias] = await Promise.allSettled([
             buscarJson('/api/calendario/eventos'),
             buscarJson('/api/calendario/minhas-turmas'),
-            buscarJson('/api/calendario/minhas-aulas')
+            buscarJson('/api/calendario/minhas-aulas'),
+            buscarJson('/api/professor/turmas'),
+            buscarJson('/api/notas/professor/pendencias')
         ]);
 
-        atualizarTurmasAtivas(turmas);
+        atualizarTurmasAtivas(turmasDocente);
+        atualizarAvaliacoesPendentes(pendencias);
+        atividadesFalharam = eventos.status === 'rejected';
 
         if (eventos.status === 'rejected' && aulasRes.status === 'rejected') {
             console.error('Erro ao carregar a agenda:', eventos.reason, aulasRes.reason);
@@ -93,8 +136,11 @@ function iniciarAgendaHoje() {
         falhou = false;
         dataCarregada = hoje;
 
-        const listaEventos = eventos.status === 'fulfilled' ? (eventos.value.eventos || []) : [];
-        eventosDeHoje = listaEventos.filter(ev => ev.date === hoje);
+        const todos = eventos.status === 'fulfilled' ? (eventos.value.eventos || []) : [];
+        eventosDeHoje = todos.filter(ev => ev.date === hoje && ev.category !== 'atividade');
+        atividades = todos.filter(ev =>
+            ev.category === 'atividade' && ev.date >= hoje && ev.date <= limiteAtividades
+        );
 
         const minhasAulas = aulasRes.status === 'fulfilled' ? (aulasRes.value.aulas || []) : [];
         const aulasDeHoje = minhasAulas.filter(aula => Number(aula.dia) === diaIso);
@@ -128,18 +174,43 @@ function iniciarAgendaHoje() {
     }
 
     function aindaVisivel(ev, agora) {
+        if (ev.date > agora.data) return true;
         if (!ev.start) return true;
         const fim = ev.end || ev.start;
         return agora.hora < fim;
     }
 
-    function renderizar() {
-        const agora = agoraSP();
+    function criarItem(ev, agora) {
+        const emAndamento = Boolean(ev.start) && ev.date === agora.data && agora.hora >= ev.start;
+        const horario = !ev.start
+            ? 'Dia todo'
+            : ev.end ? `${ev.start} - ${ev.end}` : ev.start;
+        const codigoTurma = ev.turmaId ? turmasPorId.get(ev.turmaId) : '';
 
+        const item = document.createElement('article');
+        item.className = `teacher-agenda-item is-${ev.category}${emAndamento ? ' is-ongoing' : ''}`;
+        item.innerHTML = `
+            <div class="teacher-agenda-time">${escapeHtml(horario)}</div>
+            <div class="teacher-agenda-body">
+                <strong>${escapeHtml(ev.title)}</strong>
+                <div class="teacher-agenda-meta">
+                    <span class="teacher-agenda-chip">${escapeHtml(ROTULOS[ev.category] || ev.category)}</span>
+                    ${codigoTurma ? `<span class="teacher-agenda-chip">Turma ${escapeHtml(codigoTurma)}</span>` : ''}
+                    ${ev.location ? `<span class="teacher-agenda-place">${escapeHtml(ev.location)}</span>` : ''}
+                    ${emAndamento ? '<span class="teacher-agenda-live">Em andamento</span>' : ''}
+                </div>
+                ${ev.description ? `<p class="teacher-agenda-desc">${escapeHtml(ev.description)}</p>` : ''}
+            </div>
+        `;
+        return item;
+    }
+
+    function renderizarAgenda(agora) {
         if (rotuloData) {
-            rotuloData.textContent = new Intl.DateTimeFormat('pt-BR', {
+            const texto = new Intl.DateTimeFormat('pt-BR', {
                 timeZone: FUSO, weekday: 'long', day: 'numeric', month: 'long'
             }).format(new Date());
+            rotuloData.textContent = texto.charAt(0).toUpperCase() + texto.slice(1);
         }
 
         lista.replaceChildren();
@@ -158,30 +229,56 @@ function iniciarAgendaHoje() {
             return;
         }
 
-        visiveis.forEach(ev => {
-            const emAndamento = Boolean(ev.start) && agora.hora >= ev.start;
-            const horario = !ev.start
-                ? 'Dia todo'
-                : ev.end ? `${ev.start} - ${ev.end}` : ev.start;
-            const codigoTurma = ev.turmaId ? turmasPorId.get(ev.turmaId) : '';
+        visiveis.forEach(ev => lista.append(criarItem(ev, agora)));
+    }
 
-            const item = document.createElement('article');
-            item.className = `teacher-agenda-item is-${ev.category}${emAndamento ? ' is-ongoing' : ''}`;
-            item.innerHTML = `
-                <div class="teacher-agenda-time">${escapeHtml(horario)}</div>
-                <div class="teacher-agenda-body">
-                    <strong>${escapeHtml(ev.title)}</strong>
-                    <div class="teacher-agenda-meta">
-                        <span class="teacher-agenda-chip">${escapeHtml(ROTULOS[ev.category] || ev.category)}</span>
-                        ${codigoTurma ? `<span class="teacher-agenda-chip">Turma ${escapeHtml(codigoTurma)}</span>` : ''}
-                        ${ev.location ? `<span class="teacher-agenda-place">${escapeHtml(ev.location)}</span>` : ''}
-                        ${emAndamento ? '<span class="teacher-agenda-live">Em andamento</span>' : ''}
-                    </div>
-                    ${ev.description ? `<p class="teacher-agenda-desc">${escapeHtml(ev.description)}</p>` : ''}
-                </div>
-            `;
-            lista.append(item);
+    function rotuloDoDia(dataStr, hoje) {
+        if (dataStr === hoje) return 'Hoje';
+        if (dataStr === somarDias(hoje, 1)) return 'Amanhã';
+        const [a, m, d] = dataStr.split('-').map(Number);
+        return new Intl.DateTimeFormat('pt-BR', {
+            timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long'
+        }).format(new Date(Date.UTC(a, m - 1, d)));
+    }
+
+    function renderizarAtividades(agora) {
+        if (!listaAtividades) return;
+        listaAtividades.replaceChildren();
+
+        if (atividadesFalharam) {
+            listaAtividades.innerHTML = '<p class="teacher-empty-message">Não foi possível carregar as atividades.</p>';
+            return;
+        }
+
+        const visiveis = atividades
+            .filter(ev => aindaVisivel(ev, agora))
+            .sort((a, b) =>
+                a.date.localeCompare(b.date) ||
+                (a.start || '').localeCompare(b.start || '') ||
+                a.title.localeCompare(b.title));
+
+        if (!visiveis.length) {
+            listaAtividades.innerHTML = '<p class="teacher-empty-message">Nenhuma atividade nos próximos dias.</p>';
+            return;
+        }
+
+        let diaAtual = '';
+        visiveis.forEach(ev => {
+            if (ev.date !== diaAtual) {
+                diaAtual = ev.date;
+                const cabecalho = document.createElement('p');
+                cabecalho.className = 'teacher-activity-day';
+                cabecalho.textContent = rotuloDoDia(ev.date, agora.data);
+                listaAtividades.append(cabecalho);
+            }
+            listaAtividades.append(criarItem(ev, agora));
         });
+    }
+
+    function renderizar() {
+        const agora = agoraSP();
+        renderizarAgenda(agora);
+        renderizarAtividades(agora);
     }
 
     function atualizar() {

@@ -542,7 +542,7 @@ body.theme-dark .teacher-stat > i {
 .teacher-agenda-date {
   color: var(--muted, #71809b);
   font-size: 11px;
-  text-transform: capitalize;
+  text-transform: none;
 }
 
 .teacher-agenda-list {
@@ -744,4 +744,25 @@ body.theme-dark .teacher-class-period { background: #302d55; color: #c0bcff; }
   .teacher-classes-panel { padding: 17px; }
   .teacher-class-card { min-height: 138px; }
   .frequency-call-screen .teacher-class-roster { padding: 12px; }
+}
+
+.teacher-activity-list {
+  display: grid;
+  gap: 8px;
+  max-height: 360px;
+  margin-top: 14px;
+  overflow-y: auto;
+}
+
+.teacher-activity-day {
+  margin: 8px 0 0;
+  color: var(--muted, #71809b);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.teacher-activity-day:first-child {
+  margin-top: 0;
 }
