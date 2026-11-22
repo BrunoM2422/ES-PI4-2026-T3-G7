@@ -11,6 +11,7 @@ const { autenticar } = require('../services/autenticacao');
 const router = express.Router();
 router.use(autenticar);
 
+// Define quais chamados o administrador pode visualizar, respeitando seu nível de permissão e curso.
 async function filtroDoAdministrador(req) {
   if (req.usuario.nivelPermissao !== 'admin_2') return {};
   if (!req.usuario.cursoId) return { _id: null };
@@ -184,4 +185,5 @@ router.patch('/:id/status', async (req, res) => {
   }
 });
 
+// Exporta as rotas de chamados para serem utilizadas pela aplicação.
 module.exports = router;

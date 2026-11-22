@@ -2,6 +2,7 @@
 // Gabriel Scolfaro de Azeredo - 25006194
 const mongoose = require('mongoose');
 
+// Define a estrutura dos usuários, incluindo dados pessoais e permissões.
 const usuarioSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   senha: { type: String, required: true },
@@ -14,6 +15,8 @@ const usuarioSchema = new mongoose.Schema({
     default: 'admin_mestre'
   },
   cursoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Curso', default: null },
+
+  // Armazena informações utilizadas no processo de recuperação de senha.
   passwordResetCodeHash: { type: String, select: false },
   passwordResetExpiresAt: { type: Date, select: false },
   passwordResetAttempts: { type: Number, default: 0, select: false },
@@ -23,4 +26,5 @@ const usuarioSchema = new mongoose.Schema({
   rp: { type: String }
 });
 
+// Exporta o modelo Usuario para utilização no sistema.
 module.exports = mongoose.model('Usuario', usuarioSchema, 'usuarios');

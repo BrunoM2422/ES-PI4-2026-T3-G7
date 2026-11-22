@@ -2,6 +2,7 @@
 // Gabriel Scolfaro de Azeredo - 25006194
 const mongoose = require('mongoose');
 
+// Define a estrutura e as regras dos dados dos docentes.
 const docenteSchema = new mongoose.Schema({
   rp: { type: String, unique: true },
   nome: { type: String, required: true },
@@ -18,4 +19,5 @@ const docenteSchema = new mongoose.Schema({
   }
 });
 
+// Exporta o modelo Docente para ser utilizado em outras partes do sistema.
 module.exports = mongoose.model('Docente', docenteSchema, 'docentes');

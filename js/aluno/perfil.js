@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
 
+  // Carrega os dados do perfil do aluno, incluindo informações pessoais e foto.
   try {
     const response = await fetch(`http://localhost:3000/api/perfis?email=${encodeURIComponent(user.email)}`);
     const data = await response.json();
@@ -141,6 +142,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     draw(ctx, 1, true);
   }
 
+  // Abre o editor para ajustar o enquadramento, zoom e rotação da foto.
   function abrirEditor(src) {
     const img = new Image();
     img.onload = () => {
@@ -253,6 +255,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const botaoSalvar = document.querySelector('.profile-save');
   if (botaoSalvar) {
+    // Salva as alterações do perfil, enviando os dados atualizados para a API.
     botaoSalvar.addEventListener('click', async () => {
       const telefone = inputCelular ? inputCelular.value.trim() : '';
       const endereco = inputEndereco ? inputEndereco.value.trim() : '';
