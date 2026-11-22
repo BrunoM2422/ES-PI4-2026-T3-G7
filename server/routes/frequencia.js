@@ -7,6 +7,7 @@ const Docente = require('../models/Docente');
 const Turma = require('../models/Turma');
 const Estudante = require('../models/Estudante');
 const Frequencia = require('../models/Frequencia');
+const { responderComLog } = require('../services/logs');
 
 const router = express.Router();
 const fuso = 'America/Sao_Paulo';
@@ -291,7 +292,8 @@ router.delete('/turmas/:turmaId/aulas/:aulaId/faltas/:alunoId/:data', async (req
   try {
     const docente = await Docente.findOne(docenteQuery(req.usuario)).select('_id').lean();
     const turma = docente && await turmaDoDocente(req.params.turmaId, docente._id);
-    if (!turma || !turma.horarios.some(item => String(item.aulaId) === req.params.aulaId && String(item.docenteId) === String(docente._id))) return res.status(404).json({ mensagem: 'Aula não encontrada entre suas aulas.' });
+    const aula = turma?.horarios.find(item => String(item.aulaId) === req.params.aulaId && String(item.docenteId) === String(docente._id));
+    if (!aula) return res.status(404).json({ mensagem: 'Aula não encontrada entre suas aulas.' });
     const hoje = partesLocais();
     if (req.params.data >= `${hoje.year}-${hoje.month}-${hoje.day}`) return res.status(403).json({ mensagem: 'Só é possível remover faltas de aulas passadas.' });
     const resultado = await Frequencia.updateOne({ turmaId: turma._id, aulaId: req.params.aulaId, data: req.params.data, docenteId: docente._id }, { $pull: { registros: { alunoId: req.params.alunoId, presente: false } } });
