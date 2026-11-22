@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 const mongoose = require('mongoose');
 
 const turmaSchema = new mongoose.Schema({

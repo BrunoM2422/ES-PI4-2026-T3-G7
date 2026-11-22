@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 // Gabriel Scolfaro de Azeredo - 25006194
 (function () {
     const FUSO = 'America/Sao_Paulo';

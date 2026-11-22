@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 document.addEventListener('DOMContentLoaded', async () => {
   const root = document.querySelector('[data-evaluation-root]');
   const token = sessionStorage.getItem('notadez_token');

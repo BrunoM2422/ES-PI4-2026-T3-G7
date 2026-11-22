@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 document.addEventListener('DOMContentLoaded', () => {
   const pagina = document.querySelector('#app')?.dataset.page;
 

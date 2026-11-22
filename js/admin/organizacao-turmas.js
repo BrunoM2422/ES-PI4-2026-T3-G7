@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 document.addEventListener('DOMContentLoaded', async () => {
   const root = document.querySelector('#class-organization-content');
   const params = new URLSearchParams(location.search);

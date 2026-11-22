@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 (() => {
   const vincular = (campoNome, campoEmail, tipo, excluirId = '') => {
     if (!campoNome || !campoEmail) return;

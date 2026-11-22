@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 const originalFetch = window.fetch.bind(window);
 window.formatarCodigoTurmaDisciplina = (codigoTurma, codigoDisciplina) => {
   const turma = String(codigoTurma ?? '').trim();

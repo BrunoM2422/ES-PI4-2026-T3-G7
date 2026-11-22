@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041 (Alterações menores)
 const crypto = require('crypto');
 const Usuario = require('../models/Usuario');
 

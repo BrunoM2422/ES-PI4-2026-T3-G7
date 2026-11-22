@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041 (Alterações menores)
 document.addEventListener('DOMContentLoaded', () => {
   const statusIcon = document.getElementById('status-icon');
   const statusTexto = document.getElementById('status-texto');

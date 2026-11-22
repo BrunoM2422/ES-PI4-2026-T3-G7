@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 const { randomUUID } = require('crypto');
 const Curso = require('../models/Curso');
 const Estudante = require('../models/Estudante');

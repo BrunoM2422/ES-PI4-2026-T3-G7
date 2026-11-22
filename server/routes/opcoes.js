@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 const express = require('express');
 const OpcoesSistema = require('../models/OpcoesSistema');
 const Estudante = require('../models/Estudante');

@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 document.addEventListener('DOMContentLoaded', () => {
   const app = document.querySelector('#app');
   const button = document.querySelector('.admin-button');

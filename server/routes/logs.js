@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041 (Alterações menores)
 const router = require('express').Router();
 const Log = require('../models/Log');
 const { autenticar } = require('../services/autenticacao');

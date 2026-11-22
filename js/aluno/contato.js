@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041 (Alterações menores)
 // Gabriel Scolfaro de Azeredo - 25006194
 document.addEventListener('DOMContentLoaded', async () => {
   const form = document.querySelector('#contact-form');

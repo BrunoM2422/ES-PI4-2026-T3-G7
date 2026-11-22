@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 require('dotenv').config();
 
 const express = require('express');

@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 const Usuario = require('../models/Usuario');
 const Estudante = require('../models/Estudante');
 const Docente = require('../models/Docente');

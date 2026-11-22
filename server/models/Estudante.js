@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041 (Alterações menores)
 // Nícolas Mitjans Nunes - 25005124
 // Gabriel Scolfaro de Azeredo - 25006194
 const mongoose = require('mongoose');

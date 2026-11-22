@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 document.addEventListener('DOMContentLoaded', async () => {
   const root = document.querySelector('#teachers-content');
   const somenteLeitura = JSON.parse(sessionStorage.getItem('notadez_user') || 'null')?.nivelPermissao === 'admin_2';

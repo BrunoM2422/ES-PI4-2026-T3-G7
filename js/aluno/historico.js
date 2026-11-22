@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 document.addEventListener('DOMContentLoaded', async () => {
   const linhas = document.querySelector('[data-history-rows]');
   const curso = document.querySelector('[data-history-course]');

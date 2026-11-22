@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 // Nícolas Mitjans Nunes - 25005124
 document.addEventListener('DOMContentLoaded', () => {
   // Valida os dados, envia o novo curso à API e limpa o formulário ao concluir.

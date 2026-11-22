@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 document.querySelector('#login').addEventListener('submit', async event => {
   event.preventDefault();
 

@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Bruno Machado — RA: 25008041
 (() => {
   const painel = document.querySelector('[data-importacao-csv]');
   if (!painel) return;
