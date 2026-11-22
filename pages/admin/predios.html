@@ -1,0 +1,35 @@
+<!-- Autores: Luca Filippi — RA: 25022556 -->
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prédios e salas | NotaDez</title>
+  <link rel="stylesheet" href="../../css/shared/style.css"><link rel="stylesheet" href="../../css/admin/paginas.css">
+</head>
+<body>
+<div id="app" data-page="predios" data-role="admin" data-title="Prédios e salas"><div class="shell">
+  <aside class="side" data-component="sidebar"></aside>
+  <main class="main"><div data-component="header"></div><section class="content"><article class="admin-page">
+    <div class="admin-page-intro"><span class="admin-eyebrow">Planejamento acadêmico</span><h2>Prédios e salas</h2></div>
+    <form id="cadastro" class="admin-form-card"><div class="admin-form-body">
+      <label class="schedule-search">Cadastrar<select id="tipo"><option value="predio">Prédio</option><option value="sala">Sala</option></select></label>
+      <label class="schedule-search" id="campo-predio" hidden>Prédio<select id="predio" disabled></select></label>
+      <label class="schedule-search"><span id="rotulo">Nome do prédio</span><input id="nome" required maxlength="80" placeholder="Ex.: H-15"></label>
+      <button class="admin-button">Cadastrar</button><p id="status" role="status"></p>
+    </div></form>
+    <section class="admin-form-card" data-importacao-csv="predios">
+      <div class="admin-card-heading"><div><h3>Importar prédios e salas por CSV</h3>
+        <p>Use uma linha por sala e repita o nome do prédio. Deixe a sala vazia para cadastrar apenas o prédio.</p></div></div>
+      <div class="admin-form-body">
+        <label class="admin-file-field"><strong>Arquivo CSV</strong><small></small><input type="file" accept=".csv,text/csv"></label>
+        <p role="status">Selecione um CSV para conferir a prévia.</p>
+        <div class="admin-table-wrap"><table class="admin-table" aria-label="Prévia da importação"><thead><tr></tr></thead><tbody></tbody></table></div>
+        <button class="admin-button" type="button" disabled>Importar registros válidos</button>
+      </div>
+    </section>
+    <section class="admin-form-card"><div class="admin-form-body"><h3>Locais cadastrados</h3><div id="locais"></div></div></section>
+  </article></section><div data-component="footer"></div></main>
+</div></div>
+<script src="../../js/shared/app.js"></script><script src="../../js/admin/predios.js"></script>
+<script src="../../js/admin/importacao-csv.js"></script>
+</body></html>

@@ -1,3 +1,4 @@
+/* Autores: Luca Filippi — RA: 25022556 */
 /* Autores: Bruno Machado — RA: 25008041*/
 .admin-page {
   display: grid;
@@ -94,7 +95,7 @@
   font-size: 11px;
   font-weight: 600;
 }
-.admin-field[hidden] { display: none !important; }
+.schedule-search[hidden], .admin-field[hidden] { display: none !important; }
 
 .admin-field-select {
   align-content: start;

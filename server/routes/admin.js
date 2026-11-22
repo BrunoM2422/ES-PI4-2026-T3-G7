@@ -1,3 +1,4 @@
+// Autores: Luca Filippi — RA: 25022556
 // Autores: Bruno Machado — RA: 25008041
 // Nícolas Mitjans Nunes - 25005124
 const express = require('express');
@@ -46,6 +47,54 @@ router.use(autenticar, async (req, res, next) => {
     if (!turma || String(turma.cursoId) !== req.usuario.cursoId) return res.status(403).json({ mensagem: 'Acesso permitido somente a turmas do curso coordenado.' });
   }
   return next();
+});
+
+const Predio = require('../models/Predio');
+router.get('/predios', async (req, res) => {
+  const predios = await Predio.find().select('nome salas._id salas.nome').sort({ nome: 1 }).lean();
+  res.json({ predios });
+});
+
+router.post('/predios/importar', async (req, res) => {
+  if (req.usuario.nivelPermissao !== 'admin_mestre') {
+    return res.status(403).json({ mensagem: 'Importação exclusiva do administrador mestre.' });
+  }
+  const { predio, sala = '' } = req.body || {};
+  if (typeof predio !== 'string' || !predio.trim() || predio.trim().length > 80 ||
+      typeof sala !== 'string' || sala.trim().length > 80) {
+    return res.status(400).json({ mensagem: 'Informe um prédio e use até 80 caracteres por campo.' });
+  }
+  const nome = predio.trim();
+  const chave = nome.toLocaleLowerCase('pt-BR');
+  const nomeSala = sala.trim();
+  const salas = nomeSala ? [{ nome: nomeSala, chave: nomeSala.toLocaleLowerCase('pt-BR') }] : [];
+  const novo = await Predio.updateOne({ chave }, { $setOnInsert: { chave, nome, salas } }, { upsert: true });
+  if (novo.upsertedCount) return res.status(201).json({ mensagem: nomeSala ? 'Prédio e sala cadastrados' : 'Prédio cadastrado' });
+  if (nomeSala) {
+    const resultado = await Predio.updateOne({ chave, 'salas.chave': { $ne: salas[0].chave } }, { $push: { salas: salas[0] } });
+    if (resultado.modifiedCount) return res.status(201).json({ mensagem: 'Sala cadastrada' });
+  }
+  return res.json({ mensagem: 'Já cadastrado' });
+});
+
+router.post('/predios', async (req, res) => {
+  const { nome, predioId } = req.body;
+  if (req.usuario.nivelPermissao !== 'admin_mestre') return res.sendStatus(403);
+  if (typeof nome !== 'string' || !nome.trim() || nome.trim().length > 80) return res.status(400).json({ mensagem: 'Informe um nome de até 80 caracteres.' });
+  const dados = { nome: nome.trim(), chave: nome.trim().toLocaleLowerCase('pt-BR') };
+  try {
+    if (predioId !== undefined) {
+      if (!mongoose.isValidObjectId(predioId)) return res.status(400).json({ mensagem: 'Selecione um prédio.' });
+      const resultado = await Predio.updateOne({ _id: predioId, 'salas.chave': { $ne: dados.chave } }, { $push: { salas: dados } });
+      if (!resultado.modifiedCount) return res.status(409).json({ mensagem: 'Sala já cadastrada ou prédio indisponível.' });
+    } else {
+      await Predio.create(dados);
+    }
+    return res.status(201).json({ mensagem: predioId ? 'Sala cadastrada.' : 'Prédio cadastrado.' });
+  } catch (erro) {
+    if (erro.code === 11000) return res.status(409).json({ mensagem: 'Prédio já cadastrado.' });
+    throw erro;
+  }
 });
 
 router.get('/email-sugerido', autenticar, async (req, res) => {
@@ -675,7 +724,7 @@ router.get('/turmas/:turmaId/grade', async (req, res) => {
       id: String(item.aulaId), disciplinaId: String(item.disciplinaId._id),
       disciplinaNome: item.disciplinaId.nome, disciplinaCodigo: item.disciplinaId.codigo,
       docenteId: String(item.docenteId._id), docenteNome: item.docenteId.nome,
-      turmaId: String(turma._id), turmaCodigo: turma.codigo, dia: item.dia, hora: item.hora
+      salaId: item.salaId, local: item.local, turmaId: String(turma._id), turmaCodigo: turma.codigo, dia: item.dia, hora: item.hora
     }));
     return res.json({ grade: { id: grade ? String(grade._id) : null, cursoId: String(turma.cursoId._id), semestre, turmaId: String(turma._id), turmaCodigo: turma.codigo, aulas } });
   } catch (erro) {
@@ -723,26 +772,44 @@ router.put('/turmas/:turmaId/grade', async (req, res) => {
       if (conflito) return res.status(409).json({ mensagem: 'Este docente já está atribuído a outra turma no mesmo horário.' });
     }
 
+    const predios = await Predio.find().lean();
+    const locais = new Map(predios.flatMap(predio => predio.salas.map(sala => [String(sala._id), predio.nome + ' · Sala ' + sala.nome])));
+    for (const aula of aulas) {
+      const antiga = turma.horarios.find(item => String(item.aulaId) === aula.id);
+      if (!aula.salaId && antiga && !antiga.salaId && antiga.dia === aula.dia && antiga.hora === aula.hora && String(antiga.disciplinaId) === aula.disciplinaId && String(antiga.docenteId) === aula.docenteId) continue;
+      if (!locais.has(aula.salaId)) return res.status(400).json({ mensagem: 'Selecione uma sala cadastrada para cada nova aula.' });
+    }
     const idsAula = aulas.map(aula => mongoose.isValidObjectId(aula.id) ? new mongoose.Types.ObjectId(aula.id) : new mongoose.Types.ObjectId());
     const aulasDaTurma = aulas.map((aula, index) => ({
       _id: idsAula[index], disciplinaId: aula.disciplinaId, docenteId: aula.docenteId,
       turmaId: turma._id, dia: aula.dia, hora: aula.hora
     }));
     grade.aulas = [...grade.aulas.filter(aula => String(aula.turmaId || '') !== String(turma._id)), ...aulasDaTurma];
-    await grade.save();
     turma.semestreOrganizacao = semestre;
-    turma.horarios = [...turma.horarios.filter(item => item.semestre !== semestre), ...aulasDaTurma.map(aula => ({
+    turma.horarios = [...turma.horarios.filter(item => item.semestre !== semestre), ...aulasDaTurma.map((aula, i) => ({
+      salaId: aulas[i].salaId || undefined, local: locais.get(aulas[i].salaId),
       gradeHorarioId: grade._id, aulaId: aula._id, disciplinaId: aula.disciplinaId,
       docenteId: aula.docenteId, dia: aula.dia, hora: aula.hora, semestre
     }))];
-    await turma.save();
+    const session = await mongoose.startSession();
+    try {
+      session.startTransaction();
+      await grade.save({ session });
+      await turma.save({ session });
+      await session.commitTransaction();
+    } finally {
+      if (session.inTransaction()) await session.abortTransaction();
+      await session.endSession();
+    }
     const nomesDisciplinas = new Map(disciplinas.map(item => [String(item._id), item]));
     const nomesDocentes = new Map(docentes.map(item => [String(item._id), item]));
     return res.json({ mensagem: 'Grade da turma salva no banco de dados.', grade: {
       id: String(grade._id), cursoId: String(turma.cursoId), semestre, turmaId: String(turma._id), turmaCodigo: turma.codigo,
-      aulas: aulasDaTurma.map(aula => ({ id: String(aula._id), disciplinaId: String(aula.disciplinaId), disciplinaNome: nomesDisciplinas.get(String(aula.disciplinaId)).nome, disciplinaCodigo: nomesDisciplinas.get(String(aula.disciplinaId)).codigo, docenteId: String(aula.docenteId), docenteNome: nomesDocentes.get(String(aula.docenteId)).nome, turmaId: String(turma._id), turmaCodigo: turma.codigo, dia: aula.dia, hora: aula.hora }))
+      aulas: aulasDaTurma.map((aula, i) => ({ salaId: aulas[i].salaId, local: locais.get(aulas[i].salaId), id: String(aula._id), disciplinaId: String(aula.disciplinaId), disciplinaNome: nomesDisciplinas.get(String(aula.disciplinaId)).nome, disciplinaCodigo: nomesDisciplinas.get(String(aula.disciplinaId)).codigo, docenteId: String(aula.docenteId), docenteNome: nomesDocentes.get(String(aula.docenteId)).nome, turmaId: String(turma._id), turmaCodigo: turma.codigo, dia: aula.dia, hora: aula.hora }))
     } });
   } catch (erro) {
+    if (erro.code === 11000 && erro.keyPattern?.reservasSala) return res.status(409).json({ mensagem: 'A sala já está ocupada por outra turma neste horário.' });
+    if (erro.name === 'VersionError' || erro.code === 112) return res.status(409).json({ mensagem: 'A grade foi alterada. Recarregue e tente novamente.' });
     console.error('Erro ao salvar grade da turma:', erro);
     return res.status(500).json({ mensagem: 'Não foi possível salvar a grade da turma.' });
   }
@@ -773,7 +840,9 @@ router.get('/docentes-ocupados', async (req, res) => {
         : !(String(grade.cursoId) === String(cursoId) && grade.semestre === semestreNumero))
       .map(aula => String(aula.docenteId))))];
 
-    return res.json({ docenteIds });
+    const ocupadas = await Turma.find({ _id: { $ne: turmaIdAtual }, horarios: { $elemMatch: { dia: diaNumero, hora: horaNumero, salaId: { $exists: true } } } }).select('horarios').lean();
+    const salaIds = ocupadas.flatMap(turma => turma.horarios.filter(aula => aula.dia === diaNumero && aula.hora === horaNumero && aula.salaId).map(aula => String(aula.salaId)));
+    return res.json({ docenteIds, salaIds });
   } catch (erro) {
     console.error('Erro ao consultar disponibilidade dos docentes:', erro);
     return res.status(500).json({ mensagem: 'Não foi possível consultar a disponibilidade dos docentes.' });

@@ -1,3 +1,4 @@
+// Autores: Luca Filippi — RA: 25022556
 // Autores: Bruno Machado — RA: 25008041
 document.addEventListener('DOMContentLoaded', async () => {
   const root = document.querySelector('#schedule-content');
@@ -67,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderGrade() {
     sequenciaDisponibilidade += 1;
     const turmaAtual = turmas.find(item => item.id === turmaId);
-    root.innerHTML = `<div class="schedule-breadcrumb"><button class="schedule-back" data-back>← Semestres</button><span>${escapar(cursoAtual.nome)} · ${semestreSelecionado}º semestre</span></div><div class="schedule-builder"><aside class="schedule-subject-panel"><div class="schedule-step-heading"><h3>Disciplinas</h3><p>Arraste uma disciplina para um horário.</p></div><label class="schedule-search"><span>Buscar disciplina</span><input id="subject-search" type="search" placeholder="Nome ou código"></label><div id="subject-list" class="schedule-subject-list"></div></aside><section class="schedule-calendar-panel"><div class="schedule-calendar-heading"><div><h3>Grade semanal</h3><p>Arraste disciplinas para os horários de 7h a 23h.</p></div></div><div class="schedule-calendar-scroll"><div class="schedule-calendar"><div class="schedule-time-label">Horário</div>${dias.map((dia, indice) => `<div class="schedule-day-label" data-day="${indice}">${dia}</div>`).join('')}${Array.from({ length: 16 }, (_, row) => { const hora = row + 7; return `<div class="schedule-hour-label">${String(hora).padStart(2, '0')}:00</div>${dias.map((_, dia) => { const aulas = grade.filter(item => item.dia === dia && item.hora === hora); return `<div class="schedule-slot${aulas.length ? ' is-filled' : ''}" data-day="${dia}" data-hour="${hora}" aria-label="${dias[dia]} às ${hora}:00">${aulas.map(aula => `<div class="schedule-lesson" data-lesson="${escapar(aula.id)}"><strong>${escapar(aula.disciplinaNome)}</strong><small>${escapar(aula.disciplinaCodigo)} · ${escapar(aula.docenteNome)}</small><button type="button" class="schedule-remove" aria-label="Remover aula">×</button></div>`).join('')}<span class="schedule-drop-hint">+</span></div>`; }).join('')}`; }).join('')}</div></div></section></div><div class="schedule-savebar"><span id="schedule-status" role="status">${grade.length} aula(s) na grade</span><button class="admin-button" id="save-schedule" type="button">Salvar Alterações</button></div>`;
+    root.innerHTML = `<div class="schedule-breadcrumb"><button class="schedule-back" data-back>← Semestres</button><span>${escapar(cursoAtual.nome)} · ${semestreSelecionado}º semestre</span></div><div class="schedule-builder"><aside class="schedule-subject-panel"><div class="schedule-step-heading"><h3>Disciplinas</h3><p>Arraste uma disciplina para um horário.</p></div><label class="schedule-search"><span>Buscar disciplina</span><input id="subject-search" type="search" placeholder="Nome ou código"></label><div id="subject-list" class="schedule-subject-list"></div></aside><section class="schedule-calendar-panel"><div class="schedule-calendar-heading"><div><h3>Grade semanal</h3><p>Arraste disciplinas para os horários de 7h a 23h.</p></div></div><div class="schedule-calendar-scroll"><div class="schedule-calendar"><div class="schedule-time-label">Horário</div>${dias.map((dia, indice) => `<div class="schedule-day-label" data-day="${indice}">${dia}</div>`).join('')}${Array.from({ length: 16 }, (_, row) => { const hora = row + 7; return `<div class="schedule-hour-label">${String(hora).padStart(2, '0')}:00</div>${dias.map((_, dia) => { const aulas = grade.filter(item => item.dia === dia && item.hora === hora); return `<div class="schedule-slot${aulas.length ? ' is-filled' : ''}" data-day="${dia}" data-hour="${hora}" aria-label="${dias[dia]} às ${hora}:00">${aulas.map(aula => `<div class="schedule-lesson" data-lesson="${escapar(aula.id)}"><strong>${escapar(aula.disciplinaNome)}</strong><small>${escapar(aula.disciplinaCodigo)} · ${escapar(aula.docenteNome)}</small><small>${escapar(aula.local || 'Sala a definir')}</small><button type="button" class="schedule-remove" aria-label="Remover aula">×</button></div>`).join('')}<span class="schedule-drop-hint">+</span></div>`; }).join('')}`; }).join('')}</div></div></section></div><div class="schedule-savebar"><span id="schedule-status" role="status">${grade.length} aula(s) na grade</span><button class="admin-button" id="save-schedule" type="button">Salvar Alterações</button></div>`;
     root.insertAdjacentHTML('afterbegin', `<p class="schedule-step-heading">Turma ${escapar(turmaAtual?.codigo || '')} · grade independente</p>`);
     root.querySelector('[data-back]').textContent = '← Turmas';
     root.querySelector('[data-back]').addEventListener('click', () => navegar(cursoId, semestreSelecionado));
@@ -144,10 +145,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (erro) {
       console.warn('Não foi possível conferir todas as grades salvas:', erro);
     }
+    let salasDisponiveis = [];
     const docentesOcupados = new Set(aulasNoHorario.map(item => item.docenteId));
     try {
       const consulta = new URLSearchParams({ cursoId, semestre: String(semestreSelecionado), turmaId, dia: String(dia), hora: String(hora) });
-      const disponibilidade = await carregarJson(`/api/admin/docentes-ocupados?${consulta}`);
+      const [disponibilidade, catalogo] = await Promise.all([
+        carregarJson(`/api/admin/docentes-ocupados?${consulta}`), carregarJson('/api/admin/predios')
+      ]);
+      const ocupadas = new Set(disponibilidade.salaIds);
+      salasDisponiveis = catalogo.predios.flatMap(predio => predio.salas.filter(sala => !ocupadas.has(sala._id))
+        .map(sala => ({ id: sala._id, local: predio.nome + ' · Sala ' + sala.nome })));
       if (sequenciaConsulta !== sequenciaDisponibilidade) return;
       (disponibilidade.docenteIds || []).forEach(id => docentesOcupados.add(id));
     } catch (erro) {
@@ -165,9 +172,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       options.querySelectorAll('[data-teacher]').forEach(button => button.addEventListener('click', () => {
         const docente = filtrados[Number(button.dataset.teacher)];
         if (!docente || docentesOcupados.has(docente.id)) return;
-        grade.push({ id: `${Date.now()}-${Math.random().toString(16).slice(2)}`, disciplinaId: disciplina.id, disciplinaNome: disciplina.nome, disciplinaCodigo: disciplina.codigo, docenteId: docente.id, docenteNome: docente.nome, dia, hora });
-        modalRoot.replaceChildren();
-        renderGrade();
+        modalRoot.querySelector('#teacher-modal-title').textContent = 'Atribuir sala';
+        modalRoot.querySelector('.schedule-search').hidden = true;
+        modalRoot.querySelector('.schedule-modal-note').textContent = 'Docente: ' + docente.nome;
+        options.replaceChildren();
+        if (!salasDisponiveis.length) options.textContent = 'Nenhuma sala disponível neste horário.';
+        salasDisponiveis.forEach(sala => {
+          const escolha = document.createElement('button');
+          escolha.className = 'schedule-teacher-option';
+          escolha.textContent = sala.local;
+          options.append(escolha);
+          escolha.onclick = () => {
+            grade.push({ salaId: sala.id, local: sala.local, id: `${Date.now()}-${Math.random().toString(16).slice(2)}`, disciplinaId: disciplina.id, disciplinaNome: disciplina.nome, disciplinaCodigo: disciplina.codigo, docenteId: docente.id, docenteNome: docente.nome, dia, hora });
+            modalRoot.replaceChildren();
+            renderGrade();
+          };
+        });
+        options.querySelector('button')?.focus();
       }));
     };
     modalRoot.querySelector('#teacher-search').addEventListener('input', drawTeachers);
