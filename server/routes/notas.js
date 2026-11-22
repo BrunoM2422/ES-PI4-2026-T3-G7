@@ -10,7 +10,9 @@ const Turma = require('../models/Turma');
 const ComponenteNota = require('../models/ComponenteNota');
 const Nota = require('../models/Nota');
 const ConfiguracaoNota = require('../models/ConfiguracaoNota');
-const { calcularMediasNoJava } = require('../services/calculadoraJava');
+const {
+  mediasComFallback, calcularEPersistir, marcarDesatualizadas, removerMedias
+} = require('../services/mediasNotas');
 
 const router = express.Router();
 const id = value => mongoose.isValidObjectId(value);
@@ -45,6 +47,56 @@ function mapearComponentes(componentes, notas = []) {
   });
 }
 
+// Campos de média enviados ao front (media continua sendo um número ou null, como antes)
+function camposDeMedia(info) {
+  return {
+    media: info ? info.media : null,
+    mediaOrigem: info ? info.origem : null,            // 'java' (calculada agora) ou 'banco' (salva antes)
+    mediaDesatualizada: info ? info.desatualizada : false,
+    mediaCalculadaEm: info ? info.calculadaEm : null
+  };
+}
+
+// Recalcula e salva as médias de um diário (turma + disciplina). Lança erro se o Java estiver offline.
+async function recalcularMediasDoDiario(turmaId, disciplinaId) {
+  const componentes = await ComponenteNota.find({ turmaId, disciplinaId }).sort({ createdAt: 1 }).lean();
+  if (!componentes.length) return;
+
+  const alunos = await Estudante.find({
+    gradeMatriculas: { $elemMatch: { turmaId, disciplinaId } }
+  }).select('_id').lean();
+  if (!alunos.length) return;
+
+  const configuracao = await ConfiguracaoNota.findOne({ turmaId, disciplinaId }).lean();
+  const notas = await Nota.find({ turmaId, disciplinaId, alunoId: { $in: alunos.map(a => a._id) } }).lean();
+
+  const componentesMapeados = componentes.map(c => ({
+    id: String(c._id), titulo: c.titulo, valorMaximo: c.valorMaximo,
+    tipoMedia: c.tipoMedia || 'aritmetica', peso: c.peso, dataAplicacao: c.dataAplicacao
+  }));
+  const alunosMapeados = alunos.map(aluno => ({
+    id: String(aluno._id),
+    componentes: mapearComponentes(componentes, notas.filter(n => String(n.alunoId) === String(aluno._id)))
+  }));
+
+  const tipo = configuracao?.tipoMedia || componentesMapeados[0].tipoMedia;
+  await calcularEPersistir(turmaId, disciplinaId, tipo, componentesMapeados, alunosMapeados);
+}
+
+// Chamado quando notas ou componentes mudam: marca as médias salvas como desatualizadas
+// e tenta recalculá-las em segundo plano (sem atrasar a resposta; se o Java estiver
+// offline, elas ficam marcadas como desatualizadas até o próximo cálculo).
+async function aposAlterarDiario(turmaId, disciplinaId) {
+  try {
+    await marcarDesatualizadas(turmaId, disciplinaId);
+  } catch (erro) {
+    console.error('Erro ao marcar médias como desatualizadas:', erro);
+  }
+  recalcularMediasDoDiario(turmaId, disciplinaId).catch(erro => {
+    console.warn('Médias não recalculadas (servidor Java offline?):', erro.message);
+  });
+}
+
 router.get('/aluno', autenticar, async (req, res) => {
   if (req.usuario.papel !== 'aluno') return res.status(403).json({ mensagem: 'Acesso exclusivo de alunos.' });
   try {
@@ -66,15 +118,19 @@ router.get('/aluno', autenticar, async (req, res) => {
       const notas = componentes.length ? await Nota.find({ alunoId: aluno._id, componenteId: { $in: componentes.map(item => item._id) } }).lean() : [];
       const componentesMapeados = mapearComponentes(componentes, notas);
 
-      let mediaAluno = null;
+      let infoMedia = null;
       if (componentesMapeados.length) {
         try {
           const configuracao = await ConfiguracaoNota.findOne({ turmaId: disciplina.turmaId, disciplinaId: disciplina.disciplinaId }).lean();
           const tipo = configuracao?.tipoMedia || componentesMapeados[0].tipoMedia;
-          const mediasJava = await calcularMediasNoJava(tipo, componentesMapeados, [{ id: String(aluno._id), componentes: componentesMapeados }]);
-          mediaAluno = mediasJava.get(String(aluno._id)) ?? null;
-        } catch (errJava) {
-          console.warn('Servidor Java offline ou erro no cálculo do aluno:', errJava.message);
+          // tenta o Java (e salva); se estiver offline, usa a média salva no banco
+          const medias = await mediasComFallback(
+            disciplina.turmaId, disciplina.disciplinaId, tipo, componentesMapeados,
+            [{ id: String(aluno._id), componentes: componentesMapeados }]
+          );
+          infoMedia = medias.get(String(aluno._id)) || null;
+        } catch (errMedia) {
+          console.warn('Não foi possível obter a média do aluno:', errMedia.message);
         }
       }
 
@@ -82,7 +138,7 @@ router.get('/aluno', autenticar, async (req, res) => {
         id: String(disciplina.disciplinaId), ...disciplina, 
         turmaId: String(disciplina.turmaId), disciplinaId: String(disciplina.disciplinaId), 
         componentes: componentesMapeados,
-        media: mediaAluno
+        ...camposDeMedia(infoMedia)
       };
     }));
 
@@ -183,19 +239,16 @@ router.get('/professor/:turmaId/:disciplinaId', autenticar, async (req, res) => 
       componentes: mapearComponentes(componentes, notas.filter(n => String(n.alunoId) === String(aluno._id))) 
     }));
 
-    let mediasJava = new Map();
+    // tenta o Java (e salva no banco); se estiver offline, usa as médias salvas
+    let medias = new Map();
     if (componentesMapeados.length && alunosMapeados.length) {
-      try {
-        const tipo = configuracao?.tipoMedia || componentesMapeados[0].tipoMedia;
-        mediasJava = await calcularMediasNoJava(tipo, componentesMapeados, alunosMapeados);
-      } catch (errJava) {
-        console.warn('Servidor Java offline ou erro no cálculo:', errJava.message);
-      }
+      const tipo = configuracao?.tipoMedia || componentesMapeados[0].tipoMedia;
+      medias = await mediasComFallback(turma._id, req.params.disciplinaId, tipo, componentesMapeados, alunosMapeados);
     }
 
     const alunosComMedia = alunosMapeados.map(aluno => ({
       ...aluno,
-      media: mediasJava.has(aluno.id) ? mediasJava.get(aluno.id) : null
+      ...camposDeMedia(medias.get(aluno.id))
     }));
 
     return res.json({ 
@@ -203,6 +256,7 @@ router.get('/professor/:turmaId/:disciplinaId', autenticar, async (req, res) => 
       disciplina: turma.horarios.find(item => String(item.disciplinaId?._id) === req.params.disciplinaId)?.disciplinaId?.nome || '',
       configuracao: configuracao ? { tipoMedia: configuracao.tipoMedia } : null,
       componentes: componentesMapeados,
+      mediasDoBanco: alunosComMedia.some(aluno => aluno.mediaOrigem === 'banco'),
       alunos: alunosComMedia 
     });
   } catch (erro) { 
@@ -252,6 +306,7 @@ router.post('/professor/:turmaId/:disciplinaId/componentes', autenticar, async (
     if (!configuracao || configuracao.tipoMedia !== tipoMedia) return res.status(409).json({ mensagem: 'Defina o tipo de média da disciplina antes de criar componentes. Essa escolha não poderá ser alterada.' });
     const componente = await ComponenteNota.create({ turmaId: turma._id, disciplinaId: req.params.disciplinaId, docenteId: docente._id, titulo, valorMaximo, tipoMedia, peso,
       dataAplicacao: req.body.dataAplicacao ? new Date(req.body.dataAplicacao) : null });
+    await aposAlterarDiario(turma._id, req.params.disciplinaId);
     return res.status(201).json({ mensagem: 'Componente criado.', componente: { id: String(componente._id), titulo, valorMaximo, tipoMedia, peso } });
   } catch (erro) {
     if (erro.code === 11000) return res.status(409).json({ mensagem: 'Já existe um componente com esse nome nesta disciplina.' });
@@ -279,6 +334,7 @@ router.put('/professor/:turmaId/:disciplinaId/componentes/:componenteId', autent
     componente.valorMaximo = valorMaximo;
     componente.peso = peso;
     await componente.save();
+    await aposAlterarDiario(turma._id, req.params.disciplinaId);
     return res.json({ mensagem: 'Componente atualizado.', componente: { id: String(componente._id), titulo, valorMaximo, peso, tipoMedia: componente.tipoMedia } });
   } catch (erro) {
     if (erro.code === 11000) return res.status(409).json({ mensagem: 'Já existe um componente com esse nome nesta disciplina.' });
@@ -298,7 +354,12 @@ router.delete('/professor/:turmaId/:disciplinaId/componentes/:componenteId', aut
     if (!componente) return res.status(404).json({ mensagem: 'Componente não encontrado.' });
     await Nota.deleteMany({ componenteId: componente._id, turmaId: turma._id, disciplinaId: req.params.disciplinaId });
     const componentesRestantes = await ComponenteNota.exists({ turmaId: turma._id, disciplinaId: req.params.disciplinaId });
-    if (!componentesRestantes) await ConfiguracaoNota.deleteOne({ turmaId: turma._id, disciplinaId: req.params.disciplinaId });
+    if (!componentesRestantes) {
+      await ConfiguracaoNota.deleteOne({ turmaId: turma._id, disciplinaId: req.params.disciplinaId });
+      await removerMedias(turma._id, req.params.disciplinaId);
+    } else {
+      await aposAlterarDiario(turma._id, req.params.disciplinaId);
+    }
     return res.json({ mensagem: 'Componente e notas associadas excluídos.' });
   } catch (erro) {
     console.error('Erro ao excluir componente de nota:', erro);
@@ -335,7 +396,11 @@ router.put('/professor/:turmaId/:disciplinaId/notas', autenticar, async (req, re
       if (valor === null) operacoes.push({ deleteOne: { filter: filtro } });
       else operacoes.push({ updateOne: { filter: filtro, update: { $set: { ...filtro, turmaId: turma._id, disciplinaId: req.params.disciplinaId, valor } }, upsert: true } });
     }
-    if (operacoes.length) await Nota.bulkWrite(operacoes, { ordered: true });
+    if (operacoes.length) {
+      await Nota.bulkWrite(operacoes, { ordered: true });
+      // as médias salvas ficam marcadas como desatualizadas e são recalculadas em segundo plano
+      await aposAlterarDiario(turma._id, req.params.disciplinaId);
+    }
     return res.json({ mensagem: 'Notas salvas no banco de dados.', salvas: req.body.notas.length });
   } catch (erro) { 
     console.error('Erro ao salvar notas:', erro); 

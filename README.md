@@ -52,3 +52,10 @@ Acesse:
 ```bash
 http://localhost:3000
 ```
+
+## Como executar os Testes
+
+Para rodar os testes automatizados do projeto, execute o comando abaixo na raiz do diretório:
+```bash
+mvn clean test
+```

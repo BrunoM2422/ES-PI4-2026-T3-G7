@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Matheus Antony Lucas Lima
 const { spawn } = require('child_process');
 const { HOST, PORTA, DIRETORIO_RAIZ } = require('./javaServerService');
 
