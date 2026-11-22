@@ -73,6 +73,7 @@ async function iniciarServidor() {
     await require('./models/Log').init();
     await Disciplina.init();
     await Turma.init();
+    await require('./models/Predio').init();
     await GradeHorario.init();
     await Evento.init();
     await ComponenteNota.init();

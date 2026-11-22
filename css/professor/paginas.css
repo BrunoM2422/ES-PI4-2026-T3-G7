@@ -1,3 +1,4 @@
+/* Autores: Luca Filippi — RA: 25022556 */
 /* Autores: Bruno Machado — RA: 25008041*/
 .teacher-host {
   padding: 0;
@@ -476,9 +477,7 @@ body.theme-dark .teacher-roster-table thead th { background: #1b2433; color: var
   gap: 4px;
 }
 .teacher-week-lesson-location-value {
-  min-width: 28px;
-  height: 10px;
-  border-bottom: 1px dashed #aeb8c8;
+  overflow-wrap: anywhere;
 }
 body.theme-dark .teacher-week-lesson {
   border-color: var(--line);

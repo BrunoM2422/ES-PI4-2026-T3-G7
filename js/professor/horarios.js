@@ -1,3 +1,4 @@
+// Autores: Luca Filippi — RA: 25022556
 // Autores: Bruno Machado — RA: 25008041
 document.addEventListener('DOMContentLoaded', async () => {
   const dias = Array.from(document.querySelectorAll('[data-week-day]'));
@@ -56,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         localLabel.textContent = 'Local:';
         const localVazio = document.createElement('span');
         localVazio.className = 'teacher-week-lesson-location-value';
-        localVazio.setAttribute('aria-label', 'Local não informado');
+        localVazio.textContent = aula.local || 'Sala a definir';
         local.append(localLabel, localVazio);
 
         cartao.append(horario, materia, turma, codigo, local);
