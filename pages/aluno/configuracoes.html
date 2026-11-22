@@ -1,3 +1,4 @@
+<!-- Autores: -->
 <!doctype html>
 <html lang="pt-BR">
   <head>
@@ -47,19 +48,7 @@
                           </button>
                         </div>
                       </div>
-                      <label class="settings-font-control" for="font-size">
-                        <span class="settings-copy"><strong>Tamanho da fonte</strong><small>Altere o tamanho do texto nas páginas.</small></span>
-                        <output id="font-size-value" for="font-size">
-                        </output>
-                        <input id="font-size" type="range" min="12" max="18" step="1">
-                      </label>
-                      <div class="settings-row settings-row-last">
-                        <div class="settings-copy">
-                          <strong>Reduzir animações</strong><small>Use menos transições e movimentos.</small>
-                        </div>
-                        <button class="settings-switch" type="button" role="switch" data-setting="reduceMotion" aria-label="Reduzir animações">
-                        </button>
-                      </div>
+
                     </section>
                     <section class="settings-card">
                       <div class="settings-card-heading">
@@ -76,70 +65,36 @@
                       <div class="settings-options">
                         <div class="settings-row">
                           <div class="settings-copy">
-                            <strong>Avisos acadêmicos</strong><small>Notas, frequência e comunicados.</small>
+                            <strong>Comunicados da turma</strong><small>Recados enviados pelos professores às suas turmas.</small>
                           </div>
-                          <button class="settings-switch" type="button" role="switch" data-notification="academic" aria-label="Avisos acadêmicos">
+                          <button class="settings-switch" type="button" role="switch" data-notification="comunicados" aria-label="Comunicados da turma">
                           </button>
                         </div>
                         <div class="settings-row">
                           <div class="settings-copy">
-                            <strong>Prazos e atividades</strong><small>Lembretes de provas, trabalhos e eventos.</small>
+                            <strong>Notas liberadas</strong><small>Quando uma nota é lançada ou atualizada em uma disciplina.</small>
                           </div>
-                          <button class="settings-switch" type="button" role="switch" data-notification="deadlines" aria-label="Prazos e atividades">
+                          <button class="settings-switch" type="button" role="switch" data-notification="notas" aria-label="Notas liberadas">
                           </button>
                         </div>
                         <div class="settings-row">
                           <div class="settings-copy">
-                            <strong>Avisos financeiros</strong><small>Vencimentos e atualizações financeiras.</small>
+                            <strong>Avisos do sistema</strong><small>Liberação de grade curricular, avaliação de professores e outros avisos da instituição.</small>
                           </div>
-                          <button class="settings-switch" type="button" role="switch" data-notification="finance" aria-label="Avisos financeiros">
+                          <button class="settings-switch" type="button" role="switch" data-notification="sistema" aria-label="Avisos do sistema">
                           </button>
                         </div>
                         <div class="settings-row settings-row-last">
                           <div class="settings-copy">
-                            <strong>Receber avisos por e-mail</strong><small>Envie uma cópia das notificações para seu e-mail.</small>
+                            <strong>Chamados respondidos</strong><small>Respostas da administração aos seus chamados.</small>
                           </div>
-                          <button class="settings-switch" type="button" role="switch" data-notification="email" aria-label="Receber avisos por e-mail">
+                          <button class="settings-switch" type="button" role="switch" data-notification="chamados" aria-label="Chamados respondidos">
                           </button>
                         </div>
                       </div>
                     </section>
                   </div>
                   <div class="settings-side-column">
-                    <section class="settings-card">
-                      <div class="settings-card-heading">
-                        <span class="settings-card-icon" aria-hidden="true">&#128274;</span>
-                        <div>
-                          <h3>
-                            Privacidade e acesso
-                          </h3>
-                          <p>
-                            Controle a atividade da sua conta.
-                          </p>
-                        </div>
-                      </div>
-                      <div class="settings-row">
-                        <div class="settings-copy">
-                          <strong>Alertas de novo acesso</strong><small>Avise-me sobre acessos recentes.</small>
-                        </div>
-                        <button class="settings-switch" type="button" role="switch" data-notification="access" aria-label="Alertas de novo acesso">
-                        </button>
-                      </div>
-                      <div class="settings-row settings-row-last">
-                        <div class="settings-copy">
-                          <strong>Status de atividade</strong><small>Mostrar quando estou usando o portal.</small>
-                        </div>
-                        <button class="settings-switch" type="button" role="switch" data-notification="online" aria-label="Status de atividade">
-                        </button>
-                      </div>
-                      <div class="settings-row settings-row-last" data-professor-setting hidden>
-                        <div class="settings-copy">
-                          <strong>Exibir aba Financeiro</strong><small>Mostrar o acesso financeiro no menu do professor.</small>
-                        </div>
-                        <button class="settings-switch" type="button" role="switch" data-setting="showFinanceiro" aria-label="Exibir aba Financeiro">
-                        </button>
-                      </div>
-                    </section>
                     <section class="settings-card">
                       <div class="settings-card-heading">
                         <span class="settings-card-icon" aria-hidden="true">&#9201;</span>
@@ -152,11 +107,18 @@
                           </p>
                         </div>
                       </div>
-                      <p class="settings-select-label">
+                      <label class="settings-select-label" for="session-timeout">
                         Encerrar sessão após
-                      </p>
-                      <p class="settings-select settings-unavailable">Opções não disponíveis.</p>
-                      <a class="settings-profile-link" href="perfil.html">Gerenciar dados do perfil<span aria-hidden="true">→</span> </a>
+                      </label>
+                      <select class="settings-select" id="session-timeout" data-session-timeout>
+                        <option value="0">Nunca (somente ao sair)</option>
+                        <option value="15">15 minutos de inatividade</option>
+                        <option value="30">30 minutos de inatividade</option>
+                        <option value="60">1 hora de inatividade</option>
+                        <option value="120">2 horas de inatividade</option>
+                        <option value="240">4 horas de inatividade</option>
+                      </select>
+                      <small class="settings-hint">A contagem reinicia sempre que você usa o portal. Um aviso aparece 1 minuto antes de encerrar.</small>
                     </section>
                   </div>
                 </div>

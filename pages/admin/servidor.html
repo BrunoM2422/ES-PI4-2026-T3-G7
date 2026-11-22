@@ -1,0 +1,48 @@
+<!-- Autores: -->
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Controle do Servidor | NotaDez</title>
+    <link rel="stylesheet" href="../../css/shared/style.css">
+    <link rel="stylesheet" href="../../css/admin/servidor.css">
+  </head>
+  <body>
+    <div id="app" data-page="servidor" data-role="admin" data-title="Controle do Servidor">
+      <div class="shell">
+        <aside class="side" data-component="sidebar"></aside>
+        <main class="main">
+          <div data-component="header"></div>
+          
+          <section class="content server-content">
+            <header class="server-intro">
+              <p class="server-eyebrow">Infraestrutura</p>
+              <h2>Servidor de C&aacute;lculo</h2>
+              <p>Gerencie o servi&ccedil;o respons&aacute;vel pelo processamento das m&eacute;dias acad&ecirc;micas.</p>
+            </header>
+            <article class="card server-card" aria-labelledby="status-texto">
+              <div class="server-card-main">
+                <div class="server-status-icon" id="status-icon" aria-hidden="true">&#8635;</div>
+                <div class="server-status-copy">
+                  <p class="server-eyebrow">Status do servi&ccedil;o</p>
+                  <h2 class="server-status-text" id="status-texto">Verificando status...</h2>
+                  <p class="server-status-desc" id="status-desc">Aguarde enquanto verificamos o estado atual do servidor NotaDez.</p>
+                </div>
+              </div>
+              <div class="server-card-footer">
+                <span class="server-footnote"><span aria-hidden="true">&#9679;</span> Servi&ccedil;o de m&eacute;dias acad&ecirc;micas</span>
+                <button class="server-action-button" id="btn-toggle" type="button" disabled>Aguarde...</button>
+              </div>
+            </article>
+          </section>
+
+          <div data-component="footer"></div>
+        </main>
+      </div>
+    </div>
+
+    <script src="../../js/shared/app.js"></script>
+    <script src="../../js/admin/servidor.js"></script>
+  </body>
+</html>

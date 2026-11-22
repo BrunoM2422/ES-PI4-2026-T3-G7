@@ -1,5 +1,6 @@
+// Autores:Matheus Antony Lucas Lima RA:25013260
 package server.cliente_servidor.servidor;
-
+import server.cliente_servidor.Parceiro;
 import java.net.*;
 import java.util.*;
 

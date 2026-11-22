@@ -1,3 +1,4 @@
+<!-- Autores: -->
 <!doctype html>
 <html lang="pt-BR">
   <head>
@@ -20,13 +21,35 @@
           <section class="content">
             <article class="student-page-host">
               <div class="student-page-layout">
-                <section class="student-page-panel student-empty-panel">
-                  <h2>
-                    Histórico Escolar
-                  </h2>
-                  <p>
-                    Nenhuma disciplina no histórico.
+                <section class="student-page-panel history-panel" aria-labelledby="history-title">
+                  <header class="history-heading">
+                    <div>
+                      <span class="history-eyebrow">Vida acadêmica</span>
+                      <h2 id="history-title">Histórico Escolar</h2>
+                      <p>Acompanhe as disciplinas do seu curso organizadas por semestre.</p>
+                    </div>
+                    <div class="history-summary" aria-live="polite">
+                      <span data-history-course>Carregando curso...</span>
+                      <strong data-history-count>— disciplinas</strong>
+                    </div>
+                  </header>
+                  <p class="history-note" id="history-note">
+                    As médias finais ainda não estão disponíveis. Disciplinas sem matrícula aparecem como NC (não cursada).
                   </p>
+                  <div class="history-table-scroll">
+                    <table class="history-table" aria-describedby="history-note">
+                      <thead>
+                        <tr>
+                          <th scope="col">Disciplina</th>
+                          <th scope="col">Média final</th>
+                          <th scope="col">Situação</th>
+                        </tr>
+                      </thead>
+                      <tbody data-history-rows>
+                        <tr><td class="history-message" colspan="3">Carregando histórico...</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </section>
               </div>
             </article>
@@ -37,6 +60,8 @@
       </div>
     </div>
     <script src="../../js/shared/app.js">
+    </script>
+    <script src="../../js/aluno/historico.js">
     </script>
   </body>
 </html>

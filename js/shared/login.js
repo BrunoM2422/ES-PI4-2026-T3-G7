@@ -1,3 +1,4 @@
+// Autores:
 document.querySelector('#login').addEventListener('submit', async event => {
   event.preventDefault();
 
@@ -7,7 +8,7 @@ document.querySelector('#login').addEventListener('submit', async event => {
   error.textContent = '';
 
   try {
-    const response = await fetch('http://localhost:3000/api/auth/login', {
+    const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, senha: password })
@@ -32,6 +33,7 @@ document.querySelector('#login').addEventListener('submit', async event => {
       nome: user.nome,
       email: user.email,
       nivelPermissao: user.nivelPermissao || null,
+      cursoId: user.cursoId || null,
       statusAcademico: user.statusAcademico || 'ativo'
     }));
     sessionStorage.setItem('notadez_token', data.token);

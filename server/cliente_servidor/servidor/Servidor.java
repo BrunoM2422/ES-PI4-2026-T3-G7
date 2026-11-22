@@ -1,22 +1,39 @@
+// Autores: Matheus Antony Lucas Lima RA:25013260
 package server.cliente_servidor.servidor;
-import java.util.*;
 
+import java.util.ArrayList;
+
+import server.cliente_servidor.ComunicadoDeDesligamento;
+import server.cliente_servidor.Parceiro;
 import server.cliente_servidor.Teclado;
 
+/**
+ * Servidor de cálculo de médias.
+ *
+ * Uso: java server.cliente_servidor.servidor.Servidor [PORTA]
+ *
+ * Controle (feito pelo Node via stdin):
+ *     desativar  -> avisa os clientes conectados e encerra o servidor
+ *
+ * Saída (stdout):
+ *     SERVIDOR_ATIVO   (linha impressa quando o servidor já está aceitando conexões)
+ *
+ * Se o stdin for fechado (ex.: o processo Node morreu), o servidor
+ * também se desativa, para não ficar órfão ocupando a porta.
+ */
 public class Servidor
 {
-	public static String PORTA_PADRAO = "3000";
-	
+    public static String PORTA_PADRAO = "5000";
+
     public static void main (String[] args)
     {
         if (args.length>1)
         {
             System.err.println ("Uso esperado: java Servidor [PORTA]\n");
-            return;
+            System.exit (2);
         }
 
         String porta=Servidor.PORTA_PADRAO;
-        
         if (args.length==1) porta = args[0];
 
         ArrayList<Parceiro> usuarios =new ArrayList<Parceiro> ();
@@ -30,15 +47,15 @@ public class Servidor
         catch (Exception erro)
         {
             System.err.println ("Escolha uma porta apropriada e liberada para uso!\n");
-            return;
+            System.exit (1);
         }
+
+        // o Node espera essa linha para saber que o servidor subiu
+        System.out.println ("SERVIDOR_ATIVO");
+        System.out.flush ();
 
         for(;;)
         {
-            System.out.println ("O servidor esta ativo! Para desativa-lo,");
-            System.out.println ("use o comando \"desativar\"\n");
-            System.out.print   ("> ");
-
             String comando=null;
             try
             {
@@ -47,13 +64,13 @@ public class Servidor
             catch (Exception erro)
             {}
 
-            if (comando.toLowerCase().equals("desativar"))
+            // comando == null -> stdin fechado: desliga tambem
+            if (comando==null || comando.trim().equalsIgnoreCase("desativar"))
             {
                 synchronized (usuarios)
                 {
-					ComunicadoDeDesligamento comunicadoDeDesligamento =
+                    ComunicadoDeDesligamento comunicadoDeDesligamento =
                     new ComunicadoDeDesligamento ();
-                    
                     for (Parceiro usuario:usuarios)
                     {
                         try
@@ -66,11 +83,12 @@ public class Servidor
                     }
                 }
 
-                System.out.println ("O servidor foi desativado!\n");
+                System.out.println ("O servidor foi desativado!");
+                System.out.flush ();
                 System.exit(0);
             }
             else
-                System.err.println ("Comando invalido!\n");
+                System.err.println ("Comando invalido!");
         }
     }
 }

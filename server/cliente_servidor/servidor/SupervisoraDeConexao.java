@@ -1,13 +1,25 @@
+// Autores: Matheus Antony Lucas Lima RA:25013260
 package server.cliente_servidor.servidor;
 
-import server.cliente_servidor.Comunicado;
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.util.ArrayList;
 
+import server.cliente_servidor.Comunicado;
+import server.cliente_servidor.Parceiro;
+import server.cliente_servidor.PedidoDeOperacao;
+import server.cliente_servidor.PedidoParaSair;
+
+/**
+ * Atende um cliente: recebe PedidoDeOperacao, calcula as médias
+ * e devolve um Resultado (com as médias ou com a mensagem de erro).
+ *
+ * Pré-requisito: Parceiro, PedidoDeOperacao, PedidoParaSair e
+ * ComunicadoDeDesligamento unificados em server.cliente_servidor.
+ */
 public class SupervisoraDeConexao extends Thread
 {
-    private double              valor=0;
     private Parceiro            usuario;
     private Socket              conexao;
     private ArrayList<Parceiro> usuarios;
@@ -28,7 +40,6 @@ public class SupervisoraDeConexao extends Thread
 
     public void run ()
     {
-
         ObjectOutputStream transmissor;
         try
         {
@@ -40,7 +51,7 @@ public class SupervisoraDeConexao extends Thread
         {
             return;
         }
-        
+
         ObjectInputStream receptor=null;
         try
         {
@@ -56,7 +67,6 @@ public class SupervisoraDeConexao extends Thread
             }
             catch (Exception falha)
             {} // so tentando fechar antes de acabar a thread
-            
             return;
         }
 
@@ -68,7 +78,9 @@ public class SupervisoraDeConexao extends Thread
                           transmissor);
         }
         catch (Exception erro)
-        {} // sei que passei os parametros corretos
+        {
+            return; // nao deve acontecer: parametros ja foram validados
+        }
 
         try
         {
@@ -77,60 +89,55 @@ public class SupervisoraDeConexao extends Thread
                 this.usuarios.add (this.usuario);
             }
 
-
             for(;;)
             {
                 Comunicado comunicado = this.usuario.envie ();
 
                 if (comunicado==null)
-                    return;
-                else if (comunicado instanceof PedidoDeOperacao)
+                    break;
+
+                if (comunicado instanceof PedidoDeOperacao)
                 {
-					PedidoDeOperacao pedidoDeOperacao = (PedidoDeOperacao)comunicado;
-					
-					switch (pedidoDeOperacao.getOperacao())
-					{
-						case '+':
-						    this.valor += pedidoDeOperacao.getValor();
-						    break;
-						    
-						case '-':
-						    this.valor -= pedidoDeOperacao.getValor();
-						    break;
-						    
-						case '*':
-						    this.valor *= pedidoDeOperacao.getValor();
-						    break;
-						    
-						case '/':
-						    this.valor /= pedidoDeOperacao.getValor();
+                    PedidoDeOperacao pedido = (PedidoDeOperacao)comunicado;
+
+                    Resultado resultado;
+                    try
+                    {
+                        resultado = new Resultado (
+                            CalculadoraDeMedias.calcular (
+                                pedido.getTipo        (),
+                                pedido.getComponentes (),
+                                pedido.getAlunos      ()));
                     }
-                }
-                else if (comunicado instanceof PedidoDeResultado)
-                {
-                    this.usuario.receba (new Resultado (this.valor));
+                    catch (Exception erro)
+                    {
+                        // ex.: tipo invalido, sem componentes, pesos nao somam 10
+                        resultado = new Resultado (erro.getMessage ());
+                    }
+
+                    this.usuario.receba (resultado);
                 }
                 else if (comunicado instanceof PedidoParaSair)
                 {
-                    synchronized (this.usuarios)
-                    {
-                        this.usuarios.remove (this.usuario);
-                    }
-                    this.usuario.adeus();
+                    break;
                 }
             }
         }
         catch (Exception erro)
+        {} // cliente caiu ou o servidor esta desligando
+        finally
         {
+            synchronized (this.usuarios)
+            {
+                this.usuarios.remove (this.usuario);
+            }
+
             try
             {
-                transmissor.close ();
-                receptor   .close ();
+                this.usuario.adeus ();
             }
             catch (Exception falha)
             {} // so tentando fechar antes de acabar a thread
-
-            return;
         }
     }
 }

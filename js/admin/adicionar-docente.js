@@ -1,6 +1,13 @@
+// Autores:
+// Gabriel Scolfaro de Azeredo - 25006194
 document.addEventListener('DOMContentLoaded', () => {
   const botaoCadastrar = document.querySelector('.admin-button');
   if (!botaoCadastrar) return;
+
+  const campoNome = document.querySelector('input[name="nome"]');
+  const campoEmail = document.querySelector('input[name="email"]');
+  window.NotaDezValidacaoBrasil.vincularCampos(document);
+  window.NotaDezEmailSugerido.vincular(campoNome, campoEmail, 'docente');
 
   botaoCadastrar.addEventListener('click', async () => {
     const nome = document.querySelector('input[name="nome"]').value.trim();
@@ -9,6 +16,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const telefone = document.querySelector('input[name="telefone"]').value.trim();
     const especialidade = document.querySelector('input[name="especialidade"]').value.trim();
     const instituicao = document.querySelector('input[name="instituicao"]').value.trim();
+
+    if (!window.NotaDezValidacaoBrasil.validarCpf(cpf)) {
+      window.showAppMessage('Informe um CPF válido.');
+      document.querySelector('input[name="cpf"]').focus();
+      return;
+    }
+    if (!window.NotaDezValidacaoBrasil.validarTelefone(telefone)) {
+      window.showAppMessage('Informe um telefone brasileiro válido com DDD.');
+      document.querySelector('input[name="telefone"]').focus();
+      return;
+    }
 
     if (!nome || !email || !cpf || !especialidade) {
       window.showAppMessage('Preencha os campos obrigatórios (Nome, E-mail, CPF e Especialidade).');

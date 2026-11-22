@@ -1,3 +1,4 @@
+// Autores:
 (() => {
   const app = document.querySelector('#app');
   const host = app?.querySelector('.content > .card');
@@ -7,26 +8,19 @@
   const storageKey = `notadez_settings_${user?.email || app.dataset.role}`;
   const defaults = {
     theme: 'light',
-    fontSize: 14,
-    reduceMotion: false,
     showFinanceiro: true,
+    sessionTimeout: 0,
     notifications: {
-      academic: true,
-      deadlines: true,
-      finance: true,
-      email: false,
-      access: true,
-      online: false
+      institucional: true,
+      feriado: true
     }
   };
   let settings = loadSettings();
 
+  const sessionSelect = host.querySelector('[data-session-timeout]');
+
   host.classList.remove('card');
   host.classList.add('settings-host');
-
-  const fontSize = host.querySelector('#font-size');
-  const fontSizeValue = host.querySelector('#font-size-value');
-  fontSize.value = settings.fontSize;
 
   host.querySelectorAll('[data-theme-choice]').forEach(button => {
     button.addEventListener('click', () => {
@@ -67,12 +61,13 @@
     });
   });
 
-  fontSize.addEventListener('input', () => {
-    settings.fontSize = Number(fontSize.value);
-    applySettings();
-    updateControls();
-    saveSettings();
-  });
+  if (sessionSelect) {
+    sessionSelect.addEventListener('change', () => {
+      settings.sessionTimeout = Number(sessionSelect.value);
+      updateControls();
+      saveSettings();
+    });
+  }
 
   function loadSettings() {
     try {
@@ -117,8 +112,6 @@
 
   function applySettings() {
     document.body.classList.toggle('theme-dark', settings.theme === 'dark');
-    document.body.classList.toggle('reduce-motion', settings.reduceMotion);
-    document.documentElement.style.setProperty('--font-scale', String(settings.fontSize / 13));
   }
 
   function updateControls() {
@@ -137,8 +130,11 @@
       button.classList.toggle('active', active);
       button.setAttribute('aria-checked', String(active));
     });
-    fontSize.value = settings.fontSize;
-    fontSizeValue.textContent = `${settings.fontSize}px`;
+    if (sessionSelect) {
+      const valor = String(settings.sessionTimeout);
+      const existe = [...sessionSelect.options].some(option => option.value === valor);
+      sessionSelect.value = existe ? valor : '0';
+    }
     applySettings();
   }
 

@@ -1,3 +1,5 @@
+// Autores:
+// Nícolas Mitjans Nunes - 25005124
 (() => {
   const host = document.querySelector('#app .calendar-host');
   const cloneTemplate = id => document.getElementById(id).content.cloneNode(true);
@@ -76,7 +78,8 @@
       title: fields.title.value.trim(),
       date: fields.date.value,
       category: fields.category.value,
-      turmaId: fields.turma?.value || '',
+      turmaId: fields.turma?.value ? fields.turma.value.split('::')[0] : '',
+      disciplinaId: fields.turma?.value ? fields.turma.value.split('::')[1] : '',
       start: fields.category.value === 'feriado' ? '' : fields.start.value,
       end: fields.category.value === 'feriado' ? '' : fields.end.value,
       location: fields.category.value === 'feriado' ? '' : fields.location.value.trim(),
@@ -257,7 +260,11 @@
       fields.category.add(categoriaLegada);
     }
     fields.category.value = item?.category || '';
-    if (fields.turma) fields.turma.value = item?.turmaId || '';
+    if (fields.turma) {
+      const oferta = [...fields.turma.options].find(option => option.value.startsWith(`${item?.turmaId || ''}::${item?.disciplinaId || ''}`))
+        || [...fields.turma.options].find(option => item?.turmaId && option.value.startsWith(`${item.turmaId}::`));
+      fields.turma.value = oferta?.value || '';
+    }
     fields.start.value = item?.start || '';
     fields.end.value = item?.end || '';
     fields.location.value = item?.location || '';
@@ -394,16 +401,19 @@
   async function carregarTurmasDocente() {
     try {
       const data = await enviarRequisicao('/api/calendario/minhas-turmas', 'GET');
-      const turmas = data.turmas || [];
+      const ofertas = data.ofertas || [];
       fields.turma.replaceChildren(new Option(
-        turmas.length ? 'Selecione uma turma' : 'Você não está alocado a nenhuma turma',
+        ofertas.length ? 'Selecione disciplina e turma' : 'Você não está alocado a nenhuma disciplina/turma',
         ''
       ));
-      turmas.forEach(turma => fields.turma.add(new Option(`${turma.codigo} · ${turma.periodoLetivo}`, turma.id)));
-      fields.turma.disabled = turmas.length === 0;
+      ofertas.forEach(oferta => fields.turma.add(new Option(
+        `${oferta.disciplina} (${oferta.codigoDisciplina}) · Turma ${oferta.turmaCodigo} · ${oferta.periodoLetivo}º semestre`,
+        `${oferta.turmaId}::${oferta.disciplinaId}`
+      )));
+      fields.turma.disabled = ofertas.length === 0;
     } catch (erro) {
       console.error('Erro ao carregar turmas do docente:', erro);
-      fields.turma.replaceChildren(new Option('Não foi possível carregar suas turmas', ''));
+      fields.turma.replaceChildren(new Option('Não foi possível carregar suas disciplinas/turmas', ''));
       fields.turma.disabled = true;
     }
   }

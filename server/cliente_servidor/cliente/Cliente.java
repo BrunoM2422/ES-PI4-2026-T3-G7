@@ -1,3 +1,4 @@
+// Autores: Matheus Antony Lucas Lima RA:25013260
 package server.cliente_servidor.cliente;
 
 import java.io.BufferedReader;
@@ -13,10 +14,12 @@ import java.util.List;
 import java.util.Map;
 
 import server.cliente_servidor.Comunicado;
+import server.cliente_servidor.ComunicadoDeDesligamento;
+import server.cliente_servidor.Parceiro;
+import server.cliente_servidor.PedidoDeOperacao;
+import server.cliente_servidor.PedidoParaSair;
 import server.cliente_servidor.servidor.CalculadoraDeMedias;
-import server.cliente_servidor.servidor.PedidoDeOperacao;
 import server.cliente_servidor.servidor.Resultado;
-
 /**
  * Cliente do cálculo de médias.
  *

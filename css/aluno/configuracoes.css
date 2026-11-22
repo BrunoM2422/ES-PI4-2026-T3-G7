@@ -1,3 +1,4 @@
+/* Autores: */
 .settings-host {
   min-height: auto;
   padding: 0;
@@ -202,6 +203,19 @@
   background: #fff;
   color: var(--ink);
   font-size: 10px;
+}
+
+select.settings-select {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.settings-hint {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.4;
 }
 
 .settings-unavailable {

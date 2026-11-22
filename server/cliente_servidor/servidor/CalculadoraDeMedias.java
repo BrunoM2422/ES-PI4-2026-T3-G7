@@ -1,3 +1,4 @@
+// Autores: Matheus Antony Lucas Lima RA:25013260
 package server.cliente_servidor.servidor;
 
 import java.util.ArrayList;
@@ -8,18 +9,20 @@ import java.util.Map;
  * Calcula médias de alunos (aritmética ou ponderada).
  * Não depende de sockets: recebe dados e devolve médias.
  */
-public class CalculadoraDeMedias
+public class CalculadoraDeMedias 
 {
     public static final String ARITMETICA = "Aritmética";
     public static final String PONDERADA  = "Ponderada";
 
     private static final double SOMA_PESOS_ESPERADA = 10.0;
     private static final double TOLERANCIA          = 0.01;
+    private static final double NOTA_MINIMA         = 0.0;
+    private static final double NOTA_MAXIMA         = 10.0;
 
     // ---------- tipos auxiliares ----------
 
     /** Componente de avaliação (prova, trabalho etc.). */
-    public static class Componente
+    public static class Componente implements java.io.Serializable
     {
         private final String id;     // pode ser null; nesse caso usa-se o índice
         private final double peso;
@@ -35,7 +38,7 @@ public class CalculadoraDeMedias
     }
 
     /** Notas de um aluno. A chave do mapa é "comp_<id ou índice>". */
-    public static class NotasDoAluno
+    public static class NotasDoAluno implements java.io.Serializable
     {
         private final int idEstudante;
         private final Map<String, Double> notas;
@@ -51,7 +54,7 @@ public class CalculadoraDeMedias
     }
 
     /** Média calculada de um aluno. */
-    public static class MediaDoAluno
+    public static class MediaDoAluno implements java.io.Serializable
     {
         private final int idEstudante;
         private final double media;
@@ -78,7 +81,10 @@ public class CalculadoraDeMedias
      * Calcula a média de todos os alunos.
      *
      * @throws IllegalArgumentException se não houver componentes, se o tipo for
-     *         inválido ou se, na ponderada, os pesos não somarem 10.
+     *         inválido, se algum componente for nulo ou tiver peso inválido
+     *         (negativo, NaN ou infinito), se algum aluno for nulo, se alguma
+     *         nota for inválida (NaN, negativa ou acima de 10) ou, na
+     *         ponderada, se os pesos não somarem 10.
      */
     public static List<MediaDoAluno> calcular(String tipo,
                                               List<Componente> componentes,
@@ -90,6 +96,8 @@ public class CalculadoraDeMedias
         if (!ARITMETICA.equals(tipo) && !PONDERADA.equals(tipo))
             throw new IllegalArgumentException("Tipo de média inválido: " + tipo);
 
+        validarComponentes(componentes);
+
         if (PONDERADA.equals(tipo))
             validarPesos(componentes);
 
@@ -100,6 +108,8 @@ public class CalculadoraDeMedias
 
         for (NotasDoAluno aluno : alunos)
         {
+            validarAluno(aluno);
+
             double media = ARITMETICA.equals(tipo)
                          ? mediaAritmetica(aluno)
                          : mediaPonderada(aluno, componentes);
@@ -108,6 +118,41 @@ public class CalculadoraDeMedias
         }
 
         return resultado;
+    }
+
+    // ---------- validações ----------
+
+    private static void validarComponentes(List<Componente> componentes)
+    {
+        for (Componente c : componentes)
+        {
+            if (c == null)
+                throw new IllegalArgumentException("Componente não pode ser nulo.");
+
+            double peso = c.getPeso();
+            if (Double.isNaN(peso) || Double.isInfinite(peso) || peso < 0)
+                throw new IllegalArgumentException("Peso inválido: " + peso);
+        }
+    }
+
+    private static void validarAluno(NotasDoAluno aluno)
+    {
+        if (aluno == null)
+            throw new IllegalArgumentException("Aluno não pode ser nulo.");
+
+        if (aluno.getNotas() == null)
+            return; // sem notas: tratado como 0 nas médias
+
+        for (Double nota : aluno.getNotas().values())
+        {
+            if (nota == null)
+                continue; // nota ausente continua contando como 0
+
+            if (Double.isNaN(nota) || nota < NOTA_MINIMA || nota > NOTA_MAXIMA)
+                throw new IllegalArgumentException(
+                    "Nota inválida para o aluno " + aluno.getIdEstudante()
+                    + ": " + nota + " (use valores de 0 a 10).");
+        }
     }
 
     private static void validarPesos(List<Componente> componentes)
@@ -120,6 +165,8 @@ public class CalculadoraDeMedias
             throw new IllegalArgumentException(
                 "A soma dos pesos deve ser exatamente 10. Atual: " + total);
     }
+
+    // ---------- médias ----------
 
     // Soma as notas lançadas e divide pela quantidade de notas (igual ao JS original)
     private static double mediaAritmetica(NotasDoAluno aluno)

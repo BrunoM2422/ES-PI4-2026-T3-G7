@@ -1,3 +1,4 @@
+// Autores:
 const crypto = require('crypto');
 const Usuario = require('../models/Usuario');
 
@@ -42,11 +43,12 @@ async function autenticar(req, res, next) {
       return res.status(401).json({ mensagem: 'Sessão inválida ou expirada.' });
     }
 
-    const usuario = await Usuario.findById(sessao.sub).select('_id email papeis ra rp').lean();
+    const usuario = await Usuario.findById(sessao.sub).select('_id email papeis ra rp nivelPermissao cursoId').lean();
     const papel = usuario && obterPapel(usuario);
     if (!usuario || !papel) return res.status(401).json({ mensagem: 'Sessão inválida ou expirada.' });
 
-    req.usuario = { id: String(usuario._id), email: usuario.email, ra: usuario.ra, rp: usuario.rp, papel };
+    req.usuario = { id: String(usuario._id), email: usuario.email, ra: usuario.ra, rp: usuario.rp, papel,
+      nivelPermissao: usuario.nivelPermissao || 'admin_mestre', cursoId: usuario.cursoId ? String(usuario.cursoId) : null };
     return next();
   } catch (erro) {
     if (erro.message?.startsWith('Configure SESSION_SECRET')) {

@@ -1,10 +1,9 @@
-// Autores:
+// Autores: Luca Filippi — RA: 25022556
 //Matheus Antony Lucas Lima RA:25013260
 // Nícolas Mitjans Nunes - 25005124
 const express = require('express');
 const mongoose = require('mongoose');
 const { autenticar } = require('../services/autenticacao');
-const { responderComLog } = require('../services/logs');
 const Estudante = require('../models/Estudante');
 const Docente = require('../models/Docente');
 const Turma = require('../models/Turma');
@@ -33,16 +32,6 @@ async function docenteDaSessao(usuario) {
 async function turmaAutorizada(turmaId, disciplinaId, docenteId) {
   return Turma.findOne({ _id: turmaId, 'horarios.docenteId': docenteId, 'horarios.disciplinaId': disciplinaId })
     .select('codigo periodoLetivo horarios alunosIds').populate('horarios.disciplinaId', 'nome codigo').lean();
-}
-
-function responderDiario(req, res, dados, turma, detalhes, acao) {
-  const { disciplinaId } = req.params;
-  const disciplina = turma.horarios.find(aula => String(aula.disciplinaId?._id) === disciplinaId)?.disciplinaId;
-  return responderComLog(req, res, dados, 'Notas', [
-    `Turma: ${turma.codigo || turma._id}`,
-    `Disciplina: ${disciplina?.nome || disciplinaId}`,
-    ...detalhes
-  ], acao);
 }
 
 function mapearComponentes(componentes, notas = []) {
@@ -290,8 +279,7 @@ router.post('/professor/:turmaId/:disciplinaId/configuracao', autenticar, async 
     try {
       const configuracao = await ConfiguracaoNota.create({ turmaId: turma._id, disciplinaId: req.params.disciplinaId, docenteId: docente._id, tipoMedia: valorInicial });
       if (valorInicial !== tipoMedia) return res.status(409).json({ mensagem: `O tipo de média desta disciplina já está definido como ${valorInicial === 'aritmetica' ? 'aritmética' : 'ponderada'}.`, configuracao: { tipoMedia: valorInicial } });
-      const dados = { mensagem: 'Tipo de média definido e bloqueado para esta disciplina.', configuracao: { tipoMedia: configuracao.tipoMedia } };
-      return responderDiario(req, res.status(201), dados, turma, [`Tipo de média: ${configuracao.tipoMedia}`]);
+      return res.status(201).json({ mensagem: 'Tipo de média definido e bloqueado para esta disciplina.', configuracao: { tipoMedia: configuracao.tipoMedia } });
     } catch (erro) {
       if (erro.code !== 11000) throw erro;
       const configuracao = await ConfiguracaoNota.findOne({ turmaId: turma._id, disciplinaId: req.params.disciplinaId }).lean();
@@ -319,8 +307,7 @@ router.post('/professor/:turmaId/:disciplinaId/componentes', autenticar, async (
     const componente = await ComponenteNota.create({ turmaId: turma._id, disciplinaId: req.params.disciplinaId, docenteId: docente._id, titulo, valorMaximo, tipoMedia, peso,
       dataAplicacao: req.body.dataAplicacao ? new Date(req.body.dataAplicacao) : null });
     await aposAlterarDiario(turma._id, req.params.disciplinaId);
-    const dados = { mensagem: 'Componente criado.', componente: { id: String(componente._id), titulo, valorMaximo, tipoMedia, peso } };
-    return responderDiario(req, res.status(201), dados, turma, [`Componente: ${titulo}`, `Valor máximo: ${valorMaximo}`, `Peso: ${peso}`]);
+    return res.status(201).json({ mensagem: 'Componente criado.', componente: { id: String(componente._id), titulo, valorMaximo, tipoMedia, peso } });
   } catch (erro) {
     if (erro.code === 11000) return res.status(409).json({ mensagem: 'Já existe um componente com esse nome nesta disciplina.' });
     console.error('Erro ao criar componente de nota:', erro); 
@@ -348,8 +335,7 @@ router.put('/professor/:turmaId/:disciplinaId/componentes/:componenteId', autent
     componente.peso = peso;
     await componente.save();
     await aposAlterarDiario(turma._id, req.params.disciplinaId);
-    const dados = { mensagem: 'Componente atualizado.', componente: { id: String(componente._id), titulo, valorMaximo, peso, tipoMedia: componente.tipoMedia } };
-    return responderDiario(req, res, dados, turma, [`Componente: ${titulo}`, `Valor máximo: ${valorMaximo}`, `Peso: ${peso}`]);
+    return res.json({ mensagem: 'Componente atualizado.', componente: { id: String(componente._id), titulo, valorMaximo, peso, tipoMedia: componente.tipoMedia } });
   } catch (erro) {
     if (erro.code === 11000) return res.status(409).json({ mensagem: 'Já existe um componente com esse nome nesta disciplina.' });
     console.error('Erro ao atualizar componente de nota:', erro);
@@ -374,7 +360,7 @@ router.delete('/professor/:turmaId/:disciplinaId/componentes/:componenteId', aut
     } else {
       await aposAlterarDiario(turma._id, req.params.disciplinaId);
     }
-    return responderDiario(req, res, { mensagem: 'Componente e notas associadas excluídos.' }, turma, [`Componente: ${componente.titulo}`]);
+    return res.json({ mensagem: 'Componente e notas associadas excluídos.' });
   } catch (erro) {
     console.error('Erro ao excluir componente de nota:', erro);
     return res.status(500).json({ mensagem: 'Não foi possível excluir o componente.' });
@@ -422,9 +408,11 @@ router.put('/professor/:turmaId/:disciplinaId/notas', autenticar, async (req, re
     const resultado = await Nota.bulkWrite(operacoes, { ordered: true });
     dados.alteracoes = resultado.upsertedCount + resultado.modifiedCount + resultado.deletedCount;
     if (!dados.alteracoes) return res.json(dados);
-    // as médias salvas ficam marcadas como desatualizadas e são recalculadas em segundo plano
     await aposAlterarDiario(turma._id, req.params.disciplinaId);
-    return responderDiario(req, res, dados, turma, [
+    const disciplina = turma.horarios.find(item => String(item.disciplinaId?._id || item.disciplinaId) === req.params.disciplinaId)?.disciplinaId;
+    return responderComLog(req, res, dados, 'Notas', [
+      `Turma: ${turma.codigo || turma._id}`,
+      `Disciplina: ${disciplina?.nome || req.params.disciplinaId}`,
       `Notas lançadas: ${resultado.upsertedCount}`,
       `Notas atualizadas: ${resultado.modifiedCount}`,
       `Notas removidas: ${resultado.deletedCount}`,

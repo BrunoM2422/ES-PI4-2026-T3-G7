@@ -1,3 +1,4 @@
+// Autores:
 (() => {
   const app = document.querySelector('#app');
   const host = app?.querySelector('.content > .card');
@@ -7,38 +8,24 @@
   const storageKey = `notadez_settings_${user?.email || app.dataset.role}`;
   const defaults = {
     theme: 'light',
-    fontSize: 14,
-    reduceMotion: false,
-    showFinanceiro: true,
+    sessionTimeout: 0,
     notifications: {
-      academic: true,
-      deadlines: true,
-      finance: true,
-      email: false,
-      access: true,
-      online: false
+      comunicados: true,
+      notas: true,
+      sistema: true,
+      chamados: true
     }
   };
   let settings = loadSettings();
 
+  const sessionSelect = host.querySelector('[data-session-timeout]');
+
   host.classList.remove('card');
   host.classList.add('settings-host');
-
-  const fontSize = host.querySelector('#font-size');
-  const fontSizeValue = host.querySelector('#font-size-value');
-  fontSize.value = settings.fontSize;
 
   host.querySelectorAll('[data-theme-choice]').forEach(button => {
     button.addEventListener('click', () => {
       settings.theme = button.dataset.themeChoice;
-      updateControls();
-      saveSettings();
-    });
-  });
-
-  host.querySelectorAll('[data-setting]').forEach(button => {
-    button.addEventListener('click', () => {
-      settings[button.dataset.setting] = !settings[button.dataset.setting];
       updateControls();
       saveSettings();
     });
@@ -53,21 +40,22 @@
     });
   });
 
-  fontSize.addEventListener('input', () => {
-    settings.fontSize = Number(fontSize.value);
-    applySettings();
-    updateControls();
-    saveSettings();
-  });
+  if (sessionSelect) {
+    sessionSelect.addEventListener('change', () => {
+      settings.sessionTimeout = Number(sessionSelect.value);
+      updateControls();
+      saveSettings();
+    });
+  }
 
   function loadSettings() {
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
-      return {
-        ...defaults,
-        ...saved,
-        notifications: { ...defaults.notifications, ...(saved.notifications || {}) }
-      };
+      const notifications = { ...defaults.notifications };
+      Object.keys(notifications).forEach(key => {
+        if (typeof saved.notifications?.[key] === 'boolean') notifications[key] = saved.notifications[key];
+      });
+      return { ...defaults, ...saved, notifications };
     } catch {
       return { ...defaults, notifications: { ...defaults.notifications } };
     }
@@ -81,30 +69,10 @@
       host.querySelector('#settings-saved').textContent =
         'Não foi possível salvar as configurações neste navegador.';
     }
-    syncFinanceNav();
-  }
-
-  function syncFinanceNav() {
-    if (app.dataset.role !== 'professor') return;
-    const link = document.querySelector('.nav a[href*="financeiro.html"], .nav a[data-finance-nav]');
-    if (!link) return;
-    link.dataset.financeNav = '1';
-    const disabled = settings.showFinanceiro === false;
-    link.classList.toggle('disabled', disabled);
-    link.href = disabled ? '#' : '../../pages/professor/financeiro.html';
-    if (disabled) {
-      link.dataset.inactive = '1';
-      link.setAttribute('aria-disabled', 'true');
-    } else {
-      delete link.dataset.inactive;
-      link.removeAttribute('aria-disabled');
-    }
   }
 
   function applySettings() {
     document.body.classList.toggle('theme-dark', settings.theme === 'dark');
-    document.body.classList.toggle('reduce-motion', settings.reduceMotion);
-    document.documentElement.style.setProperty('--font-scale', String(settings.fontSize / 13));
   }
 
   function updateControls() {
@@ -113,21 +81,18 @@
       button.classList.toggle('selected', selected);
       button.setAttribute('aria-pressed', String(selected));
     });
-    host.querySelectorAll('[data-setting]').forEach(button => {
-      const active = Boolean(settings[button.dataset.setting]);
-      button.classList.toggle('active', active);
-      button.setAttribute('aria-checked', String(active));
-    });
     host.querySelectorAll('[data-notification]').forEach(button => {
       const active = Boolean(settings.notifications[button.dataset.notification]);
       button.classList.toggle('active', active);
       button.setAttribute('aria-checked', String(active));
     });
-    fontSize.value = settings.fontSize;
-    fontSizeValue.textContent = `${settings.fontSize}px`;
+    if (sessionSelect) {
+      const valor = String(settings.sessionTimeout);
+      const existe = [...sessionSelect.options].some(option => option.value === valor);
+      sessionSelect.value = existe ? valor : '0';
+    }
     applySettings();
   }
 
   updateControls();
-  syncFinanceNav();
 })();

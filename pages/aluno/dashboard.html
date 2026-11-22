@@ -1,65 +1,83 @@
+<!-- Autores: -->
+<!-- Gabriel Scolfaro de Azeredo - 25006194 -->
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>
-      Dashboard do Aluno | NotaDez
-    </title>
-    <link rel="stylesheet" href="../../css/shared/style.css">
-    <link rel="stylesheet" href="../../css/aluno/paginas.css">
-  </head>
-  <body>
-    <div id="app" data-page="dashboard" data-role="aluno" data-title="Dashboard do Aluno">
-      <div class="shell">
-        <aside class="side" data-component="sidebar">
-        </aside>
-        <main class="main">
-          <div data-component="header">
-          </div>
-          <section class="content">
-            <article class="student-page-host">
-              <div class="student-dashboard">
-                <section class="student-page-panel student-dashboard-notifications">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>
+    Dashboard do Aluno | NotaDez
+  </title>
+  <link rel="stylesheet" href="../../css/shared/style.css">
+  <link rel="stylesheet" href="../../css/aluno/paginas.css">
+  <link rel="stylesheet" href="../../css/shared/notificacoes.css">
+</head>
+
+<body>
+  <div id="app" data-page="dashboard" data-role="aluno" data-title="Dashboard do Aluno">
+    <div class="shell">
+      <aside class="side" data-component="sidebar">
+      </aside>
+      <main class="main">
+        <div data-component="header">
+        </div>
+        <section class="content">
+          <article class="student-page-host">
+            <div class="student-dashboard">
+              <section class="student-page-panel student-dashboard-main">
+                <div class="student-dashboard-heading">
+                  <h2>
+                    Grade do Dia
+                  </h2>
+                  <button type="button" id="aulas-hoje" class="notif-btn" hidden>Hoje</button>
+                </div>
+                <div class="student-day-nav">
+                  <button type="button" id="aulas-anterior" class="notif-btn student-day-arrow"
+                    aria-label="Dia anterior">&lsaquo;</button>
+                  <div class="student-day-label">
+                    <strong id="aulas-dia-semana"></strong>
+                    <small id="aulas-data"></small>
+                  </div>
+                  <button type="button" id="aulas-proximo" class="notif-btn student-day-arrow"
+                    aria-label="Próximo dia">&rsaquo;</button>
+                </div>
+                <div class="student-class-list" id="aulas-lista">
+                  <p class="student-dashboard-empty">Carregando aulas...</p>
+                </div>
+              </section>
+              <div class="student-dashboard-side">
+                <section class="student-page-panel student-dashboard-section">
                   <div class="student-dashboard-heading">
                     <h2>
                       Notificações Recentes
                     </h2>
-                    <button type="button" disabled>
+                    <button type="button" id="btn-marcar-todas-lidas" class="notif-btn" hidden>
                       Marcar todas como lidas
                     </button>
                   </div>
-                  <p class="student-dashboard-empty">
-                    Nenhuma notificação recente.
-                  </p>
+                  <div class="notif-list" id="notif-list"></div>
                 </section>
-                <div class="student-dashboard-side">
-                  <section class="student-page-panel student-dashboard-section">
-                    <h2>
-                      Próximas Atividades
-                    </h2>
-                    <p class="student-dashboard-empty">
-                      Nenhuma atividade próxima.
-                    </p>
-                  </section>
-                  <section class="student-page-panel student-dashboard-section">
-                    <h2>
-                      Agenda Geral
-                    </h2>
-                    <p class="student-dashboard-empty">
-                      Nenhum evento na agenda.
-                    </p>
-                  </section>
-                </div>
+                <section class="student-page-panel student-dashboard-section">
+                  <h2>
+                    Agenda Geral
+                  </h2>
+                  <div class="student-agenda-list" id="agenda-geral">
+                    <p class="student-dashboard-empty">Nenhum evento na agenda.</p>
+                  </div>
+                </section>
               </div>
-            </article>
-          </section>
-          <div data-component="footer">
-          </div>
-        </main>
-      </div>
+            </div>
+          </article>
+        </section>
+        <div data-component="footer">
+        </div>
+      </main>
     </div>
-    <script src="../../js/shared/app.js">
-    </script>
-  </body>
+  </div>
+  <script src="../../js/shared/app.js"></script>
+  <script src="../../js/shared/notificacoes.js"></script>
+  <script src="../../js/aluno/dashboard.js"></script>
+</body>
+
 </html>

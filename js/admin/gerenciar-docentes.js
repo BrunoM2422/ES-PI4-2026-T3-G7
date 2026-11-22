@@ -1,5 +1,7 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', async () => {
   const root = document.querySelector('#teachers-content');
+  const somenteLeitura = JSON.parse(sessionStorage.getItem('notadez_user') || 'null')?.nivelPermissao === 'admin_2';
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
   const normalize = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
   const request = async (url, options = {}) => {
@@ -24,7 +26,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     search.addEventListener('input', drawList);
     drawList();
-    if (selected) bindEditor(selected);
+    if (selected && somenteLeitura) {
+      root.querySelectorAll('#teacher-form input').forEach(input => { input.disabled = true; });
+      root.querySelector('.teacher-editor-actions')?.remove();
+      const descricao = root.querySelector('.catalog-section-heading p');
+      if (descricao) descricao.textContent = 'Docentes são cadastros compartilhados e podem atuar em vários cursos.';
+    } else if (selected) bindEditor(selected);
   }
 
   function editorMarkup(teacher) {
@@ -63,9 +70,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function bindEditor(teacher) {
     const form = root.querySelector('#teacher-form');
+    window.NotaDezValidacaoBrasil.vincularCampos(form);
+    window.NotaDezEmailSugerido.vincular(form.querySelector('[name="nome"]'), form.querySelector('[name="email"]'), 'docente', teacher.id);
     form.addEventListener('submit', async event => {
       event.preventDefault();
       if (!window.validateAppForm(form)) return;
+      const cpf = form.querySelector('[name="cpf"]').value;
+      const telefone = form.querySelector('[name="telefone"]').value;
+      if (cpf && !window.NotaDezValidacaoBrasil.validarCpf(cpf)) {
+        root.querySelector('.catalog-feedback').textContent = 'Informe um CPF válido.';
+        form.querySelector('[name="cpf"]').focus();
+        return;
+      }
+      if (!window.NotaDezValidacaoBrasil.validarTelefone(telefone)) {
+        root.querySelector('.catalog-feedback').textContent = 'Informe um telefone brasileiro válido com DDD.';
+        form.querySelector('[name="telefone"]').focus();
+        return;
+      }
       const button = form.querySelector('[type="submit"]'); button.disabled = true;
       try {
         const payload = Object.fromEntries(new FormData(form).entries());

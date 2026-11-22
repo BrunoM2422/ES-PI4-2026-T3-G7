@@ -1,3 +1,4 @@
+// Autores:
 const mongoose = require('mongoose');
 
 const turmaSchema = new mongoose.Schema({
@@ -6,6 +7,7 @@ const turmaSchema = new mongoose.Schema({
     required: true,
     trim: true,
     uppercase: true,
+    match: /^\d{4}[ABC]$/,
     unique: true
   },
   cursoId: {
@@ -25,6 +27,7 @@ const turmaSchema = new mongoose.Schema({
     min: 1,
     max: 300
   },
+  alunosIds: { type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Estudante' }], default: [] },
   semestreOrganizacao: { type: Number, min: 1, max: 20, default: null },
   horarios: [{
     gradeHorarioId: { type: mongoose.Schema.Types.ObjectId, ref: 'GradeHorario', required: true },

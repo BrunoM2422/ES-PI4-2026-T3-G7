@@ -1,3 +1,4 @@
+// Autores: Luca Filippi — RA: 25022556
 const Log = require('../models/Log');
 const mongoose = require('mongoose');
 

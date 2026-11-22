@@ -1,3 +1,4 @@
+// Autores:
 require('dotenv').config();
 
 const express = require('express');
@@ -10,10 +11,23 @@ const perfisRoutes = require('./routes/perfis');
 const opcoesRoutes = require('./routes/opcoes');
 const calendarioRoutes = require('./routes/calendario');
 const chamadosRoutes = require('./routes/chamados');
+const gradeAlunoRoutes = require('./routes/grade-aluno');
+const historicoAlunoRoutes = require('./routes/historico-aluno');
+const professorTurmasRoutes = require('./routes/professor-turmas');
+const frequenciaRoutes = require('./routes/frequencia');
+const frequenciaAlunoRoutes = require('./routes/frequencia-aluno');
+const notificacoesRoutes = require('./routes/notificacoes');
+const notasRoutes = require('./routes/notas');
+const javaServerRoutes = require('./routes/java-server');
 const Disciplina = require('./models/Disciplina');
 const Turma = require('./models/Turma');
 const GradeHorario = require('./models/GradeHorario');
 const Evento = require('./models/Evento');
+const Docente = require('./models/Docente');
+const ComponenteNota = require('./models/ComponenteNota');
+const Nota = require('./models/Nota');
+const ConfiguracaoNota = require('./models/ConfiguracaoNota');
+const Usuario = require('./models/Usuario');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -39,10 +53,19 @@ app.use(['/api/admin', '/api/perfis', '/api/chamados', '/api/calendario'], (req,
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/perfis',perfisRoutes);
+app.use('/api/perfis', perfisRoutes);
 app.use('/api/opcoes', opcoesRoutes);
+app.use('/api/aluno/avaliacao-professores', require('./routes/avaliacao-professores'));
 app.use('/api/calendario', calendarioRoutes);
 app.use('/api/chamados', chamadosRoutes);
+app.use('/api/aluno/grade', gradeAlunoRoutes);
+app.use('/api/aluno/historico', historicoAlunoRoutes);
+app.use('/api/professor/turmas', professorTurmasRoutes);
+app.use('/api/professor/frequencia', frequenciaRoutes);
+app.use('/api/aluno/frequencia', frequenciaAlunoRoutes);
+app.use('/api/aluno/notificacoes', notificacoesRoutes);
+app.use('/api/notas', notasRoutes);
+app.use('/api/java-server', javaServerRoutes);
 
 async function iniciarServidor() {
   try {
@@ -52,7 +75,17 @@ async function iniciarServidor() {
     await Turma.init();
     await GradeHorario.init();
     await Evento.init();
+    await ComponenteNota.init();
+    await Nota.init();
+    await ConfiguracaoNota.init();
+    await require('./models/Frequencia').init();
     await Evento.updateMany({ scope: { $exists: false } }, { $set: { scope: 'global' } });
+    await Docente.collection.updateMany({ cursoId: { $exists: true } }, { $unset: { cursoId: '' } });
+    const coordenadores = await Usuario.find({ papeis: 'admin', nivelPermissao: 'admin_2', cursoId: { $ne: null } }).select('_id cursoId').lean();
+    await Promise.all(coordenadores.map(coordenador => Evento.updateMany(
+      { createdBy: coordenador._id, scope: 'global' },
+      { $set: { scope: 'curso', cursoId: coordenador.cursoId } }
+    )));
 
     app.get('/', (req, res) => {
       res.sendFile(path.join(__dirname, '..', 'login.html'));

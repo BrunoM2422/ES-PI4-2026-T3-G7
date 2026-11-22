@@ -1,3 +1,4 @@
+/* Autores: */
 .admin-dashboard-host {
   min-width: 0;
 }
@@ -153,4 +154,8 @@ body.theme-dark .admin-notification-item strong { color: var(--ink); }
 @media (max-width: 700px) {
   .admin-stats { grid-template-columns: 1fr; }
   .admin-dashboard-panels { grid-template-columns: 1fr; }
+}
+
+.admin-panel .notif-list {
+  margin-top: 0;
 }

@@ -1,6 +1,7 @@
+<!-- Autores: -->
 <template id="sidebar-aluno">
   <div class="brand">
-    <a class="brand-link" href="../../login.html" aria-label="Ir para o login">
+    <a class="brand-link" href="dashboard.html" aria-label="Página Inicial">
       <i aria-hidden="true">&#10022;</i>
     </a>
     <span>NotaDez</span>
@@ -52,10 +53,13 @@
       </a>
     </div>
   </nav>
+  <button class="sidebar-logout" type="button" data-logout>
+    <span class="nav-icon" aria-hidden="true">&#10140;</span><span>Sair</span>
+  </button>
 </template>
 <template id="sidebar-professor">
   <div class="brand">
-    <a class="brand-link" href="../../login.html" aria-label="Ir para o login">
+    <a class="brand-link" href="dashboard.html" aria-label="Página Inicial">
       <i aria-hidden="true">&#10022;</i>
     </a>
     <span>NotaDez</span>
@@ -104,26 +108,32 @@
       </a>
     </div>
   </nav>
+  <button class="sidebar-logout" type="button" data-logout>
+    <span class="nav-icon" aria-hidden="true">&#10140;</span><span>Sair</span>
+  </button>
 </template>
 <template id="sidebar-admin">
   <div class="brand">
-    <a class="brand-link" href="../../login.html" aria-label="Ir para o login">
+    <a class="brand-link" href="dashboard.html" aria-label="Página Inicial">
       <i aria-hidden="true">&#10022;</i>
     </a>
     <span>NotaDez</span>
   </div>
-  <nav class="nav" aria-label="Navegação principal">
+  <nav class="nav nav-admin" aria-label="Navegação principal">
     <div class="nav-group" role="group" aria-label="Início">
-      <span class="nav-section-label" aria-hidden="true">Início</span>
+      <button class="nav-section-label" type="button" aria-expanded="false" title="Início">Início</button>
+      <div class="nav-group-items">
       <a data-nav-page="dashboard" href="../../pages/admin/dashboard.html" title="Dashboard">
         <span class="nav-icon" aria-hidden="true">&#9638;</span><span>Dashboard</span>
       </a>
       <a data-nav-page="calendario" href="../../pages/admin/calendario.html" title="Calendário">
         <span class="nav-icon" aria-hidden="true">&#9687;</span><span>Calendário</span>
       </a>
+      </div>
     </div>
     <div class="nav-group" role="group" aria-label="Cadastros">
-      <span class="nav-section-label" aria-hidden="true">Cadastros</span>
+      <button class="nav-section-label" type="button" aria-expanded="false" title="Cadastros">Cadastros</button>
+      <div class="nav-group-items">
       <a data-nav-page="adicionar-alunos" href="../../pages/admin/adicionar-alunos.html" title="Cadastro de alunos">
         <span class="nav-icon" aria-hidden="true">&#43;</span><span>Cadastro de alunos</span>
       </a>
@@ -156,36 +166,49 @@
       <a data-nav-page="chamados" href="../../pages/admin/contato.html" title="Gerenciar Chamados">
         <span class="nav-icon" aria-hidden="true">&#9786;</span><span>Gerenciar Chamados</span>
       </a>
+      </div>
     </div>
     <div class="nav-group" role="group" aria-label="Organização acadêmica">
-      <span class="nav-section-label" aria-hidden="true">Organização acadêmica</span>
+      <button class="nav-section-label" type="button" aria-expanded="false" title="Organização acadêmica">Organização acadêmica</button>
+      <div class="nav-group-items">
       <a data-nav-page="organizacao-horarios" href="../../pages/admin/organizacao-horarios.html" title="Organização de Horários">
         <span class="nav-icon" aria-hidden="true">&#9687;</span><span>Organização de Horários</span>
       </a>
       <a data-nav-page="organizacao-turmas" href="../../pages/admin/organizacao-turmas.html" title="Organização de Turmas">
         <span class="nav-icon" aria-hidden="true">&#9638;</span><span>Organização de Turmas</span>
       </a>
+      </div>
     </div>
     <div class="nav-group" role="group" aria-label="Matrículas">
-      <span class="nav-section-label" aria-hidden="true">Matrículas</span>
+      <button class="nav-section-label" type="button" aria-expanded="false" title="Matrículas">Matrículas</button>
+      <div class="nav-group-items">
       <a data-nav-page="cancelar-matricula" href="../../pages/admin/cancelar-matricula.html" title="Cancelar matrícula">
         <span class="nav-icon" aria-hidden="true">&#10005;</span><span>Cancelar matrícula</span>
       </a>
       <a data-nav-page="trancar-matricula" href="../../pages/admin/trancar-matricula.html" title="Trancar matrícula">
         <span class="nav-icon" aria-hidden="true">&#10003;</span><span>Trancar matrícula</span>
       </a>
+      </div>
     </div>
     <div class="nav-group" role="group" aria-label="Sistema e conta">
-      <span class="nav-section-label" aria-hidden="true">Sistema e conta</span>
+      <button class="nav-section-label" type="button" aria-expanded="false" title="Sistema e conta">Sistema e conta</button>
+      <div class="nav-group-items">
       <a data-nav-page="gerenciamento-opcoes" href="../../pages/admin/gerenciamento-opcoes.html" title="Gerenciamento de Opções">
         <span class="nav-icon" aria-hidden="true">&#9881;</span><span>Gerenciamento de Opções</span>
       </a>
       <a data-nav-page="logs" href="../../pages/admin/logs.html" title="Logs">
         <span class="nav-icon" aria-hidden="true">&#9776;</span><span>Logs</span>
       </a>
+      <a data-nav-page="servidor" href="../../pages/admin/servidor.html" title="Controle do Servidor">
+        <span class="nav-icon" aria-hidden="true">&#9889;</span><span>Controle do Servidor</span>
+      </a>
       <a data-nav-page="configuracoes" href="../../pages/admin/configuracoes.html" title="Configurações">
         <span class="nav-icon" aria-hidden="true">&#9881;</span><span>Configurações</span>
       </a>
+      </div>
     </div>
   </nav>
+  <button class="sidebar-logout" type="button" data-logout>
+    <span class="nav-icon" aria-hidden="true">&#10140;</span><span>Sair</span>
+  </button>
 </template>

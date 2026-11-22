@@ -1,3 +1,4 @@
+// Autores:
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const Log = require('../models/Log');

@@ -1,3 +1,4 @@
+<!-- Autores: -->
 <!doctype html>
 <html lang="pt-BR">
   <head>
@@ -20,14 +21,11 @@
           <section class="content">
             <article class="student-page-host">
               <div class="student-page-layout">
-                <section class="student-page-panel student-empty-panel">
-                  <h2>
-                    Notas
-                  </h2>
-                  <p>
-                    Nenhuma disciplina registrada.
-                  </p>
+                <section class="student-page-panel grades-panel">
+                  <div class="grades-heading"><div><span class="grades-eyebrow">Desempenho acadêmico</span><h2>Minhas notas</h2><p>Disciplinas em que você está matriculado.</p></div><span class="grades-count" data-grade-count>Carregando...</span></div>
+                  <div class="grades-card-grid" data-grade-cards aria-live="polite"><p class="student-dashboard-empty">Carregando disciplinas...</p></div>
                 </section>
+                <section class="student-page-panel grades-detail" data-grade-detail hidden></section>
               </div>
             </article>
           </section>
@@ -38,5 +36,6 @@
     </div>
     <script src="../../js/shared/app.js">
     </script>
+    <script src="../../js/aluno/notas.js"></script>
   </body>
 </html>

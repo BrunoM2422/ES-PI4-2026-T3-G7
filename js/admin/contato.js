@@ -1,3 +1,5 @@
+// Autores:
+// Gabriel Scolfaro de Azeredo - 25006194
 document.addEventListener('DOMContentLoaded', async () => {
   const list = document.querySelector('#tickets-list');
   if (!list) return;

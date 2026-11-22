@@ -1,4 +1,13 @@
+// Autores:
 const originalFetch = window.fetch.bind(window);
+window.formatarCodigoTurmaDisciplina = (codigoTurma, codigoDisciplina) => {
+  const turma = String(codigoTurma ?? '').trim();
+  const disciplina = String(codigoDisciplina ?? '').trim();
+  const legado = Number(turma.slice(-2));
+  const letra = /^[0-9]{4}[ABC]$/i.test(turma) ? turma.slice(-1).toUpperCase()
+    : legado >= 1 && legado <= 3 ? String.fromCharCode(64 + legado) : '';
+  return turma && disciplina && letra ? `${disciplina}${letra}` : turma;
+};
 window.fetch = (input, options = {}) => {
   const url = new URL(input instanceof Request ? input.url : input, location.href);
   if (url.origin !== location.origin || !url.pathname.startsWith('/api/')) return originalFetch(input, options);
@@ -87,10 +96,29 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
     user = null;
   }
 
-  if (!user || user.tipo !== role || !sessionStorage.getItem('notadez_token')) {
+  const token = sessionStorage.getItem('notadez_token');
+  if (!user || user.tipo !== role || !token) {
     sessionStorage.removeItem('notadez_user');
     sessionStorage.removeItem('notadez_token');
     window.location.href = '../../login.html';
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/auth/sessao', { headers: { Authorization: `Bearer ${token}` } });
+    const sessao = response.ok ? await response.json() : null;
+    if (!sessao || sessao.usuario?.tipo !== role || sessao.usuario?.email !== user.email) {
+      throw new Error('Sessão inválida ou expirada.');
+    }
+    if (role === 'admin') {
+      user.nivelPermissao = sessao.usuario.nivelPermissao || 'admin_mestre';
+      user.cursoId = sessao.usuario.cursoId || null;
+      sessionStorage.setItem('notadez_user', JSON.stringify(user));
+    }
+  } catch {
+    sessionStorage.removeItem('notadez_user');
+    sessionStorage.removeItem('notadez_token');
+    window.location.replace('../../login.html');
     return;
   }
 
@@ -114,16 +142,19 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
   }
 
   const nivelAdmin = user.nivelPermissao || 'admin_mestre';
-  const adminRestrito = role === 'admin' && nivelAdmin !== 'admin_mestre';
-  if (adminRestrito && !['dashboard', 'logs'].includes(page)) {
+  const cursoAdmin = user.cursoId || null;
+  const paginasAdmin3 = ['dashboard', 'chamados', 'contato', 'configuracoes', 'trancar-matricula'];
+  const paginasAdmin2 = ['dashboard', 'calendario', 'adicionar-alunos', 'adicionar-docente', 'adicionar-disciplina', 'adicionar-turma', 'gerenciar-turmas', 'gerenciar-docentes', 'gerenciar-cursos-disciplinas', 'organizacao-horarios', 'organizacao-turmas', 'gerenciamento-opcoes', 'logs', 'configuracoes', 'contato', 'chamados'];
+  const adminSemAcessoPagina = role === 'admin' && (nivelAdmin === 'admin_3' ? !paginasAdmin3.includes(page) : nivelAdmin === 'admin_2' && (!cursoAdmin || !paginasAdmin2.includes(page)));
+  if (adminSemAcessoPagina) {
     window.location.replace('../../pages/admin/dashboard.html');
     return;
   }
 
-  let opcoesAluno = { avaliacao: false, gradeCurricular: false };
+  let opcoesAluno = { avaliacaoProfessores: false, gradeCurricular: false };
   if (role === 'aluno') {
     try {
-      const response = await fetch('/api/opcoes');
+      const response = await fetch('/api/opcoes?email=' + encodeURIComponent(user.email || ''));
       if (!response.ok) throw new Error('Não foi possível carregar as opções do sistema.');
       const data = await response.json();
       opcoesAluno = { ...opcoesAluno, ...(data.opcoes || {}) };
@@ -132,7 +163,7 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
     }
 
     const opcaoDaPagina = page === 'avaliar'
-      ? 'avaliacao'
+      ? 'avaliacaoProfessores'
       : page === 'grade'
         ? 'gradeCurricular'
         : null;
@@ -164,8 +195,6 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
     return;
   }
   document.body.classList.toggle('theme-dark', settings.theme === 'dark');
-  document.body.classList.toggle('reduce-motion', Boolean(settings.reduceMotion));
-  document.documentElement.style.setProperty('--font-scale', String(settings.fontSize ? settings.fontSize / 13 : 1));
 
   const componentBase = new URL('../../components/', scriptUrl);
   Promise.all(['sidebar.html', 'header.html', 'footer.html'].map(async file => {
@@ -181,7 +210,7 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
 
     if (role === 'aluno') {
       const acessos = [
-        { page: 'avaliar', opcao: 'avaliacao' },
+        { page: 'avaliar', opcao: 'avaliacaoProfessores' },
         { page: 'grade', opcao: 'gradeCurricular' }
       ];
       acessos.forEach(({ page: pagina, opcao }) => {
@@ -209,16 +238,20 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
       }
     }
 
-    if (adminRestrito) {
+    if (role === 'admin' && nivelAdmin === 'admin_2') {
+      const bloqueadas = ['adicionar-curso', 'adicionar-administrador', 'cancelar-matricula', 'servidor'];
       app.querySelectorAll('[data-nav-page]').forEach(link => {
-        if (['dashboard', 'logs'].includes(link.dataset.navPage)) return;
-        link.href = '#';
-        link.classList.add('disabled');
-        link.setAttribute('aria-disabled', 'true');
-        link.tabIndex = -1;
-        link.title = 'Esta opção ainda não foi liberada para este nível de administrador.';
-        link.addEventListener('click', event => event.preventDefault());
+        if (!bloqueadas.includes(link.dataset.navPage)) return;
+        link.closest('.nav-group')?.classList.add('admin-nav-hidden');
+        link.remove();
       });
+      app.querySelector('[data-equivalencia-entry]')?.remove();
+    }
+    if (role === 'admin' && nivelAdmin === 'admin_3') {
+      app.querySelectorAll('[data-nav-page]').forEach(link => {
+        if (!['dashboard', 'chamados', 'contato', 'configuracoes', 'trancar-matricula'].includes(link.dataset.navPage)) link.remove();
+      });
+      app.querySelectorAll('.nav-admin .nav-group').forEach(group => { if (!group.querySelector('[data-nav-page]')) group.remove(); });
     }
 
     const insertFragment = (markup, selector) => {
@@ -233,44 +266,95 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
     app.querySelectorAll('[data-user-name]').forEach(element => {
       element.textContent = user.nome || 'Usuário';
     });
+    const dashboardLink = app.querySelector('[data-dashboard-link]');
+    if (dashboardLink) dashboardLink.href = `../../pages/${role}/dashboard.html`;
+    app.querySelectorAll('[data-logout]').forEach(button => {
+      button.addEventListener('click', () => {
+        sessionStorage.removeItem('notadez_user');
+        sessionStorage.removeItem('notadez_token');
+        window.location.replace('../../login.html');
+      });
+    });
     app.querySelectorAll('[data-profile-link]').forEach(link => {
       link.href = role === 'admin' ? '../../pages/admin/dashboard.html' : `../../pages/${role}/perfil.html`;
     });
+ 
     const atualizarAvatar = origem => {
-      const link = app.querySelector('.header-avatar-link');
-      if (!link) return;
-      const imagem = link.querySelector('[data-profile-avatar]');
-      const padrao = link.querySelector('svg');
-      if (!imagem || !padrao) return;
+      const imagem = document.querySelector('[data-profile-avatar]');
+      const link = imagem ? imagem.closest('a') : null;
+      const padrao = link ? link.querySelector('svg') : document.querySelector('.header-avatar-link svg');
+
+      if (!imagem) return;
+
       if (origem) {
         imagem.onerror = () => {
           console.error('A imagem de perfil recebida não pôde ser exibida.');
-          atualizarAvatar('');
+          atualizarAvatar(''); // Volta para o padrão se der erro no link
         };
+        
         imagem.alt = `Foto de ${user.nome || 'perfil'}`;
         imagem.src = origem;
+        
+        imagem.style.display = 'block';
         imagem.hidden = false;
-        padrao.hidden = true;
+        
+        if (padrao) {
+          padrao.style.display = 'none';
+          padrao.hidden = true;
+        }
       } else {
         imagem.removeAttribute('src');
+        imagem.style.display = 'none';
         imagem.hidden = true;
-        padrao.hidden = false;
+        
+        if (padrao) {
+          padrao.style.display = 'block';
+          padrao.hidden = false;
+        }
       }
     };
-    const carregarFotoPerfil = () => {
+    
+    window.atualizarAvatarCabecalho = atualizarAvatar;
+
+    const carregarFotoPerfil = (forcarNovo = false) => {
       if (role !== 'aluno' && role !== 'professor') return;
-      const consulta = new URLSearchParams({ email: user.email || '', versao: String(Date.now()) });
+      const versao = forcarNovo ? Date.now() : (sessionStorage.getItem('notadez_foto_versao') || Date.now());
+      if (forcarNovo) sessionStorage.setItem('notadez_foto_versao', versao);
+      
+      const consulta = new URLSearchParams({ email: user.email || '', v: versao });
       atualizarAvatar(`/api/perfis/foto?${consulta}`);
     };
-    document.addEventListener('notadez:foto-perfil-atualizada', carregarFotoPerfil);
+
+    document.addEventListener('notadez:foto-perfil-atualizada', (event) => {
+      if (event.detail && typeof event.detail.foto === 'string' && event.detail.foto.startsWith('data:image')) {
+        atualizarAvatar(event.detail.foto);
+      } else {
+        carregarFotoPerfil(true); // Força recarregar quebrando o cache
+      }
+    });
+
     if (role === 'aluno' || role === 'professor') {
       carregarFotoPerfil();
     }
+    
     const pageTitle = app.querySelector('[data-page-title]');
     if (pageTitle) pageTitle.textContent = app.dataset.title || '';
     app.querySelectorAll('[data-nav-page]').forEach(link => {
       if (link.dataset.navPage === page) link.classList.add('active');
     });
+
+    if (role === 'admin') {
+      app.querySelectorAll('.nav-admin .nav-group').forEach(group => {
+        const toggle = group.querySelector('button.nav-section-label');
+        const containsCurrentPage = Boolean(group.querySelector(`[data-nav-page="${page}"]`));
+        group.classList.toggle('is-open', containsCurrentPage);
+        toggle?.setAttribute('aria-expanded', String(containsCurrentPage));
+        toggle?.addEventListener('click', () => {
+          const isOpen = group.classList.toggle('is-open');
+          toggle.setAttribute('aria-expanded', String(isOpen));
+        });
+      });
+    }
 
     if (role === 'professor') {
       const financeLink = app.querySelector('[data-finance-nav]');
@@ -282,4 +366,81 @@ window.confirmAppAction = (message, title = 'Confirmar ação') => new Promise(r
       }
     }
   }).catch(error => console.error('Erro ao carregar componentes compartilhados:', error));
+})();
+
+
+(() => {
+  const CHAVE_ATIVIDADE = 'notadez_atividade';
+  const EVENTOS = ['pointerdown', 'pointermove', 'keydown', 'wheel', 'touchstart', 'scroll'];
+  const VERIFICAR_A_CADA = 15000;
+  const AVISO_ANTES = 60000;
+
+  const assinatura = () => (sessionStorage.getItem('notadez_token') || '').slice(-12);
+
+  function limiteDeInatividade() {
+    let usuario = null;
+    try {
+      usuario = JSON.parse(sessionStorage.getItem('notadez_user') || 'null');
+    } catch {
+      usuario = null;
+    }
+    const papel = document.querySelector('#app')?.dataset.role;
+    try {
+      const salvo = JSON.parse(localStorage.getItem(`notadez_settings_${usuario?.email || papel}`) || '{}');
+      const minutos = Number(salvo.sessionTimeout);
+      return Number.isFinite(minutos) && minutos > 0 ? minutos * 60000 : 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  function lerUltimaAtividade() {
+    const [assin, instante] = (sessionStorage.getItem(CHAVE_ATIVIDADE) || '').split(':');
+    return assin === assinatura() && Number(instante) ? Number(instante) : Date.now();
+  }
+
+  let ultima = lerUltimaAtividade();
+  let ultimoRegistro = 0;
+  let avisou = false;
+
+  function guardar() {
+    sessionStorage.setItem(CHAVE_ATIVIDADE, `${assinatura()}:${ultima}`);
+  }
+
+  function registrarAtividade() {
+    const agora = Date.now();
+    ultima = agora;
+    avisou = false;
+    if (agora - ultimoRegistro > 5000) {
+      ultimoRegistro = agora;
+      guardar();
+    }
+  }
+
+  function encerrar() {
+    sessionStorage.removeItem('notadez_user');
+    sessionStorage.removeItem('notadez_token');
+    sessionStorage.removeItem(CHAVE_ATIVIDADE);
+    window.location.replace('../../login.html?motivo=inatividade');
+  }
+
+  function verificar() {
+    if (!sessionStorage.getItem('notadez_token')) return;
+    const limite = limiteDeInatividade();
+    if (!limite) return;
+
+    const ocioso = Date.now() - ultima;
+    if (ocioso >= limite) {
+      encerrar();
+    } else if (!avisou && limite - ocioso <= AVISO_ANTES) {
+      avisou = true;
+      window.showAppMessage?.('Sua sessão será encerrada em 1 minuto por inatividade.', 'error');
+    }
+  }
+
+  if (sessionStorage.getItem('notadez_token')) guardar();
+  EVENTOS.forEach(nome => window.addEventListener(nome, registrarAtividade, { passive: true, capture: true }));
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) verificar(); });
+  window.setInterval(verificar, VERIFICAR_A_CADA);
+  verificar();
 })();

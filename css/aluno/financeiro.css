@@ -1,3 +1,4 @@
+/* Autores: Matheus Antony Lucas Lima RA:25013260 */
 .finance-host {
   padding: 0;
   background: transparent;
@@ -13,7 +14,7 @@
   gap: 14px;
 }
 .student-summary {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 .professor-summary {
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -159,12 +160,354 @@
   color: #00a875;
   font-size: 15px;
 }
+
+/* ---------- Pagamento do aluno: Pix e boleto ---------- */
+.finance-page [hidden] {
+  display: none !important;
+}
+.finance-payment {
+  display: grid;
+  gap: 16px;
+  padding: 0 16px 16px;
+}
+.finance-method-group {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.finance-method {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+.finance-method input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.finance-method-card {
+  display: grid;
+  gap: 4px;
+  height: 100%;
+  padding: 12px;
+  border: 1px solid var(--border, #e1e8f0);
+  border-radius: 7px;
+  background: var(--surface-muted, #f7f9fc);
+}
+.finance-method-card strong {
+  color: var(--text, #172033);
+  font-size: 13px;
+}
+.finance-method-card small {
+  color: var(--muted, #75849b);
+  font-size: 11px;
+  line-height: 1.4;
+}
+.finance-method:hover .finance-method-card {
+  border-color: #5145ed;
+}
+.finance-method input:checked + .finance-method-card {
+  border-color: #5145ed;
+  box-shadow: inset 0 0 0 1px #5145ed;
+  background: rgba(81, 69, 237, .07);
+}
+.finance-method input:focus-visible + .finance-method-card {
+  outline: 2px solid #5145ed;
+  outline-offset: 2px;
+}
+.finance-checkout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+}
+.finance-checkout-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin: 0;
+  font-size: 12px;
+}
+.finance-checkout-info div {
+  display: grid;
+  gap: 2px;
+}
+.finance-checkout-info dt {
+  color: var(--muted, #75849b);
+  font-size: 11px;
+}
+.finance-checkout-info dd {
+  margin: 0;
+  color: var(--text, #172033);
+  font-weight: 600;
+}
+.finance-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border: 1px solid var(--border, #e1e8f0);
+  border-radius: 7px;
+  background: var(--surface-muted, #f7f9fc);
+  color: var(--text, #34445e);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.finance-btn:hover {
+  border-color: #5145ed;
+  color: #5145ed;
+}
+.finance-btn:focus-visible {
+  outline: 2px solid #5145ed;
+  outline-offset: 2px;
+}
+.finance-btn:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+.finance-btn.is-primary {
+  padding: 10px 18px;
+  border-color: #5145ed;
+  background: #5145ed;
+  color: #fff;
+  font-size: 13px;
+}
+.finance-btn.is-primary:hover {
+  border-color: #4339d6;
+  background: #4339d6;
+  color: #fff;
+}
+.finance-btn.is-success {
+  padding: 12px 22px;
+  border-color: #00855f;
+  background: #00855f;
+  color: #fff;
+  font-size: 14px;
+}
+.finance-btn.is-success:hover {
+  border-color: #006e4f;
+  background: #006e4f;
+  color: #fff;
+}
+.finance-btn.is-small {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+.finance-output {
+  padding: 16px;
+  border: 1px dashed var(--border, #cfd8e3);
+  border-radius: 7px;
+  background: var(--surface-muted, #f7f9fc);
+}
+.finance-output h3 {
+  margin: 0 0 4px;
+  color: var(--text, #172033);
+  font-size: 14px;
+  font-weight: 650;
+}
+.finance-output p {
+  margin: 0 0 12px;
+  color: var(--muted, #596b87);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.finance-output-pix {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 20px;
+}
+.finance-qr {
+  flex: 0 0 auto;
+  width: 200px;
+  height: 200px;
+  border: 1px solid var(--border, #e1e8f0);
+  border-radius: 7px;
+  background: #fff;
+}
+.finance-output-info {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.finance-code-box {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 10px;
+  border: 1px solid var(--border, #e1e8f0);
+  border-radius: 7px;
+  background: var(--surface, #fff);
+}
+.finance-code {
+  color: var(--text, #172033);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  word-break: break-all;
+  user-select: all;
+}
+.finance-code-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.finance-copy-feedback {
+  color: #00855f;
+  font-size: 11px;
+  font-weight: 600;
+}
+.finance-note {
+  display: block;
+  color: var(--muted, #75849b);
+  font-size: 11px;
+  line-height: 1.4;
+}
+.finance-output-boleto {
+  display: grid;
+  gap: 14px;
+}
+.finance-boleto-dados {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px 20px;
+  margin: 0;
+  font-size: 12px;
+}
+.finance-boleto-dados div {
+  display: grid;
+  gap: 2px;
+}
+.finance-boleto-dados dt {
+  color: var(--muted, #75849b);
+  font-size: 11px;
+}
+.finance-boleto-dados dd {
+  margin: 0;
+  color: var(--text, #172033);
+  font-weight: 600;
+}
+.finance-barcode {
+  display: block;
+  width: 100%;
+  max-width: 640px;
+  height: 80px;
+  border: 1px solid var(--border, #e1e8f0);
+  border-radius: 4px;
+  background: #fff;
+}
+.finance-validate {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.finance-validate small {
+  max-width: 44ch;
+  color: var(--muted, #75849b);
+  font-size: 11px;
+  line-height: 1.4;
+}
+.finance-success {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid #00855f;
+  border-radius: 7px;
+  background: rgba(0, 168, 117, .1);
+}
+.finance-success-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #00855f;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+}
+.finance-success-text {
+  display: grid;
+  flex: 1 1 240px;
+  gap: 2px;
+  min-width: 0;
+}
+.finance-success-text strong {
+  color: var(--text, #172033);
+  font-size: 14px;
+}
+.finance-success-text p {
+  margin: 0;
+  color: var(--text, #34445e);
+  font-size: 12px;
+}
+.finance-success-text small {
+  color: var(--muted, #75849b);
+  font-size: 11px;
+}
+.finance-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.finance-badge.is-paid {
+  background: #00855f;
+  color: #fff;
+}
+.finance-badge.is-open {
+  background: #5145ed;
+  color: #fff;
+}
+.finance-badge.is-overdue {
+  background: #c93a3a;
+  color: #fff;
+}
+.finance-badge.is-upcoming {
+  border: 1px solid var(--border, #d6deea);
+  background: var(--surface-muted, #f7f9fc);
+  color: var(--muted, #596b87);
+}
+.finance-paid-info {
+  color: var(--muted, #75849b);
+  font-size: 12px;
+}
+
 body.theme-dark .finance-summary, body.theme-dark .finance-panel {
   background: var(--surface, #1c2433);
   border-color: var(--border, #303a4a);
 }
 body.theme-dark .payment-options button, body.theme-dark .finance-table-wrap th {
   background: var(--surface-muted, #242e3e);
+}
+body.theme-dark .finance-method-card, body.theme-dark .finance-output, body.theme-dark .finance-badge.is-upcoming, body.theme-dark .finance-btn:not(.is-primary):not(.is-success) {
+  border-color: var(--border, #303a4a);
+  background: var(--surface-muted, #242e3e);
+}
+body.theme-dark .finance-code-box {
+  border-color: var(--border, #303a4a);
+  background: var(--surface, #1c2433);
+}
+body.theme-dark .finance-method input:checked + .finance-method-card {
+  border-color: #5145ed;
+  background: rgba(81, 69, 237, .18);
+}
+body.theme-dark .finance-success {
+  border-color: #00a875;
+  background: rgba(0, 168, 117, .16);
 }
 @media (max-width: 900px) {
   .professor-finance-grid {
@@ -174,5 +517,18 @@ body.theme-dark .payment-options button, body.theme-dark .finance-table-wrap th 
 @media (max-width: 640px) {
   .student-summary, .professor-summary, .payment-options {
     grid-template-columns: 1fr;
+  }
+  .finance-method-group {
+    grid-template-columns: 1fr;
+  }
+  .finance-checkout .finance-btn, .finance-validate .finance-btn {
+    width: 100%;
+  }
+  .finance-qr {
+    width: 100%;
+    max-width: 240px;
+    height: auto;
+    aspect-ratio: 1;
+    margin-inline: auto;
   }
 }

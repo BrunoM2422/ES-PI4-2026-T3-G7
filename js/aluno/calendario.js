@@ -1,3 +1,5 @@
+// Autores:
+// Nícolas Mitjans Nunes - 25005124
 (() => {
   const host = document.querySelector('#app .calendar-host');
   const cloneTemplate = id => document.getElementById(id).content.cloneNode(true);

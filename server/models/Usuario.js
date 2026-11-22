@@ -1,3 +1,5 @@
+// Autores:
+// Gabriel Scolfaro de Azeredo - 25006194
 const mongoose = require('mongoose');
 
 const usuarioSchema = new mongoose.Schema({
@@ -11,6 +13,7 @@ const usuarioSchema = new mongoose.Schema({
     enum: ['admin_mestre', 'admin_2', 'admin_3'],
     default: 'admin_mestre'
   },
+  cursoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Curso', default: null },
   passwordResetCodeHash: { type: String, select: false },
   passwordResetExpiresAt: { type: Date, select: false },
   passwordResetAttempts: { type: Number, default: 0, select: false },

@@ -1,3 +1,4 @@
+// Autores:
 const nodemailer = require('nodemailer');
 
 function escaparHtml(valor) {

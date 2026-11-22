@@ -1,12 +1,12 @@
-package server.cliente_servidor.cliente;
+//Autor Matheus Antony Lucas Lima RA:25013260
+
+package server.cliente_servidor;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.concurrent.Semaphore;
-
-import server.cliente_servidor.Comunicado;
 
 public class Parceiro
 {

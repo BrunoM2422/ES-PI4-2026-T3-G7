@@ -1,5 +1,9 @@
+// Autores: Matheus Antony Lucas Lima RA:25013260
 package server.cliente_servidor.cliente;
 import java.net.*;
+
+import server.cliente_servidor.ComunicadoDeDesligamento;
+import server.cliente_servidor.Parceiro;
 
 public class TratadoraDeComunicadoDeDesligamento extends Thread
 {

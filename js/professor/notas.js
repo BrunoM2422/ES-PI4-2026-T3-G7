@@ -1,4 +1,4 @@
-// Autores:
+// Autores: Luca Filippi — RA: 25022556
 // Nícolas Mitjans Nunes - 25005124
 document.addEventListener('DOMContentLoaded', async () => {
   const cards = document.querySelector('[data-grade-cards]'); const count = document.querySelector('[data-grade-count]'); const detail = document.querySelector('[data-grade-detail]');
@@ -138,25 +138,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       }));
       save.addEventListener('click', async () => { save.disabled = true; saveFeedback.className = 'grades-save-feedback'; saveFeedback.textContent = 'Salvando notas...';
         const notas = [...roster.querySelectorAll('.grade-value-input')].map(input => ({ alunoId: input.dataset.alunoId, componenteId: input.dataset.componenteId, valor: input.value === '' ? null : Number(input.value) }));
-        try {
-          const response = await fetch(`${url}/notas`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ notas }) });
-          const result = await response.json();
-          if (!response.ok) throw new Error(result.mensagem || 'Não foi possível salvar notas.');
-          save.classList.add('is-saved');
-          save.textContent = 'Salvo ✓';
-          saveFeedback.className = 'grades-save-feedback';
-          if (result.avisoLog) {
-            saveFeedback.textContent = result.avisoLog;
-          } else if (result.alteracoes === 0) {
-            saveFeedback.textContent = 'Nenhuma nota foi alterada.';
-          } else if (result.alteracoes > 0) {
-            saveFeedback.classList.add('is-success');
-            saveFeedback.textContent = 'Notas salvas e lançamento registrado em Logs.';
-          } else {
-            saveFeedback.textContent = 'Notas salvas. Esta versão do servidor não confirma o registro em Logs.';
-          }
-          await atualizarMedias();
-        }
+        try { const response = await fetch(`${url}/notas`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ notas }) }); const result = await response.json(); if (!response.ok) throw new Error(result.mensagem || 'Não foi possível salvar notas.'); saveFeedback.className = 'grades-save-feedback is-success'; saveFeedback.textContent = '✓ Notas salvas com sucesso'; save.classList.add('is-saved'); save.textContent = 'Salvo ✓';
+          await atualizarMedias(); }
         catch (error) { saveFeedback.className = 'grades-save-feedback is-error'; saveFeedback.textContent = error.message || 'Não foi possível salvar notas.'; } finally { save.disabled = false; }
       });
     }

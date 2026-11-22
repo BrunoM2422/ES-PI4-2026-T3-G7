@@ -1,3 +1,4 @@
+// Autores:
 document.addEventListener('DOMContentLoaded', async () => {
   const root = document.querySelector('#class-organization-content');
   const params = new URLSearchParams(location.search);
@@ -70,8 +71,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           const turma = turmaDaAula(aula);
           const associacao = turma ? atribuicoes(turma, aula)[0] : null;
           const turmaId = turma?.id || aula.turmaId;
+          const codigoTurma = window.formatarCodigoTurmaDisciplina(turma?.codigo || aula.turmaCodigo, aula.disciplinaCodigo);
           const assignmentsMarkup = turmaId
-            ? `<span class="schedule-class-assignment">${escapar(turma?.codigo || aula.turmaCodigo || 'Turma associada')}<button type="button" data-unassign="${escapar(turmaId)}" data-grade="${escapar(associacao?.gradeHorarioId || grade.id)}" data-aula="${escapar(associacao?.aulaId || aula.id)}" aria-label="Desassociar turma">×</button></span>`
+            ? `<span class="schedule-class-assignment">${escapar(codigoTurma || 'Turma associada')}<button type="button" data-unassign="${escapar(turmaId)}" data-grade="${escapar(associacao?.gradeHorarioId || grade.id)}" data-aula="${escapar(associacao?.aulaId || aula.id)}" aria-label="Desassociar turma">×</button></span>`
             : '';
           const dropMarkup = turmaId ? '' : '<span class="schedule-class-drop">Solte a turma aqui</span>';
           return `<article class="schedule-lesson schedule-class-target${turmaId ? ' is-assigned' : ''}" data-lesson="${escapar(aula.id)}"><strong>${escapar(aula.disciplinaNome)}</strong><small>${escapar(aula.disciplinaCodigo)} · ${escapar(aula.docenteNome)}</small><div class="schedule-class-assignments">${assignmentsMarkup}</div>${dropMarkup}</article>`;

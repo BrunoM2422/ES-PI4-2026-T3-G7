@@ -1,0 +1,49 @@
+/* Autores: */
+.evaluation-heading { margin: 0 0 22px; }
+.evaluation-heading h2 { margin: 7px 0 5px; color: #26334a; font-size: 24px; }
+.evaluation-heading p { margin: 0; color: #71809b; font-size: 13px; }
+.student-page-eyebrow { color: var(--primary); font-size: 10px; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; }
+.evaluation-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(min(100%,300px),1fr)); gap: 12px; }
+.evaluation-card { display: flex; min-width: 0; align-items: center; gap: 14px; padding: 15px; border: 1px solid var(--line); border-radius: 13px; background: #fff; color: var(--ink); text-align: left; cursor: pointer; transition: border-color .15s,transform .15s,box-shadow .15s; }
+.evaluation-card:hover { transform: translateY(-2px); border-color: #c7c3ff; box-shadow: 0 8px 20px rgb(31 42 68 / 8%); }
+.evaluation-avatar { display: grid; width: 52px; height: 52px; flex: 0 0 52px; overflow: hidden; place-items: center; border-radius: 50%; background: var(--primary-soft); color: var(--primary); font-size: 19px; font-weight: 750; }
+.evaluation-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.evaluation-card-copy { display: grid; min-width: 0; flex: 1; gap: 5px; }
+.evaluation-card-copy strong { color: #26334a; font-size: 13px; }
+.evaluation-card-copy small { overflow: hidden; color: #78869c; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.evaluation-card-arrow { color: #8882e9; font-size: 26px; }
+.evaluation-empty { display: grid; min-height: 200px; justify-items: center; align-content: center; gap: 10px; padding: 28px; border: 1px dashed var(--line); border-radius: 14px; color: #71809b; text-align: center; }
+.evaluation-empty > span { color: var(--primary); font-size: 32px; }
+.evaluation-empty strong { color: #35435a; font-size: 14px; }
+.evaluation-empty p { max-width: 420px; margin: 0; font-size: 12px; line-height: 1.55; }
+.evaluation-status { min-height: 18px; margin: 12px 0 0; color: #16824f; font-size: 12px; }
+.evaluation-backdrop { position: fixed; z-index: 50; inset: 0; display: grid; place-items: center; overflow-y: auto; padding: 20px; background: rgb(18 25 40 / 58%); }
+.evaluation-modal { position: relative; width: min(100%,650px); max-height: calc(100vh - 40px); overflow-y: auto; padding: 28px; border: 1px solid var(--line); border-radius: 18px; background: #fff; box-shadow: 0 24px 70px rgb(12 20 36 / 28%); }
+.evaluation-close { position: absolute; top: 12px; right: 14px; display: grid; width: 36px; height: 36px; place-items: center; border: 0; border-radius: 9px; background: transparent; color: #71809b; font-size: 24px; cursor: pointer; }
+.evaluation-close:hover { background: #f2f3f8; }
+.evaluation-teacher { display: flex; align-items: center; gap: 15px; padding-right: 36px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.evaluation-avatar-large { width: 68px; height: 68px; flex-basis: 68px; }
+.evaluation-teacher h2 { margin: 4px 0; color: #26334a; font-size: 19px; }
+.evaluation-teacher p { margin: 0; color: #71809b; font-size: 12px; line-height: 1.5; }
+.evaluation-categories { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; margin: 20px 0; }
+.evaluation-category { min-width: 0; margin: 0; padding: 13px 10px; border: 1px solid var(--line); border-radius: 11px; text-align: center; }
+.evaluation-category legend { padding: 0 5px; color: #35435a; font-size: 12px; font-weight: 700; }
+.evaluation-stars { display: flex; justify-content: center; gap: 1px; }
+.evaluation-star { padding: 1px; border: 0; background: none; color: #d7dbe4; font-size: 24px; cursor: pointer; }
+.evaluation-star.is-selected { color: #f3ad2f; }
+.evaluation-zero { padding: 0 5px; border: 0; background: none; color: #78869c; font-size: 11px; cursor: pointer; }
+.evaluation-star:focus-visible { outline: 2px solid var(--primary); border-radius: 4px; }
+.evaluation-category small { display: block; margin-top: 4px; color: #8a95a7; font-size: 9px; line-height: 1.35; }
+.evaluation-comment-label { display: block; margin-bottom: 7px; color: #35435a; font-size: 12px; font-weight: 700; }
+.evaluation-comment { width: 100%; min-height: 105px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); font: inherit; font-size: 12px; resize: vertical; }
+.evaluation-comment:focus { outline: 2px solid rgb(81 70 238 / 22%); border-color: var(--primary); }
+.evaluation-modal-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
+.evaluation-demo-note { max-width: 260px; color: #8a95a7; font-size: 10px; line-height: 1.4; }
+.evaluation-submit { display: inline-flex; min-height: 46px; align-items: center; justify-content: center; gap: 9px; padding: 0 22px; border: 1px solid #5146ce; border-radius: 10px; background: linear-gradient(135deg, #6b63e8, #5146ce); color: #fff; font-size: 12px; font-weight: 750; letter-spacing: .01em; box-shadow: 0 7px 16px rgb(81 70 206 / 24%); cursor: pointer; transition: transform .16s, box-shadow .16s, filter .16s; }
+.evaluation-submit::before { content: "\2713"; display: grid; width: 20px; height: 20px; place-items: center; border: 1px solid rgb(255 255 255 / 38%); border-radius: 50%; font-size: 12px; }
+.evaluation-submit:hover { transform: translateY(-1px); filter: brightness(1.05); box-shadow: 0 10px 22px rgb(81 70 206 / 30%); }
+.evaluation-submit:active { transform: translateY(0); }
+.evaluation-submit:focus-visible { outline: 3px solid #bcb8ff; outline-offset: 3px; }
+body.theme-dark .evaluation-card, body.theme-dark .evaluation-modal, body.theme-dark .evaluation-category { background: #202735; color: var(--ink); }
+body.theme-dark .evaluation-card-copy strong, body.theme-dark .evaluation-heading h2, body.theme-dark .evaluation-teacher h2, body.theme-dark .evaluation-category legend { color: var(--ink); }
+@media (max-width: 540px) { .evaluation-modal { padding: 22px 16px; } .evaluation-categories { grid-template-columns: 1fr; } .evaluation-category { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 10px; } .evaluation-category legend { float: left; } .evaluation-category small { display: none; } .evaluation-modal-footer { align-items: stretch; flex-direction: column; } .evaluation-submit { width: 100%; } }

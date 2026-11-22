@@ -1,8 +1,7 @@
-// Autores:
+// Autores: Luca Filippi — RA: 25022556
 const express = require('express');
 const mongoose = require('mongoose');
 const { autenticar } = require('../services/autenticacao');
-const { responderComLog } = require('../services/logs');
 const Docente = require('../models/Docente');
 const Turma = require('../models/Turma');
 const Estudante = require('../models/Estudante');

@@ -1,3 +1,5 @@
+// Autores:
+// Gabriel Scolfaro de Azeredo - 25006194
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const Usuario = require('../models/Usuario');
