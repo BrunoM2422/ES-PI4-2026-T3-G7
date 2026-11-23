@@ -4,6 +4,7 @@
 
 | Data | Autor | Versão | Comentários |
 | :---: | :--- | :---: | :--- |
+| 22/11/2026 | Gabriel Scolfaro | 1.0.0-alfa3 | Versão atualizada |
 | 18/11/2026 | Gabriel Scolfaro | 1.0.0-alfa2 | Versão inicial completa do dicionário. |
 | 18/11/2026 | Gabriel Scolfaro | 1.0.0-alfa1 | Versão inicial do dicionário. |
 
@@ -17,14 +18,15 @@ Pessoa com credenciais de acesso e um ou mais papéis no sistema. Os perfis de e
 | :--- | :--- | :---: | :---: | :--- | :--- | :--- |
 | Identificador | ObjectId | Sim | Simples | Identificador MongoDB | Identificador malformado | Identidade do usuário. |
 | E-mail | Texto | Sim | Simples | `aluno@exemplo.edu.br` | Vazio ou malformado | Único, normalizado em minúsculas. Usado no acesso. |
-| Senha | Texto protegido | Sim | Simples | Hash bcrypt | Senha em texto puro | O documento armazena hash e senha original(somente pro admin); entrada deve ter ao menos 6 caracteres. |
+| Senha | Texto protegido | Sim | Simples | Hash bcrypt | Senha em texto puro | O documento armazena hash bcrypt; a senha original não deve ser persistida. |
 | Nome | Texto | Sim | Simples | `Ana Souza` | Vazio | Nome exibido no sistema. |
 | Papéis | Lista de texto | Sim | M | `estudante`, `docente`, `admin` | Papel fora da lista | Um usuário pode acumular papéis. |
-| Nível de permissão | Texto enumerado | Não | Simples | `admin_mestre`, `admin_2`, `admin_3` | Valor fora da lista | Aplicável ao controle de permissões administrativas; padrão `admin_mestre`. |
+| Nível de permissão | Texto enumerado | Não | Simples | `admin_mestre`, `admin_2`, `admin_3` | Valor fora da lista | `admin_mestre`: administração global; `admin_2`: coordenador restrito a um curso e exige `cursoId`; `admin_3`: atendimento ao aluno, com acesso administrativo limitado. Padrão `admin_mestre`. |
 | Telefone | Texto | Não | Simples | DDD e número | Texto sem número útil | Contato; mantido como texto para preservar formatação. |
 | Preferência financeira | Booleano | Não | Simples | `true`, `false` | `sim` | `showFinanceiro`; indica exibição da área financeira. Padrão `true`. |
-| RA / RP | Texto | Não | Simples | `E2026001`, `P20261` | Identificador incompatível com o perfil | RA identifica estudante e RP docente; não existe para administradores. |
-| Dados temporários de recuperação | Hash, data e número | Não | C | Hash de código e data de expiração | Código de recuperação em texto puro | Campos de recuperação de senha são internos|
+| RA / RP | Texto | Não | Simples | `E2026001`, `P20261` | Identificador incompatível com o perfil | RA identifica estudante e RP docente; normalmente ausentes em contas apenas administrativas. |
+| Curso associado | ObjectId | Não | Simples | Referência a `cursos` ou `null` | Curso inválido | `cursoId` delimita o escopo do administrador `admin_2`; para outros níveis fica nulo. |
+| Dados temporários de recuperação | Hash, data e número | Não | C | Hash de código e data de expiração | Código de recuperação em texto puro | Campos internos de recuperação podem ser ocultados nas consultas; tentativas têm padrão zero. |
 
 ### 2.2. Estudante
 
@@ -188,8 +190,8 @@ Evento exibido no calendário, podendo ser global, associado a uma turma ou priv
 | :--- | :--- | :---: | :---: | :--- | :--- | :--- |
 | Título e data | Texto | Sim | Simples | Título até 90; `AAAA-MM-DD` | Data fora do padrão | A data é armazenada como texto. |
 | Categoria | Texto enumerado | Sim | Simples | `feriado`, `institucional`, `aula`, `atividade`, `avaliacao`, `compromisso` | Valor fora da lista | Classificação do evento. |
-| Escopo | Texto enumerado | Sim | Simples | `global`, `turma`, `privado` | Outro valor | Padrão `privado`. |
-| Criador e turma | ObjectId | Não | Simples | Referências a usuário/turma ou nulo | ObjectId malformado | `createdBy` e `turmaId`; turma pode ser nula. |
+| Escopo | Texto enumerado | Sim | Simples | `global`, `curso`, `turma`, `privado` | Outro valor | Padrão `privado`; eventos de coordenador podem ser limitados ao curso. |
+| Criador, curso, turma e disciplina | ObjectId | Não | Simples | Referências válidas ou nulo | ObjectId malformado | `createdBy`, `cursoId`, `turmaId` e `disciplinaId`; vínculos dependem do escopo do evento. |
 | Horário, local e descrição | Texto | Não | Simples | Horário, local até 100, descrição até 400 | Texto além do limite | `start` e `end` têm padrão vazio. |
 | Chave legada | Texto | Não | Simples | Chave única ou ausente | Chave duplicada | `legacyKey` é opcional, única quando presente e ocultada nas consultas padrão. |
 | Datas de criação e alteração | Data/hora | Geradas | Simples | Data/hora ISO | — | Timestamps |
@@ -224,6 +226,29 @@ Armazena um contador sequencial usado ajudar com a geração dos RAs de estudant
 | :--- | :--- | :---: | :---: | :--- | :--- | :--- |
 | Chave do contador | Texto | Sim | Simples | `ra-estudante-2026` | Vazia | É o próprio `_id` do documento. |
 | Valor | Número inteiro | Sim | Simples | Inteiro igual ou maior que zero | Negativo | Incrementado para emitir o próximo identificador. |
+
+### 2.18. Média de nota
+
+Resultado calculado para um estudante em uma disciplina de uma turma. A média é calculada pelo serviço Java e persistida para consulta posterior, inclusive quando o serviço estiver indisponível.
+
+| Atributo / dado | Tipo conceitual | Obrigatório | Característica | Ex. aceitos | Ex. não aceitos | Comentários |
+| :--- | :--- | :---: | :---: | :--- | :--- | :--- |
+| Estudante, turma e disciplina | Referências | Sim | Simples | ObjectIds existentes | Referências inválidas | A combinação estudante/turma/disciplina é única. |
+| Tipo de média | Texto enumerado | Sim | Simples | `aritmetica`, `ponderada` | Outro valor | Método usado no cálculo. |
+| Média | Número | Sim | Simples | 0 a 100 | Menor que 0 ou maior que 100 | Valor calculado. |
+| Desatualizada | Booleano | Não | Simples | `true`, `false` | Texto | Indica se notas/componentes mudaram desde o último cálculo; padrão `false`. |
+| Data do cálculo | Data/hora | Não | Simples | Data/hora válida | Texto arbitrário | `calculadaEm`, padrão atual. |
+| Datas de criação e alteração | Data/hora | Geradas | Simples | Data/hora ISO | — | Timestamps do Mongoose. |
+
+### 2.19. Prédio
+
+Prédio de uma unidade acadêmica que contém salas utilizadas na organização dos horários.
+
+| Atributo / dado | Tipo conceitual | Obrigatório | Característica | Ex. aceitos | Ex. não aceitos | Comentários |
+| :--- | :--- | :---: | :---: | :--- | :--- | :--- |
+| Identificador | ObjectId | Sim | Simples | Identificador MongoDB | — | Identificador do prédio. |
+| Nome e chave | Texto | Sim | Simples | Nome até 80 caracteres e chave normalizada | Nome vazio ou acima do limite | A chave é única e usada para evitar duplicidade de prédio. |
+| Salas | Lista de salas | Não | MC | Nome até 80 caracteres e chave | Nome vazio ou acima do limite | Cada sala é embutida no prédio; a aplicação evita duplicidade de chave dentro do prédio. |
 
 ## 3. Tipos especiais, compostos ou específicos
 
@@ -271,6 +296,8 @@ As duas estruturas representam a alocação de uma disciplina em dia e hora. A g
 | gradeHorarioId | ObjectId | Em horário de turma | Referência à grade de origem. |
 | aulaId | ObjectId | Sim | Identificador da aula dentro da grade. |
 | disciplinaId, docenteId | ObjectId | Sim | Disciplina ministrada e responsável. |
+| salaId | ObjectId | Não | Referência à sala embutida em um documento de `predios`. |
+| local | Texto | Não | Rótulo do local apresentado, por exemplo prédio e sala. |
 | turmaId | ObjectId | Em aula de grade, pode ser nulo | Turma associada à aula. |
 | dia | Número inteiro | Sim | Dia da semana de 0 a 6. |
 | hora | Número inteiro | Sim | Hora entre 7 e 22. |
@@ -311,23 +338,25 @@ O projeto usa MongoDB por meio do Mongoose. Os nomes abaixo correspondem às col
 
 | Entidade conceitual | Coleção | Estratégia |
 | :--- | :--- | :--- |
-| Usuário | `usuarios` | Documento próprio; perfil e credenciais de acesso. |
+| Usuário | `usuarios` | Documento próprio; credenciais e papéis. Administradores coordenadores (`admin_2`) também guardam `cursoId`; outros níveis mantêm o campo nulo. |
 | Estudante | `estudantes` | Documento próprio; embute resumo do curso, instituição, trancamento e matrículas na grade; referencia curso/turma. |
 | Docente | `docentes` | Documento próprio; embute instituição. |
 | Curso | `cursos` | Documento próprio, referenciado por disciplinas, turmas e grades. |
 | Disciplina | `disciplinas` | Documento próprio; referencia curso; equivalências em array de códigos. |
-| Turma | `turmas` | Documento próprio; referencia curso e estudantes; embute horários. |
+| Turma | `turmas` | Documento próprio; referencia curso e estudantes; embute horários e referências às salas. Mantém `reservasSala` derivado para impedir conflitos de sala/horário. |
 | Grade de horário | `grades_horarios` | Documento próprio; embute aulas e referencia curso, turma, disciplina e docente. |
 | Frequência | `frequencias` | Documento próprio por turma/aula/data; embute registros de presença. |
 | Componente de nota | `componentes_notas` | Documento próprio; referencia turma, disciplina e docente. |
 | Configuração de nota | `configuracoes_notas` | Documento próprio por turma/disciplina; referencia docente. |
 | Nota | `notas` | Documento próprio; referencia estudante, turma, disciplina e componente. |
+| Média de nota | `medias_notas` | Documento próprio; guarda média calculada, estado de atualização e data do cálculo; referencia estudante, turma e disciplina. |
 | Chamado | `chamados` | Documento próprio; embute histórico de mensagens e dados do solicitante. |
 | Notificação | `notificacoes` | Documento próprio por destinatário; referencia estudante, turma e docente. |
-| Evento | `eventos` | Documento próprio; referencia criador e turma. |
+| Evento | `eventos` | Documento próprio; referencia criador, curso, turma e/ou disciplina conforme o escopo; escopo pode ser global, curso, turma ou privado. |
 | Log de auditoria | `LOGs` | Documento próprio; referencia usuário e indexa autor/data. O nome está capitalizado assim no model. |
 | Opções do sistema | `opcoes_sistema` | Documento de configuração; listas de cursos liberados guardam ObjectIds. |
 | Contador | `contadores` | Documento próprio com `_id` textual e valor numérico. |
+| Prédio | `predios` | Documento próprio; embute as salas e suas chaves. `salaId` nas turmas referencia o `_id` do subdocumento da sala. |
 
 #### Exemplo de documento da coleção `estudantes`
 
@@ -377,7 +406,7 @@ O projeto usa MongoDB por meio do Mongoose. Os nomes abaixo correspondem às col
         "$oid": "6afcd10e02db8dbd35db5aec"
       }
     }
-  ],
+  ]
 }
 ```
 
@@ -435,16 +464,19 @@ Entidades consultadas e atualizadas de forma independente, como estudantes, doce
 | `estudantes` | `ra`, `email` | Únicos quando existentes; email obrigatório. |
 | `docentes` | `rp`, `email` | Únicos quando informados; email obrigatório. |
 | `cursos` | `codigo` | Único. |
-| `disciplinas` | `cursoId + codigo` , `equivale_para` | Índice composto único; Único. |
+| `disciplinas` | `cursoId + codigo`; `equivale_para` | Índice composto único para curso/código; índice multikey simples para equivalências (não único). |
 | `turmas` | `codigo` | Único. |
+| `turmas` | `reservasSala` | Índice único esparso; valores derivados de sala/dia/hora para impedir conflito de reserva. |
 | `grades_horarios` | `cursoId + semestre` | Índice composto único. |
 | `frequencias` | `turmaId + aulaId + data` | Índice composto único, evita duplicar chamada para a mesma aula/data. |
 | `componentes_notas` | `turmaId + disciplinaId + titulo` | Índice composto único. |
 | `configuracoes_notas` | `turmaId + disciplinaId` | Índice composto único. |
 | `notas` | `alunoId + componenteId` | Índice composto único. |
+| `medias_notas` | `alunoId + turmaId + disciplinaId`; `turmaId + disciplinaId` | Primeiro composto único; segundo composto para consultas por turma/disciplina. |
 | `notificacoes` | `alunoId + createdAt` | Ordenação das notificações mais recentes; `alunoId + chave` único parcial quando chave é textual. |
-| `eventos` | `legacyKey` | Único e esparso. |
+| `eventos` | `legacyKey`; `cursoId`; `scope + turmaId + disciplinaId + date` | `legacyKey` único esparso; índice simples em curso; índice composto para filtrar calendário por escopo, turma/disciplina e data. |
 | `LOGs` | `usuarioId + dataHora` | Apoia histórico de auditoria por usuário, em ordem decrescente de data. |
+| `predios` | `chave` | Único; evita prédios duplicados. |
 
 ### 4.2. Tipos físicos usados
 
@@ -455,8 +487,8 @@ Entidades consultadas e atualizadas de forma independente, como estudantes, doce
 | `Number` | Valores de notas, pesos, duração, vagas, horas e contadores. |
 | `Boolean` | Preferências, estados de presença e opções de sistema. |
 | `Date` | Timestamps, datas de aplicação, expiração e eventos com data/hora. |
-| Array de tipos/subdocumentos | Papéis, estudantes, equivalências, horários, aulas, presenças, mensagens e listas de cursos. |
-| Subdocumento | Dados compostos embutidos em perfil, turma, grade, frequência ou chamado. |
+| Array de tipos/subdocumentos | Papéis, estudantes, equivalências, horários, aulas, presenças, mensagens, salas e listas de cursos. |
+| Subdocumento | Dados compostos embutidos em perfil, turma, grade, frequência, chamado ou prédio. |
 
 ## 5. Consultas, índices e observações de arquitetura
 
@@ -472,10 +504,12 @@ Entidades consultadas e atualizadas de forma independente, como estudantes, doce
 | Consultar matrícula do estudante | `estudantes.gradeMatriculas.turmaId`, `disciplinaId` | Considerar índices multikey conforme volume | `alunosIds` da turma também é consultado; manter os dois lados coerentes. |
 | Registrar/listar frequência | `turmaId`, `aulaId`, `data` | Composto único existente | Registros de presença ficam embutidos no documento da chamada. |
 | Listar notas do aluno/componente | `notas.alunoId`, `componenteId` | Composto único existente | Uma nota por estudante e componente. |
+| Consultar médias por aluno ou turma/disciplina | `medias_notas.alunoId`, `turmaId`, `disciplinaId` | Ambos compostos existentes | A média persistida pode estar marcada como desatualizada. |
 | Listar componentes/configuração de nota | `turmaId`, `disciplinaId` | Compostos únicos existentes | Configuração única por turma/disciplina; títulos únicos entre componentes desse contexto. |
 | Buscar chamados por solicitante/status | `ra`, `email`, `status` | Avaliar índices conforme volume | Coleção não declara índices específicos no schema atual. |
 | Listar notificações recentes do aluno | `alunoId`, `createdAt` | Composto existente | Limitada às notificações do destinatário. |
-| Consultar eventos por data, escopo ou turma | `date`, `scope`, `turmaId` | Avaliar índice composto conforme filtros reais | O schema declara índice apenas para `legacyKey`. |
+| Consultar eventos por data, escopo, curso, turma ou disciplina | `date`, `scope`, `cursoId`, `turmaId`, `disciplinaId` | Índice composto de calendário e índice de `cursoId` existentes | O schema também mantém índice único esparso para `legacyKey`. |
+| Listar prédios/salas e verificar disponibilidade | `predios.nome`, `predios.salas`; `turmas.reservasSala` | Único em `predios.chave`; único esparso em `turmas.reservasSala` | Salas ficam embutidas; reservas são derivadas dos horários de turma. |
 | Consultar auditoria de usuário | `usuarioId`, `dataHora` | Composto existente, data descendente | Índice declarado em `LOGs`. |
 | Carregar configurações acadêmicas | `_id` | Chave primária | Documento de chave fixa `opcoes-academicas`. |
 | Obter próximo RA | `contadores._id`, `valor` | Chave primária textual | Incremento atômico do contador. |
@@ -485,7 +519,9 @@ Entidades consultadas e atualizadas de forma independente, como estudantes, doce
 - As regras de validação descritas derivam principalmente dos schemas Mongoose e das rotas da aplicação.
 - Campos opcionais com valor ausente não são necessariamente persistidos como `null`; a presença depende do fluxo de gravação e dos valores padrão do schema.
 - O exemplo fornecido para `usuarios` mostra `showFinanceiro`, `nivelPermissao`, `ra`/`rp` e hashes de senha. Nenhum hash ou senha de exemplo deve ser reutilizado como credencial em documentação pública.
-- A coleção de notas foi indicada como sujeita a ajuste. Sua documentação aqui descreve o schema atual (`alunoId`, `turmaId`, `disciplinaId`, `componenteId`, `valor`); alterações futuras no modelo exigirão revisão desta seção.
+- A coleção `notas` segue o schema atual (`alunoId`, `turmaId`, `disciplinaId`, `componenteId`, `valor`).
 - O campo `data` de frequência e `date` de evento é texto `AAAA-MM-DD`; já timestamps e datas como `dataAplicacao` são BSON Date. Não tratar os dois formatos como equivalentes na persistência.
+- A coleção `medias_notas` guarda um cache persistido do cálculo. `desatualizada: true` significa que notas ou componentes mudaram depois da última média calculada; a média pode continuar sendo mostrada como último valor salvo.
+- `admin_2` representa coordenador de um curso e deve ter `cursoId`; `admin_3` representa atendimento ao aluno, sem `cursoId`; `admin_mestre` tem administração global. O enum do model permite os três níveis, e as rotas aplicam os limites de acesso.
 - As referências `ref` do Mongoose não criam, por si só, integridade referencial automática no MongoDB. A aplicação deve garantir que as entidades relacionadas existam e que exclusões/alterações não deixem referências incoerentes.
 - Os índices adicionais sugeridos na tabela 5.1 devem ser avaliados com dados.
