@@ -10,7 +10,7 @@ async function conectarBanco() {
 
   // Define a URI de conexão e o nome do banco de dados utilizado.
   await mongoose.connect(process.env.MONGODB_URI, {
-    dbName: 'NotaDez2'
+    dbName: 'NotaDez3'
   });
 
   // Confirma que a conexão com o banco foi estabelecida.
