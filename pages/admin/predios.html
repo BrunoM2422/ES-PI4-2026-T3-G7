@@ -4,20 +4,20 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Prédios e salas | NotaDez</title>
-  <link rel="stylesheet" href="../../css/shared/style.css"><link rel="stylesheet" href="../../css/admin/paginas.css">
+  <link rel="stylesheet" href="../../css/shared/style.css"><link rel="stylesheet" href="../../css/admin/paginas.css"><link rel="stylesheet" href="../../css/admin/predios.css">
 </head>
 <body>
 <div id="app" data-page="predios" data-role="admin" data-title="Prédios e salas"><div class="shell">
   <aside class="side" data-component="sidebar"></aside>
   <main class="main"><div data-component="header"></div><section class="content"><article class="admin-page">
-    <div class="admin-page-intro"><span class="admin-eyebrow">Planejamento acadêmico</span><h2>Prédios e salas</h2></div>
-    <form id="cadastro" class="admin-form-card"><div class="admin-form-body">
-      <label class="schedule-search">Cadastrar<select id="tipo"><option value="predio">Prédio</option><option value="sala">Sala</option></select></label>
+    <div class="admin-page-intro predios-intro"><span class="admin-eyebrow">Planejamento acadêmico</span><h2>Prédios e salas</h2><p>Organize os espaços do campus para facilitar a montagem dos horários das turmas.</p></div>
+    <form id="cadastro" class="admin-form-card predios-create-card"><div class="admin-card-heading"><span class="admin-card-icon" aria-hidden="true">⌂</span><div><h3>Novo espaço</h3><p>Cadastre um prédio ou adicione uma sala a um prédio existente.</p></div></div><div class="admin-form-body predios-create-fields">
+      <label class="schedule-search">O que deseja cadastrar?<select id="tipo"><option value="predio">Prédio</option><option value="sala">Sala</option></select></label>
       <label class="schedule-search" id="campo-predio" hidden>Prédio<select id="predio" disabled></select></label>
       <label class="schedule-search"><span id="rotulo">Nome do prédio</span><input id="nome" required maxlength="80" placeholder="Ex.: H-15"></label>
-      <button class="admin-button">Cadastrar</button><p id="status" role="status"></p>
+      <button class="admin-button">Cadastrar espaço <span aria-hidden="true">→</span></button><p id="status" role="status" aria-live="polite"></p>
     </div></form>
-    <section class="admin-form-card" data-importacao-csv="predios">
+    <section class="admin-form-card predios-import-card" data-importacao-csv="predios">
       <div class="admin-card-heading"><div><h3>Importar prédios e salas por CSV</h3>
         <p>Use uma linha por sala e repita o nome do prédio. Deixe a sala vazia para cadastrar apenas o prédio.</p></div></div>
       <div class="admin-form-body">
@@ -27,7 +27,7 @@
         <button class="admin-button" type="button" disabled>Importar registros válidos</button>
       </div>
     </section>
-    <section class="admin-form-card"><div class="admin-form-body"><h3>Locais cadastrados</h3><div id="locais"></div></div></section>
+    <section class="admin-form-card predios-list-card"><div class="admin-card-heading"><span class="admin-card-icon" aria-hidden="true">▦</span><div><h3>Locais cadastrados</h3><p>Prédios e salas disponíveis para as aulas.</p></div></div><div id="locais" aria-live="polite"></div></section>
   </article></section><div data-component="footer"></div></main>
 </div></div>
 <script src="../../js/shared/app.js"></script><script src="../../js/admin/predios.js"></script>

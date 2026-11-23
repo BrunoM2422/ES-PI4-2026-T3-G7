@@ -21,13 +21,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const anterior = predio.value;
     predio.replaceChildren(new Option('Selecione o prédio', ''));
     lista.replaceChildren();
-    if (!predios.length) lista.textContent = 'Cadastre o primeiro prédio para adicionar salas.';
+    if (!predios.length) {
+      const vazio = document.createElement('p');
+      vazio.className = 'predios-empty';
+      vazio.textContent = 'Nenhum local cadastrado. Comece adicionando o primeiro prédio.';
+      lista.append(vazio);
+    }
     for (const item of predios) {
       predio.add(new Option(item.nome, item._id));
-      const linha = document.createElement('p');
+      const linha = document.createElement('article');
+      linha.className = 'predios-list-item';
+      const marcador = document.createElement('span');
+      marcador.className = 'predios-list-marker';
+      marcador.setAttribute('aria-hidden', 'true');
+      marcador.textContent = '⌂';
+      const conteudo = document.createElement('div');
+      conteudo.className = 'predios-list-copy';
       const titulo = document.createElement('strong');
       titulo.textContent = item.nome;
-      linha.append(titulo, ' · ', item.salas.map(s => s.nome).join(', ') || 'Sem salas cadastradas');
+      const detalhe = document.createElement('span');
+      detalhe.textContent = item.salas.length
+        ? item.salas.map(s => `Sala ${s.nome}`).join(' · ')
+        : 'Nenhuma sala cadastrada';
+      const quantidade = document.createElement('small');
+      quantidade.textContent = `${item.salas.length} ${item.salas.length === 1 ? 'sala' : 'salas'}`;
+      conteudo.append(titulo, detalhe);
+      linha.append(marcador, conteudo, quantidade);
       lista.append(linha);
     }
     predio.value = anterior;

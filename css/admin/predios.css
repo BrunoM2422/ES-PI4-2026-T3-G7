@@ -1,0 +1,50 @@
+.predios-intro { padding: 4px 2px 8px; }
+.predios-intro h2 { font-size: 26px; letter-spacing: -.025em; }
+.predios-intro p { max-width: 560px; margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.predios-create-card { padding: 22px; border-color: #e4e7f0; box-shadow: 0 8px 24px rgb(35 48 78 / 5%); }
+.predios-create-card .admin-card-heading { margin-bottom: 20px; }
+.predios-create-card .admin-card-icon { width: 42px; height: 42px; flex-basis: 42px; border-radius: 12px; font-size: 22px; }
+.predios-create-card .admin-card-heading h3,
+.predios-list-card .admin-card-heading h3 { margin-bottom: 4px; font-size: 16px; }
+.predios-create-fields { display: grid; grid-template-columns: minmax(150px, .8fr) minmax(160px, 1fr) auto; align-items: end; gap: 14px; }
+.predios-create-fields .schedule-search { width: 100%; gap: 8px; color: #465570; font-size: 11px; }
+.predios-create-fields select,
+.predios-create-fields input { box-sizing: border-box; width: 100%; min-height: 42px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; outline: none; background: #fff; color: var(--ink); font: inherit; font-size: 12px; font-weight: 400; transition: border-color .15s, box-shadow .15s; }
+.predios-create-fields select:focus,
+.predios-create-fields input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgb(81 70 238 / 10%); }
+.predios-create-fields input::placeholder { color: #9aa5b7; }
+.predios-create-fields .admin-button { min-height: 42px; padding: 0 18px; border-radius: 8px; font-size: 11px; white-space: nowrap; }
+.predios-create-fields .admin-button span { margin-left: 8px; font-size: 15px; }
+#status { grid-column: 1 / -1; min-height: 0; margin: 0; color: var(--muted); font-size: 11px; }
+#status:empty { display: none; }
+.predios-import-card { overflow: hidden; }
+.predios-import-card .admin-card-heading { align-items: flex-start; }
+.predios-list-card { padding: 22px; }
+.predios-list-card .admin-card-heading { margin-bottom: 14px; }
+#locais { display: grid; gap: 9px; }
+.predios-list-item { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fbfcff; }
+.predios-list-marker { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 10px; background: var(--primary-soft); color: var(--primary); font-size: 18px; }
+.predios-list-copy { display: grid; min-width: 0; gap: 4px; }
+.predios-list-copy strong { overflow: hidden; color: #34425a; font-size: 12px; text-overflow: ellipsis; }
+.predios-list-copy span { overflow: hidden; color: var(--muted); font-size: 10px; line-height: 1.5; text-overflow: ellipsis; }
+.predios-list-item > small { padding: 5px 8px; border-radius: 20px; background: #f0f2f8; color: #64718a; font-size: 9px; font-weight: 700; white-space: nowrap; }
+.predios-empty { margin: 0; padding: 20px; border: 1px dashed #cfd5e2; border-radius: 9px; color: var(--muted); font-size: 11px; text-align: center; }
+body.theme-dark .predios-create-card { border-color: var(--line); }
+body.theme-dark .predios-create-fields select,
+body.theme-dark .predios-create-fields input { border-color: var(--line); background: #202b3d; color: var(--ink); }
+body.theme-dark .predios-create-fields .schedule-search,
+body.theme-dark .predios-list-copy strong { color: var(--ink); }
+body.theme-dark .predios-list-item { border-color: var(--line); background: #202b3d; }
+body.theme-dark .predios-list-item > small { background: #2a3650; color: #c2cce0; }
+body.theme-dark .predios-empty { border-color: #46516a; }
+@media (max-width: 760px) {
+  .predios-create-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .predios-create-fields .admin-button { grid-column: 1 / -1; }
+}
+@media (max-width: 520px) {
+  .predios-create-fields { grid-template-columns: 1fr; }
+  .predios-create-fields .admin-button { grid-column: auto; width: 100%; }
+  .predios-list-item { grid-template-columns: 34px minmax(0, 1fr); gap: 10px; padding: 11px; }
+  .predios-list-marker { width: 34px; height: 34px; }
+  .predios-list-item > small { grid-column: 2; justify-self: start; }
+}
