@@ -1,4 +1,5 @@
 // Autores: Bruno Machado — RA: 25008041; Luca Filippi — RA: 25022556
+// Gabriel Scolfaro de Azeredo - 25006194
 const originalFetch = window.fetch.bind(window);
 window.formatarCodigoTurmaDisciplina = (codigoTurma, codigoDisciplina) => {
   const turma = String(codigoTurma ?? '').trim();

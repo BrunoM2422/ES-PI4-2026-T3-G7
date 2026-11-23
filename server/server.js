@@ -1,4 +1,5 @@
 // Autores: Bruno Machado — RA: 25008041; Luca Filippi — RA: 25022556
+// Gabriel Scolfaro de Azeredo - 25006194
 require('dotenv').config();
 
 const express = require('express');

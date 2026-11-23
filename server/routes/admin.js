@@ -1,6 +1,7 @@
 // Autores: Luca Filippi — RA: 25022556
 // Autores: Bruno Machado — RA: 25008041
 // Nícolas Mitjans Nunes - 25005124
+// Gabriel Scolfaro de Azeredo - 25006194
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');

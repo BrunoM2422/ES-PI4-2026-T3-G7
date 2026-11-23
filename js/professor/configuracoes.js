@@ -1,4 +1,5 @@
 // Autores: Luca Filippi — RA: 25022556
+// Gabriel Scolfaro de Azeredo - 25006194
 (() => {
   const app = document.querySelector('#app');
   const host = app?.querySelector('.content > .card');
