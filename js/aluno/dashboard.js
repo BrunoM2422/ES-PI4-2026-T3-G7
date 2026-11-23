@@ -307,7 +307,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         hora: Number(horario.hora),
                         disciplina: disciplina.nome,
                         turma: window.formatarCodigoTurmaDisciplina(turma.codigo, disciplina.codigo),
-                        docente: horario.docente || ''
+                        docente: horario.docente || '',
+                        local: horario.local || ''
                     })))
             );
         }
@@ -370,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="student-class-time">${inicio} - ${fim}</div>
                     <div class="student-class-body">
                         <strong>${escapeHtml(bloco.disciplina)}</strong>
-                        <small>Turma ${escapeHtml(bloco.turma)}${bloco.docente ? ` · ${escapeHtml(bloco.docente)}` : ''}</small>
+                        <small>Turma ${escapeHtml(bloco.turma)}${bloco.docente ? ` · ${escapeHtml(bloco.docente)}` : ''}${bloco.local ? ` · ${escapeHtml(bloco.local)}` : ''}</small>
                         ${emAndamento ? '<span class="student-class-live">Em andamento</span>' : ''}
                     </div>
                 `;

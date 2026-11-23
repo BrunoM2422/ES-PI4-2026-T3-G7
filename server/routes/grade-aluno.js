@@ -47,7 +47,7 @@ async function estudanteAtivo(req) {
 function mapearHorario(item) {
   return {
     dia: item.dia, diaNome: dias[item.dia], hora: item.hora,
-    semestre: item.semestre, docente: item.docenteId?.nome || ''
+    semestre: item.semestre, docente: item.docenteId?.nome || '', local: item.local || ''
   };
 }
 
